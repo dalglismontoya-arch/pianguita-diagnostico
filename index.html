@@ -270,7 +270,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <p id="results-group-label">Playa Piangüita</p>
   </div>
   <div id="results-content"></div>
-  <div class="nav" style="margin-top:1.5rem">
+  <div id="results-retry-btn" style="display:none;text-align:center;margin-bottom:1rem">
+    <button class="btn btn-primary" onclick="retryAI()" style="width:100%">
+      Generar análisis IA ahora (requiere internet) →
+    </button>
+  </div>
+  <div class="nav" style="margin-top:0.5rem">
     <button class="btn btn-outline" onclick="goHome()">← Inicio</button>
     <button class="btn btn-facilitator" onclick="showPinOverlay()">🔒 Ver consolidado</button>
   </div>
@@ -574,10 +579,10 @@ function getLabel(qNum) {
 async function generateDiagnosis() {
   showPage('page-loading');
   const msgs = [
-    'Analizando tus respuestas...', 'Evaluando gestión y gobernanza...',
+    'Calculando puntajes...', 'Evaluando gestión y gobernanza...',
     'Revisando condiciones ambientales...', 'Verificando seguridad...',
     'Analizando servicios e infraestructura...', 'Evaluando gestión sociocultural...',
-    'Generando plan de acción NTS-TS 001-2...'
+    'Preparando tu diagnóstico...'
   ];
   let mi = 0;
   const ml = document.getElementById('load-msg');
@@ -586,13 +591,19 @@ async function generateDiagnosis() {
   const scores = BLOCKS.map((b, i) => ({ name: b.name, score: calcBlockScore(i) }));
   const total = calcTotalScore();
 
-  const resumenRespuestas = BLOCKS.map((b, i) =>
-    `${b.name} (${scores[i].score}%): ` + b.questions.map(q =>
-      `P${q.n}=${['A','B','C','D'][answers[q.n]]}`
-    ).join(',')
-  ).join('. ');
+  // Guardar resultado base (sin IA) inmediatamente
+  saveGroupResult(scores, total, null);
 
-  const prompt = `Eres auditor NTS-TS 001-2 Colombia. Grupo evaluador: ${currentGroupName}. Destino: Playa Piangüita, Bazanbocana, Buenaventura (Pacífico, comunidad afrocolombiana, manglar, acceso fluvial).
+  // Intentar generar diagnóstico IA si hay internet
+  let aiResult = null;
+  try {
+    const resumenRespuestas = BLOCKS.map((b, i) =>
+      `${b.name} (${scores[i].score}%): ` + b.questions.map(q =>
+        `P${q.n}=${['A','B','C','D'][answers[q.n]]}`
+      ).join(',')
+    ).join('. ');
+
+    const prompt = `Eres auditor NTS-TS 001-2 Colombia. Grupo evaluador: ${currentGroupName}. Destino: Playa Piangüita, Bazanbocana, Buenaventura (Pacífico, comunidad afrocolombiana, manglar, acceso fluvial).
 
 Puntajes bloque (0-100): Gobernanza=${scores[0].score}%, Zonificación=${scores[1].score}%, Ambiental=${scores[2].score}%, Seguridad=${scores[3].score}%, Servicios=${scores[4].score}%, Sociocultural-Económico=${scores[5].score}%, TOTAL=${total}%.
 Respuestas: ${resumenRespuestas}
@@ -600,7 +611,8 @@ Respuestas: ${resumenRespuestas}
 Responde SOLO JSON puro sin markdown. Campos máximo 20 palabras cada uno. Exactamente 6 acciones:
 {"nivel":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","resumen":"frase","nc":["nc1","nc2","nc3"],"diag":{"gobernanza":{"f":"frase","b":"frase","r":"frase"},"zonificacion":{"f":"frase","b":"frase","r":"frase"},"ambiental":{"f":"frase","b":"frase","r":"frase"},"seguridad":{"f":"frase","b":"frase","r":"frase"},"servicios":{"f":"frase","b":"frase","r":"frase"},"sociocultural":{"f":"frase","b":"frase","r":"frase"}},"acciones":[{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"},{"p":"BAJA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"}],"ruta":"frase"}`;
 
-  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -608,26 +620,32 @@ Responde SOLO JSON puro sin markdown. Campos máximo 20 palabras cada uno. Exact
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
         messages: [{ role: 'user', content: prompt }]
-      })
+      }),
+      signal: controller.signal
     });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error.message);
-    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
-    const cleaned = raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
-    const match = cleaned.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('Sin JSON en respuesta');
-    const result = JSON.parse(match[0]);
-    if (!result.nc) result.nc = [];
-    clearInterval(iv);
-    saveGroupResult(scores, total, result);
-    showResultsPage(scores, total, result);
-  } catch (err) {
-    clearInterval(iv);
-    alert('Error al generar diagnóstico: ' + err.message + '\n\nTus respuestas están guardadas. Por favor intenta de nuevo.');
-    showPage('page-questions');
+    clearTimeout(timeout);
+    if (resp.ok) {
+      const data = await resp.json();
+      if (!data.error) {
+        const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+        const cleaned = raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if (match) {
+          aiResult = JSON.parse(match[0]);
+          if (!aiResult.nc) aiResult.nc = [];
+          saveGroupResult(scores, total, aiResult);
+        }
+      }
+    }
+  } catch(e) {
+    // Sin internet - continúa sin IA
+    aiResult = null;
   }
+
+  clearInterval(iv);
+  showResultsPage(scores, total, aiResult);
 }
+
 
 // ============================================================
 // GUARDAR RESULTADO EN LOCALSTORAGE
@@ -688,62 +706,114 @@ function showResultsPage(scores, total, r) {
   const scoreCards = scores.map((s, i) =>
     `<div class="score-card"><div class="sl">${cats[i].l}</div><div class="sv ${scC(s.score)}">${s.score}%</div></div>`
   ).join('');
-  const ncHtml = r.nc && r.nc.length ? `<div class="nc-box"><div class="nc-title">Puntos críticos que deben atenderse primero:</div>
+
+  // Nivel basado en puntaje total si no hay IA
+  let nivel = r ? r.nivel : (total >= 70 ? 'AVANZADO' : total >= 50 ? 'EN_DESARROLLO' : total >= 30 ? 'INICIAL' : 'CRITICO');
+  let resumen = r ? r.resumen : `El grupo ${currentGroupName} obtuvo un puntaje de ${total}% en la evaluación NTS-TS 001-2. El diagnóstico detallado estará disponible cuando haya conexión a internet.`;
+
+  const ncHtml = r && r.nc && r.nc.length ? `<div class="nc-box"><div class="nc-title">Puntos críticos que deben atenderse primero:</div>
     ${r.nc.map((n, i) => `<div class="nc-item"><div class="nc-dot">${i+1}</div><span>${n}</span></div>`).join('')}</div>` : '';
-  const diagSecs = cats.map((c, i) => {
-    const d = r.diag && r.diag[c.k];
-    if (!d) return '';
-    const sc = scores[i].score;
-    const id = 'db-' + c.k;
-    const lbl = sc >= 70 ? 'Bueno' : sc >= 40 ? 'En proceso' : 'Crítico';
-    const bg = sc >= 70 ? '#d1fae5' : sc >= 40 ? '#fef3c7' : '#fee2e2';
-    const col = sc >= 70 ? '#065f46' : sc >= 40 ? '#78350f' : '#7f1d1d';
-    return `<div class="diag-block"><div class="diag-hdr" onclick="tog('${id}')">
-      <span class="diag-hdr-txt">${c.l} · ${sc}%</span>
-      <div style="display:flex;align-items:center;gap:6px">
-        <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${bg};color:${col};font-weight:500">${lbl}</span>
-        <span id="a-${id}">▾</span>
+
+  // Sin IA: mostrar tabla simple de puntajes por pregunta
+  let diagContent = '';
+  if (r && r.diag) {
+    const diagSecs = cats.map((c, i) => {
+      const d = r.diag[c.k];
+      if (!d) return '';
+      const sc = scores[i].score;
+      const id = 'db-' + c.k;
+      const lbl = sc >= 70 ? 'Bueno' : sc >= 40 ? 'En proceso' : 'Crítico';
+      const bg = sc >= 70 ? '#d1fae5' : sc >= 40 ? '#fef3c7' : '#fee2e2';
+      const col = sc >= 70 ? '#065f46' : sc >= 40 ? '#78350f' : '#7f1d1d';
+      return `<div class="diag-block"><div class="diag-hdr" onclick="tog('${id}')">
+        <span class="diag-hdr-txt">${c.l} · ${sc}%</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${bg};color:${col};font-weight:500">${lbl}</span>
+          <span id="a-${id}">▾</span>
+        </div>
       </div>
-    </div>
-    <div class="diag-body" id="${id}" style="display:none">
-      <div class="diag-blk"><div class="diag-lbl">Lo que hacemos bien:</div>${d.f||'—'}</div>
-      <div class="diag-blk"><div class="diag-lbl">Lo que nos falta:</div>${d.b||'—'}</div>
-      <div class="rec-box"><strong style="color:#059669;display:block;margin-bottom:3px">Qué recomienda la norma:</strong>${d.r||'—'}</div>
-    </div></div>`;
-  }).join('');
-  const acciones = (r.acciones || []).map((a, i) =>
+      <div class="diag-body" id="${id}" style="display:none">
+        <div class="diag-blk"><div class="diag-lbl">Lo que hacemos bien:</div>${d.f||'—'}</div>
+        <div class="diag-blk"><div class="diag-lbl">Lo que nos falta:</div>${d.b||'—'}</div>
+        <div class="rec-box"><strong style="color:#059669;display:block;margin-bottom:3px">Qué recomienda la norma:</strong>${d.r||'—'}</div>
+      </div></div>`;
+    }).join('');
+    diagContent = `<div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">Diagnóstico por bloque <span style="font-size:11px;color:#6b7280;font-weight:400">(toca para expandir)</span></div>${diagSecs}`;
+  } else {
+    // Sin IA: mostrar resumen visual de respuestas
+    const blockSummary = BLOCKS.map((b, bi) => {
+      const sc = scores[bi].score;
+      const bg = sc >= 70 ? '#d1fae5' : sc >= 40 ? '#fef3c7' : '#fee2e2';
+      const col = sc >= 70 ? '#065f46' : sc >= 40 ? '#78350f' : '#7f1d1d';
+      const lbl = sc >= 70 ? 'Bueno' : sc >= 40 ? 'En proceso' : 'Crítico';
+      const qRows = b.questions.map(q => {
+        const ans = answers[q.n];
+        const letter = ['A','B','C','D'][ans];
+        const qcol = ans === 0 ? '#059669' : ans === 1 ? '#d97706' : ans === 2 ? '#dc2626' : '#991b1b';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #f3f4f6;font-size:11px">
+          <span style="color:#374151;flex:1;padding-right:8px">P${q.n}. ${q.q.substring(0,60)}${q.q.length>60?'...':''}</span>
+          <span style="font-weight:600;color:${qcol};min-width:20px;text-align:center">${letter}</span>
+        </div>`;
+      }).join('');
+      const id = 'db-noai-' + bi;
+      return `<div class="diag-block"><div class="diag-hdr" onclick="tog('${id}')">
+        <span class="diag-hdr-txt">${b.name} · ${sc}%</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${bg};color:${col};font-weight:500">${lbl}</span>
+          <span id="a-${id}">▾</span>
+        </div>
+      </div>
+      <div class="diag-body" id="${id}" style="display:none">${qRows}</div></div>`;
+    }).join('');
+    diagContent = `
+      <div class="card" style="background:#fef3c7;border-color:#fcd34d;margin-bottom:1rem">
+        <div style="font-size:12px;font-weight:600;color:#78350f;margin-bottom:4px">Sin conexión a internet</div>
+        <div style="font-size:12px;color:#92400e;line-height:1.5">Tus respuestas están guardadas. El análisis detallado con IA se generará cuando haya conexión. Abajo puedes ver el resumen de tus respuestas.</div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">Resumen de respuestas por bloque</div>
+      ${blockSummary}`;
+  }
+
+  const acciones = r && r.acciones ? r.acciones.map((a, i) =>
     `<div class="action-item"><div class="a-num">${i+1}</div><div>
       <div class="a-txt">${a.acc || ''}</div>
-      <div class="a-meta">
-        <span class="ptag ${ptC(a.p || '')}">${a.p || ''}</span>
+      <div class="a-meta"><span class="ptag ${ptC(a.p || '')}">${a.p || ''}</span>
         <span>${a.cat || ''}</span><span>·</span><span>${a.plazo || ''}</span>
         ${a.resp ? `<span>· ${a.resp}</span>` : ''}
       </div>
     </div></div>`
-  ).join('');
+  ).join('') : '';
+
+  const rutaHtml = r && r.ruta ? `<div class="ruta-box">
+    <div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:6px">Ruta hacia la certificación NTS-TS 001-2</div>
+    <div style="font-size:12px;color:#374151;line-height:1.6">${r.ruta}</div>
+  </div>` : '';
+
+  const accionesHtml = acciones ? `<div class="card" style="margin-top:1rem">
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:12px">Plan de acción prioritario</div>
+    ${acciones}
+  </div>` : '';
 
   document.getElementById('results-content').innerHTML = `
     <div class="card" style="text-align:center;background:#f0fdf4;border-color:#6ee7b7">
       <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Puntaje global NTS-TS 001-2</div>
-      <div class="score-big" style="color:${ncC(r.nivel)}">${total}%</div>
-      <div style="font-size:13px;font-weight:600;color:${ncC(r.nivel)};margin:4px 0 10px">${r.nivel ? r.nivel.replace('_',' ') : ''}</div>
-      <div style="font-size:12px;color:#4b5563;line-height:1.6;text-align:left;border-top:1px solid #6ee7b7;padding-top:10px;margin-top:6px">${r.resumen || ''}</div>
+      <div class="score-big" style="color:${ncC(nivel)}">${total}%</div>
+      <div style="font-size:13px;font-weight:600;color:${ncC(nivel)};margin:4px 0 10px">${nivel.replace('_',' ')}</div>
+      <div style="font-size:12px;color:#4b5563;line-height:1.6;text-align:left;border-top:1px solid #6ee7b7;padding-top:10px;margin-top:6px">${resumen}</div>
     </div>
     <div class="score-grid">${scoreCards}</div>
     ${ncHtml}
-    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">Diagnóstico por bloque <span style="font-size:11px;color:#6b7280;font-weight:400">(toca para expandir)</span></div>
-    ${diagSecs}
-    <div class="card" style="margin-top:1rem">
-      <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:12px">Plan de acción prioritario</div>
-      ${acciones}
-    </div>
-    <div class="ruta-box">
-      <div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:6px">Ruta hacia la certificación NTS-TS 001-2</div>
-      <div style="font-size:12px;color:#374151;line-height:1.6">${r.ruta || ''}</div>
-    </div>
+    ${diagContent}
+    ${accionesHtml}
+    ${rutaHtml}
   `;
+  lastScores = scores;
+  lastTotal = total;
+  const retryBtn = document.getElementById('results-retry-btn');
+  if (retryBtn) retryBtn.style.display = r ? 'none' : 'block';
   showPage('page-results');
 }
+
 
 // ============================================================
 // VISTA FACILITADOR - CONSOLIDADO
@@ -809,12 +879,15 @@ function showConsolidated() {
 
   const groupCards = groups.map(g => {
     const col = g.total >= 70 ? '#059669' : g.total >= 40 ? '#d97706' : '#dc2626';
-    return `<div class="group-saved-item">
+    return `<div class="group-saved-item" id="gsi-${g.group}">
       <div class="gsi-info">
         <div class="gsi-name">${g.groupIcon} ${g.groupName}</div>
         <div class="gsi-date">Respondido el ${g.date}</div>
       </div>
-      <div class="gsi-score" style="color:${col}">${g.total}%</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="gsi-score" style="color:${col}">${g.total}%</div>
+        <button onclick="deleteGroup('${g.group}')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500" title="Eliminar este grupo">🗑 Borrar</button>
+      </div>
     </div>`;
   }).join('');
 
@@ -837,8 +910,9 @@ function showConsolidated() {
     </div>
     <div style="text-align:center">
       <button class="btn btn-primary" onclick="generateConsolidatedAI()" style="width:100%;padding:14px">
-        Generar informe IA consolidado de todos los grupos →
+        Generar informe IA consolidado →
       </button>
+      <div style="font-size:11px;color:#6b7280;margin-top:6px">Requiere conexión a internet</div>
     </div>
   `;
   showPage('page-consolidated');
@@ -924,10 +998,79 @@ Genera un informe consolidado que reconozca las diferentes perspectivas, identif
   }
 }
 
+function deleteGroup(groupKey) {
+  const all = JSON.parse(localStorage.getItem('pianguita_diagnostico') || '{}');
+  const groupName = all[groupKey] ? all[groupKey].groupName : groupKey;
+  if (confirm(`¿Seguro que quieres borrar el diagnóstico del grupo "${groupName}"? Esta acción no se puede deshacer.`)) {
+    delete all[groupKey];
+    localStorage.setItem('pianguita_diagnostico', JSON.stringify(all));
+    // Refrescar la vista
+    const el = document.getElementById('gsi-' + groupKey);
+    if (el) el.remove();
+    // Si no quedan grupos, volver al inicio
+    if (Object.keys(all).length === 0) {
+      goHome();
+    } else {
+      showConsolidated();
+    }
+  }
+}
+
 function clearAll() {
-  if (confirm('¿Seguro que quieres borrar todos los diagnósticos guardados? Esta acción no se puede deshacer.')) {
+  if (confirm('¿Seguro que quieres borrar TODOS los diagnósticos guardados? Esta acción no se puede deshacer.')) {
     localStorage.removeItem('pianguita_diagnostico');
     goHome();
+  }
+}
+
+// ============================================================
+// RETRY AI WHEN INTERNET AVAILABLE
+// ============================================================
+let lastScores = null;
+let lastTotal = null;
+
+function retryAI() {
+  if (!lastScores || lastTotal === null) return;
+  generateDiagnosisWithAI(lastScores, lastTotal);
+}
+
+async function generateDiagnosisWithAI(scores, total) {
+  document.getElementById('results-retry-btn').style.display = 'none';
+  showPage('page-loading');
+  document.getElementById('load-msg').textContent = 'Conectando con el análisis IA...';
+  const iv = setInterval(() => {}, 2000);
+
+  try {
+    const resumenRespuestas = BLOCKS.map((b, i) =>
+      `${b.name} (${scores[i].score}%): ` + b.questions.map(q =>
+        `P${q.n}=${['A','B','C','D'][answers[q.n]]}`
+      ).join(',')
+    ).join('. ');
+
+    const prompt = `Eres auditor NTS-TS 001-2 Colombia. Grupo evaluador: ${currentGroupName}. Destino: Playa Piangüita, Bazanbocana, Buenaventura (Pacífico, comunidad afrocolombiana, manglar, acceso fluvial).
+Puntajes bloque (0-100): Gobernanza=${scores[0].score}%, Zonificación=${scores[1].score}%, Ambiental=${scores[2].score}%, Seguridad=${scores[3].score}%, Servicios=${scores[4].score}%, Sociocultural-Económico=${scores[5].score}%, TOTAL=${total}%.
+Respuestas: ${resumenRespuestas}
+Responde SOLO JSON puro sin markdown. Campos máximo 20 palabras. Exactamente 6 acciones:
+{"nivel":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","resumen":"frase","nc":["nc1","nc2","nc3"],"diag":{"gobernanza":{"f":"frase","b":"frase","r":"frase"},"zonificacion":{"f":"frase","b":"frase","r":"frase"},"ambiental":{"f":"frase","b":"frase","r":"frase"},"seguridad":{"f":"frase","b":"frase","r":"frase"},"servicios":{"f":"frase","b":"frase","r":"frase"},"sociocultural":{"f":"frase","b":"frase","r":"frase"}},"acciones":[{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"},{"p":"BAJA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"}],"ruta":"frase"}`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+    });
+    clearInterval(iv);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const match = raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim().match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Sin JSON');
+    const aiResult = JSON.parse(match[0]);
+    if (!aiResult.nc) aiResult.nc = [];
+    saveGroupResult(scores, total, aiResult);
+    showResultsPage(scores, total, aiResult);
+  } catch(err) {
+    clearInterval(iv);
+    showResultsPage(scores, total, null);
+    alert('No se pudo conectar: ' + err.message);
   }
 }
 
