@@ -411,6 +411,55 @@ const BLOCKS = [
 // ESTADO DE LA APP
 // ============================================================
 const PIN = "1234";
+
+// ============================================================
+// FIREBASE REALTIME DATABASE
+// ============================================================
+const FIREBASE_DB = 'https://pianguita-diagnostico-default-rtdb.firebaseio.com/diagnosticos';
+
+async function fb_guardar(grupo, datos) {
+  try {
+    await fetch(`${FIREBASE_DB}/${grupo}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos)
+    });
+    console.log('✅ Firebase: guardado', grupo);
+  } catch(e) {
+    console.warn('⚠️ Firebase: no se pudo guardar', e);
+  }
+}
+
+async function fb_leer() {
+  try {
+    const r = await fetch(`${FIREBASE_DB}.json`);
+    if (r.ok) {
+      const datos = await r.json();
+      return datos || {};
+    }
+  } catch(e) {
+    console.warn('⚠️ Firebase: no se pudo leer', e);
+  }
+  return null;
+}
+
+async function fb_borrar(grupo) {
+  try {
+    await fetch(`${FIREBASE_DB}/${grupo}.json`, { method: 'DELETE' });
+    console.log('✅ Firebase: borrado', grupo);
+  } catch(e) {
+    console.warn('⚠️ Firebase: no se pudo borrar', e);
+  }
+}
+
+async function fb_borrar_todo() {
+  try {
+    await fetch(`${FIREBASE_DB}.json`, { method: 'DELETE' });
+    console.log('✅ Firebase: todo borrado');
+  } catch(e) {
+    console.warn('⚠️ Firebase: no se pudo borrar todo', e);
+  }
+}
 let currentGroup = null;
 let currentGroupName = "";
 let currentGroupIcon = "";
@@ -702,7 +751,7 @@ Responde SOLO JSON puro sin markdown. Campos máximo 20 palabras cada uno. Exact
 function saveGroupResult(scores, total, aiResult) {
   const key = 'pianguita_diagnostico';
   const all = JSON.parse(localStorage.getItem(key) || '{}');
-  all[currentGroup] = {
+  const datos = {
     group: currentGroup,
     groupName: currentGroupName,
     groupIcon: currentGroupIcon,
@@ -713,11 +762,19 @@ function saveGroupResult(scores, total, aiResult) {
     evidence: { ...evidence },
     aiResult: aiResult
   };
+  all[currentGroup] = datos;
   localStorage.setItem(key, JSON.stringify(all));
+  fb_guardar(currentGroup, datos); // 🔥 Guardar en Firebase
 }
 
-function loadSavedGroups() {
-  const all = JSON.parse(localStorage.getItem('pianguita_diagnostico') || '{}');
+async function loadSavedGroups() {
+  // 🔥 Intentar leer desde Firebase primero
+  const firebaseData = await fb_leer();
+  if (firebaseData && Object.keys(firebaseData).length > 0) {
+    // Sincronizar localStorage con Firebase
+    localStorage.setItem('pianguita_diagnostico', JSON.stringify(firebaseData));
+  }
+  const all = firebaseData || JSON.parse(localStorage.getItem('pianguita_diagnostico') || '{}');
   const keys = Object.keys(all);
   const section = document.getElementById('saved-groups-section');
   const list = document.getElementById('saved-groups-list');
@@ -899,9 +956,14 @@ function checkPin() {
   }
 }
 
-function showConsolidated() {
-  const all = JSON.parse(localStorage.getItem('pianguita_diagnostico') || '{}');
-  const groups = Object.values(all);
+async function showConsolidated() {
+// 🔥 Leer desde Firebase y sincronizar
+const firebaseData = await fb_leer();
+if (firebaseData && Object.keys(firebaseData).length > 0) {
+  localStorage.setItem('pianguita_diagnostico', JSON.stringify(firebaseData));
+}
+const all = firebaseData || JSON.parse(localStorage.getItem('pianguita_diagnostico') || '{}');
+const groups = Object.values(all);
   document.getElementById('consolidated-ai-result').innerHTML = '';
   document.getElementById('consolidated-loading').style.display = 'none';
 
