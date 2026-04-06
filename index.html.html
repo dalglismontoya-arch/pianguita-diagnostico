@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico NTS-TS 001-2 · Playa Pianguita</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f0;color:#1a1a18;min-height:100vh}
+.page{display:none;min-height:100vh;padding:1.5rem}
+.page.active{display:block}
+.container{max-width:700px;margin:0 auto}
+
+/* HEADER */
+.app-header{background:#065f46;color:white;padding:1rem 1.5rem;margin:-1.5rem -1.5rem 1.5rem;border-radius:0}
+.app-header h1{font-size:16px;font-weight:600;margin-bottom:2px}
+.app-header p{font-size:11px;opacity:0.8}
+
+/* CARDS */
+.card{background:white;border:1px solid #e5e7eb;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.card-green{border-color:#6ee7b7;background:#f0fdf4}
+
+/* BADGES */
+.badge{display:inline-block;font-size:10px;padding:3px 9px;border-radius:20px;font-weight:500}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-amber{background:#fef3c7;color:#78350f}
+.badge-red{background:#fee2e2;color:#7f1d1d}
+.badge-gray{background:#f3f4f6;color:#374151}
+
+/* GROUP SELECTION */
+.group-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1rem 0}
+.group-btn{background:white;border:2px solid #e5e7eb;border-radius:10px;padding:1rem;cursor:pointer;text-align:center;transition:all 0.2s;font-family:inherit}
+.group-btn:hover{border-color:#059669;background:#f0fdf4}
+.group-btn.selected{border-color:#059669;background:#d1fae5}
+.group-btn .g-icon{font-size:24px;margin-bottom:6px}
+.group-btn .g-name{font-size:13px;font-weight:600;color:#111827}
+.group-btn .g-desc{font-size:11px;color:#6b7280;margin-top:2px}
+
+/* PROGRESS */
+.progress-wrap{margin-bottom:1.2rem}
+.progress-track{display:flex;gap:4px;margin-bottom:6px}
+.ps{flex:1;height:5px;border-radius:3px;background:#e5e7eb;transition:background 0.3s}
+.ps.done{background:#059669}
+.ps.active{background:#34d399}
+.progress-label{font-size:11px;color:#6b7280;text-align:center}
+
+/* QUESTIONS */
+.block-header{background:#065f46;color:white;border-radius:10px;padding:12px 16px;margin-bottom:1rem}
+.block-header h2{font-size:14px;font-weight:600;margin-bottom:2px}
+.block-header p{font-size:11px;opacity:0.8}
+.q-item{background:white;border:1px solid #e5e7eb;border-radius:10px;padding:1.1rem;margin-bottom:10px}
+.q-num{font-size:10px;color:#6b7280;margin-bottom:4px;font-weight:500}
+.q-text{font-size:13px;font-weight:500;color:#111827;margin-bottom:8px;line-height:1.5}
+.q-hint{font-size:11px;color:#6b7280;margin-bottom:8px;font-style:italic;line-height:1.4}
+.q-evidence{font-size:11px;color:#059669;margin-bottom:10px;line-height:1.4}
+.q-evidence span{font-weight:500}
+.options{display:grid;gap:5px}
+.opt-btn{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;cursor:pointer;background:white;font-family:inherit;text-align:left;transition:all 0.15s;width:100%}
+.opt-btn:hover{border-color:#059669;background:#f0fdf4}
+.opt-btn.selected{border-color:#059669;background:#d1fae5}
+.opt-letter{min-width:22px;height:22px;border-radius:50%;background:#f3f4f6;color:#374151;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.opt-btn.selected .opt-letter{background:#059669;color:white}
+.opt-text{font-size:12px;color:#374151;line-height:1.4}
+
+/* NAVIGATION */
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:1.2rem;gap:10px}
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;border:none}
+.btn-primary{background:#059669;color:white}
+.btn-primary:hover{background:#047857}
+.btn-outline{background:white;color:#374151;border:1px solid #d1d5db}
+.btn-outline:hover{background:#f9fafb}
+.btn-facilitator{background:#1e40af;color:white}
+.btn-facilitator:hover{background:#1e3a8a}
+.btn-danger{background:#dc2626;color:white}
+.btn-danger:hover{background:#b91c1c}
+.err{background:#fef2f2;color:#991b1b;font-size:12px;padding:8px 12px;border-radius:8px;margin-top:8px;display:none;border:1px solid #fecaca}
+
+/* LOADING */
+.loading{text-align:center;padding:3rem 1rem}
+.spin{width:44px;height:44px;border:4px solid #d1fae5;border-top-color:#059669;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* RESULTS */
+.score-big{font-size:60px;font-weight:700;line-height:1}
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:1rem 0}
+.score-card{background:white;border:1px solid #e5e7eb;border-radius:8px;padding:10px;text-align:center}
+.score-card .sl{font-size:10px;color:#6b7280;margin-bottom:4px}
+.score-card .sv{font-size:20px;font-weight:700}
+.sv.g{color:#059669}.sv.a{color:#d97706}.sv.r{color:#dc2626}
+.nc-box{background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:1rem;margin:1rem 0}
+.nc-title{font-size:12px;font-weight:600;color:#991b1b;margin-bottom:8px}
+.nc-item{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #fecaca;font-size:12px;color:#1f2937}
+.nc-item:last-child{border-bottom:none}
+.nc-dot{min-width:18px;height:18px;border-radius:50%;background:#fee2e2;color:#991b1b;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.diag-block{border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px;overflow:hidden}
+.diag-hdr{padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#f9fafb;user-select:none}
+.diag-hdr:hover{background:#f3f4f6}
+.diag-hdr-txt{font-size:13px;font-weight:500;color:#111827}
+.diag-body{padding:14px;display:none;font-size:12px;color:#4b5563;line-height:1.7;background:white}
+.diag-body.open{display:block}
+.diag-lbl{font-size:11px;font-weight:600;color:#374151;margin-bottom:3px}
+.diag-blk{margin-bottom:10px}
+.rec-box{padding:9px 12px;background:#f0fdf4;border-radius:8px;border-left:3px solid #059669;font-size:12px;color:#374151}
+.action-item{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid #f3f4f6}
+.action-item:last-child{border-bottom:none}
+.a-num{min-width:22px;height:22px;border-radius:50%;background:#d1fae5;color:#065f46;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.a-txt{font-size:12px;color:#111827;line-height:1.5}
+.a-meta{font-size:10px;color:#6b7280;margin-top:2px;display:flex;gap:5px;flex-wrap:wrap}
+.ptag{font-size:9px;padding:1px 6px;border-radius:4px;font-weight:500}
+.p-alta{background:#fee2e2;color:#7f1d1d}
+.p-media{background:#fef3c7;color:#78350f}
+.p-baja{background:#d1fae5;color:#064e3b}
+.ruta-box{background:#f0fdf4;border:1px solid #6ee7b7;border-radius:10px;padding:1rem;margin-top:1rem}
+
+/* CONSOLIDATED */
+.groups-saved{display:grid;gap:8px;margin:1rem 0}
+.group-saved-item{background:white;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.gsi-info .gsi-name{font-size:13px;font-weight:600;color:#111827}
+.gsi-info .gsi-date{font-size:11px;color:#6b7280;margin-top:1px}
+.gsi-score{font-size:22px;font-weight:700}
+.comparison-table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:12px}
+.comparison-table th{background:#065f46;color:white;padding:8px;text-align:center;font-weight:500}
+.comparison-table th:first-child{text-align:left}
+.comparison-table td{padding:7px 8px;border-bottom:1px solid #e5e7eb;text-align:center}
+.comparison-table td:first-child{text-align:left;font-weight:500;color:#111827}
+.comparison-table tr:last-child td{border-bottom:none;font-weight:600;background:#f0fdf4}
+.cel-g{color:#059669;font-weight:600}
+.cel-a{color:#d97706;font-weight:600}
+.cel-r{color:#dc2626;font-weight:600}
+
+/* WELCOME */
+.welcome-hero{background:#065f46;color:white;border-radius:12px;padding:1.5rem;margin-bottom:1rem;text-align:center}
+.welcome-hero h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.welcome-hero p{font-size:13px;opacity:0.9;line-height:1.5}
+.norma-badge{display:inline-block;background:rgba(255,255,255,0.2);padding:4px 12px;border-radius:20px;font-size:11px;margin-bottom:12px}
+
+/* FACILITATOR PIN */
+.pin-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100}
+.pin-overlay.show{display:flex}
+.pin-box{background:white;border-radius:12px;padding:1.5rem;width:300px;text-align:center}
+.pin-box h3{font-size:15px;font-weight:600;margin-bottom:8px}
+.pin-box p{font-size:12px;color:#6b7280;margin-bottom:12px}
+.pin-input{width:100%;text-align:center;font-size:24px;letter-spacing:8px;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-family:inherit;margin-bottom:10px}
+.pin-input:focus{border-color:#059669;outline:none}
+</style>
+</head>
+<body>
+
+<!-- PAGE 0: BIENVENIDA -->
+<div class="page active" id="page-welcome">
+<div class="container">
+  <div class="app-header">
+    <h1>Diagnóstico Participativo NTS-TS 001-2</h1>
+    <p>Playa Pianguita · Bazanbocana · Buenaventura</p>
+  </div>
+  <div class="welcome-hero">
+    <div class="norma-badge">NTS-TS 001-2 · Playas Turísticas Sostenibles</div>
+    <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
+    <p>Esta herramienta nos ayuda a entender cómo estamos como destino turístico. Cada grupo de nuestra comunidad tiene algo importante que decir. Todas las voces cuentan.</p>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">¿Cómo funciona?</div>
+    <div style="font-size:12px;color:#4b5563;line-height:1.7">
+      1. Seleccionas tu grupo (hoteleros, restaurantes, carperos, etc.)<br>
+      2. Respondes 50 preguntas sencillas sobre la playa<br>
+      3. La herramienta genera un diagnóstico de tu grupo<br>
+      4. Al final, el facilitador puede ver el consolidado de todos los grupos
+    </div>
+  </div>
+
+  <div id="saved-groups-section" style="display:none">
+    <div class="card" style="border-color:#6ee7b7;background:#f0fdf4">
+      <div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:8px">Grupos que ya respondieron:</div>
+      <div id="saved-groups-list"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:12px">Selecciona tu grupo:</div>
+    <div class="group-grid">
+      <button class="group-btn" onclick="selectGroup('hoteleros','Hoteleros y hospedajes','🏨')">
+        <div class="g-icon">🏨</div>
+        <div class="g-name">Hoteleros</div>
+        <div class="g-desc">Hoteles y hospedajes</div>
+      </button>
+      <button class="group-btn" onclick="selectGroup('restaurantes','Restaurantes y cocinas','🍽️')">
+        <div class="g-icon">🍽️</div>
+        <div class="g-name">Restaurantes</div>
+        <div class="g-desc">Comidas y bebidas</div>
+      </button>
+      <button class="group-btn" onclick="selectGroup('carperos','Carperos y arrendadores','⛱️')">
+        <div class="g-icon">⛱️</div>
+        <div class="g-name">Carperos</div>
+        <div class="g-desc">Sillas, carpas y servicio de playa</div>
+      </button>
+      <button class="group-btn" onclick="selectGroup('guias','Guías y transportadores','⛵')">
+        <div class="g-icon">⛵</div>
+        <div class="g-name">Guías y transportadores</div>
+        <div class="g-desc">Lanchas y recorridos</div>
+      </button>
+      <button class="group-btn" onclick="selectGroup('comunidad','Comunidad en general','👥')">
+        <div class="g-icon">👥</div>
+        <div class="g-name">Comunidad</div>
+        <div class="g-desc">Vecinos de Piangüita</div>
+      </button>
+      <button class="group-btn" onclick="selectGroup('escuela','Escuela y jóvenes','🏫')">
+        <div class="g-icon">🏫</div>
+        <div class="g-name">Escuela y jóvenes</div>
+        <div class="g-desc">Estudiantes y docentes</div>
+      </button>
+    </div>
+    <div style="margin-top:10px">
+      <input id="custom-group-input" style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit" placeholder="Otro grupo (escríbelo aquí)..." oninput="selectGroup('otro',this.value,'🤝')">
+    </div>
+  </div>
+
+  <div id="selected-group-display" style="display:none" class="card card-green">
+    <div style="font-size:12px;color:#065f46">Grupo seleccionado:</div>
+    <div id="selected-group-name" style="font-size:15px;font-weight:600;color:#065f46;margin-top:2px"></div>
+  </div>
+
+  <div class="nav">
+    <button class="btn btn-facilitator" onclick="showPinOverlay()">🔒 Vista Facilitador</button>
+    <button class="btn btn-primary" id="btn-start" onclick="startDiagnostic()" style="opacity:0.4;pointer-events:none">Comenzar diagnóstico →</button>
+  </div>
+</div>
+</div>
+
+<!-- PAGE 1-6: PREGUNTAS -->
+<div class="page" id="page-questions">
+<div class="container">
+  <div class="app-header">
+    <h1 id="q-group-label">Diagnóstico</h1>
+    <p>Playa Piangüita · NTS-TS 001-2</p>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-track" id="progress-track"></div>
+    <div class="progress-label" id="progress-label"></div>
+  </div>
+  <div id="block-content"></div>
+  <div class="err" id="q-err">Por favor responde todas las preguntas antes de continuar.</div>
+  <div class="nav">
+    <button class="btn btn-outline" id="q-btn-back" onclick="blockBack()">← Anterior</button>
+    <button class="btn btn-primary" id="q-btn-next" onclick="blockNext()">Siguiente →</button>
+  </div>
+</div>
+</div>
+
+<!-- PAGE: LOADING -->
+<div class="page" id="page-loading">
+<div class="container">
+  <div class="app-header">
+    <h1>Generando diagnóstico...</h1>
+    <p>Por favor espera</p>
+  </div>
+  <div class="loading">
+    <div class="spin"></div>
+    <div style="font-size:14px;font-weight:500;color:#111827;margin-bottom:5px" id="load-msg">Analizando respuestas...</div>
+    <div style="font-size:12px;color:#6b7280">Comparando con criterios NTS-TS 001-2</div>
+  </div>
+</div>
+</div>
+
+<!-- PAGE: RESULTS -->
+<div class="page" id="page-results">
+<div class="container">
+  <div class="app-header">
+    <h1>Tu diagnóstico está listo</h1>
+    <p id="results-group-label">Playa Piangüita</p>
+  </div>
+  <div id="results-content"></div>
+  <div id="results-retry-btn" style="display:none;text-align:center;margin-bottom:1rem">
+    <button class="btn btn-primary" onclick="retryAI()" style="width:100%">
+      Generar análisis IA ahora (requiere internet) →
+    </button>
+  </div>
+  <div class="nav" style="margin-top:0.5rem">
+    <button class="btn btn-outline" onclick="goHome()">← Inicio</button>
+    <button class="btn btn-facilitator" onclick="showPinOverlay()">🔒 Ver consolidado</button>
+  </div>
+</div>
+</div>
+
+<!-- PAGE: CONSOLIDATED -->
+<div class="page" id="page-consolidated">
+<div class="container">
+  <div class="app-header">
+    <h1>Vista Facilitador — Consolidado</h1>
+    <p>Playa Piangüita · Todos los grupos</p>
+  </div>
+  <div id="consolidated-content"></div>
+  <div class="loading" id="consolidated-loading" style="display:none">
+    <div class="spin"></div>
+    <div style="font-size:14px;font-weight:500;color:#111827;margin-bottom:5px" id="consol-msg">Generando informe consolidado...</div>
+    <div style="font-size:12px;color:#6b7280">Analizando todas las voces de la comunidad</div>
+  </div>
+  <div id="consolidated-ai-result"></div>
+  <div class="nav" style="margin-top:1.5rem">
+    <button class="btn btn-outline" onclick="goHome()">← Inicio</button>
+    <button class="btn btn-danger" onclick="clearAll()" style="font-size:12px">🗑 Borrar todos los datos</button>
+  </div>
+</div>
+</div>
+
+<!-- PIN OVERLAY -->
+<div class="pin-overlay" id="pin-overlay">
+  <div class="pin-box">
+    <h3>Acceso Facilitador</h3>
+    <p>Ingresa el código para ver el consolidado de todos los grupos</p>
+    <input class="pin-input" id="pin-input" type="password" maxlength="4" placeholder="••••" oninput="checkPin()">
+    <div style="font-size:11px;color:#dc2626;margin-bottom:10px;display:none" id="pin-error">Código incorrecto</div>
+    <button class="btn btn-outline" onclick="hidePinOverlay()" style="width:100%">Cancelar</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DATOS: 50 PREGUNTAS EN 6 BLOQUES
+// ============================================================
+const BLOCKS = [
+  {
+    id: 1, name: "Gestión y Gobernanza", ref: "§4.1 y §4.2 NTS-TS 001-2",
+    questions: [
+      { n:1, q:"¿Sabemos cuáles son todas las leyes y permisos que necesitamos para manejar la playa como destino turístico?", hint:"Piensa en permisos de la DIMAR, la alcaldía y el Ministerio de Medio Ambiente.", ev:"Carpeta con normas, permisos y conceptos vigentes de DIMAR, alcaldía y autoridad ambiental.", opts:["Sí, las conocemos todas y tenemos los documentos al día","Conocemos algunas, pero nos faltan otras","Las estamos averiguando, estamos en proceso","No las conocemos"] },
+      { n:2, q:"¿El municipio tiene registrado en el plan de ordenamiento que nuestra playa es de uso turístico?", hint:"Esto se llama POT (Plan de Ordenamiento Territorial).", ev:"Documento del POT de Buenaventura donde aparezca la playa como zona turística.", opts:["Sí, está registrado oficialmente","Creemos que sí, pero no tenemos el documento","Está en trámite","No sabemos o no está registrado"] },
+      { n:3, q:"¿Tenemos un grupo, comité o persona encargada de organizar y dirigir el turismo en Piangüita?", hint:"Puede ser una junta, un consejo comunitario, una asociación o un líder reconocido.", ev:"Acta de constitución o carta de reconocimiento del comité o entidad gestora.", opts:["Sí, hay un grupo formal y activo","Hay un grupo pero funciona de manera informal","Estamos organizándonos para crearlo","No hay nadie encargado"] },
+      { n:4, q:"¿Ese grupo tiene escrito quién hace qué, con qué recursos cuenta y en qué tiempo debe hacerlo?", hint:"Que cada miembro sepa cuál es su responsabilidad específica.", ev:"Actas o documentos donde estén las responsabilidades y recursos asignados.", opts:["Sí, todo está escrito y claro","Algunas cosas están escritas pero faltan otras","Lo estamos organizando","No, nada está escrito"] },
+      { n:5, q:"¿Tenemos un plan de sostenibilidad con metas claras que nos diga qué queremos lograr y cómo lo vamos a medir?", hint:"Un plan que tenga objetivos, actividades, fechas y cómo sabemos si lo logramos.", ev:"Documento del Plan de Gestión para la Sostenibilidad con objetivos, metas e indicadores.", opts:["Sí, tenemos el plan y lo seguimos","Tenemos algunas metas pero sin indicadores claros","Lo estamos construyendo","No tenemos ningún plan"] },
+      { n:6, q:"¿Ese plan tiene en cuenta que en temporada alta la playa se comporta diferente que en temporada baja?", hint:"Las Semanas Santas, diciembre y los puentes festivos traen mucha más gente.", ev:"Documento del plan donde aparezcan actividades específicas para temporada alta y baja.", opts:["Sí, el plan distingue temporadas y tiene acciones para cada una","Algo considera, pero no está bien diferenciado","No lo hemos pensado todavía","No tenemos plan"] },
+      { n:7, q:"¿Les hemos contado a los turistas, vendedores y a toda la comunidad qué dice nuestro plan y qué esperamos de cada uno?", hint:"Que todos conozcan las reglas, los acuerdos y los compromisos.", ev:"Actas de reuniones, volantes, carteleras o registros de socializaciones.", opts:["Sí, hacemos reuniones y divulgamos el plan regularmente","Lo hemos comunicado algunas veces","Lo hemos hecho una sola vez","Nunca lo hemos comunicado"] },
+      { n:8, q:"¿Revisamos nuestro plan al menos una vez al año para mejorarlo según lo que nos ha funcionado y lo que no?", hint:"Que el plan no quede guardado en un cajón sino que evolucione.", ev:"Actas o registros de reuniones de revisión y ajuste del plan.", opts:["Sí, lo revisamos y ajustamos regularmente","Lo hemos revisado alguna vez","Planeamos revisarlo pero no lo hemos hecho","No lo revisamos"] },
+    ]
+  },
+  {
+    id: 2, name: "Delimitación y Zonificación", ref: "§4.3 NTS-TS 001-2",
+    questions: [
+      { n:9, q:"¿Tenemos un mapa oficial que muestre exactamente hasta dónde llega nuestra playa?", hint:"Un mapa técnico que delimite el área, no solo un dibujo.", ev:"Mapas oficiales de la zona costera de Piangüita con escala y referencia cartográfica.", opts:["Sí, tenemos el mapa oficial actualizado","Tenemos un mapa básico pero no oficial","Lo estamos gestionando","No tenemos ningún mapa"] },
+      { n:10, q:"¿La playa está dividida en zonas claramente marcadas: una para bañarse, una para descansar, una para caminar, una para los negocios?", hint:"Que la gente sepa dónde puede hacer cada cosa.", ev:"Plano de zonificación y fotos de los letreros o señales en la playa.", opts:["Sí, las zonas están definidas y señalizadas","Algunas zonas están definidas, otras no","Lo estamos planeando","No hay ninguna división de zonas"] },
+      { n:11, q:"¿La zona donde la gente se baña está delimitada con boyas, según las condiciones del mar en ese punto?", hint:"Las boyas marcan el límite seguro de baño según corrientes y profundidad.", ev:"Informe técnico de instalación de boyas y fotos de la delimitación.", opts:["Sí, hay boyas instaladas según un estudio técnico","Hay algunas marcas pero sin estudio técnico","Lo estamos gestionando con la DIMAR","No hay ninguna delimitación"] },
+      { n:12, q:"¿La zona por donde camina la gente está completamente libre de mesas, quioscos o cualquier obstáculo?", hint:"La zona de tránsito debe estar despejada para que todos puedan pasar cómodamente.", ev:"Fotos que muestren la zona de circulación libre.", opts:["Sí, la zona de paso siempre está libre","Generalmente está libre pero a veces se invade","Con frecuencia hay obstáculos","Siempre hay obstáculos"] },
+      { n:13, q:"¿Hay una zona definida para deportes náuticos (surf, kayak, lanchas) separada de donde se bañan las familias?", hint:"Los deportes con equipos o motores son peligrosos cerca de los bañistas.", ev:"Documento o plano que muestre la zona de deportes náuticos y sus reglas.", opts:["Sí, hay una zona definida con reglas claras","Existe una zona aproximada pero sin reglas formales","Lo estamos planificando","No hay separación de zonas náuticas"] },
+      { n:14, q:"¿Está clara la ruta que deben seguir las lanchas y botes para no meterse en la zona donde se bañan las personas?", hint:"Los bañistas y las embarcaciones no deben mezclarse por seguridad.", ev:"Señalización o protocolo de navegación en la playa.", opts:["Sí, hay una ruta definida y señalizada","Hay acuerdos informales entre los lancheros","Lo estamos organizando","No hay ninguna separación"] },
+      { n:15, q:"¿Sabemos cuántas personas puede recibir la playa al mismo tiempo sin dañar el ecosistema ni la experiencia del visitante?", hint:"Esto se llama capacidad de carga y es obligatorio para la norma.", ev:"Estudio técnico de capacidad de carga aprobado y sistema de control de aforo.", opts:["Sí, tenemos el estudio y controlamos el acceso","Tenemos una idea aproximada pero sin estudio formal","Lo estamos gestionando","No sabemos cuántas personas soporta la playa"] },
+    ]
+  },
+  {
+    id: 3, name: "Medio Ambiente", ref: "§4.4 NTS-TS 001-2",
+    questions: [
+      { n:16, q:"¿Le hacemos análisis al agua del mar para saber si es segura para bañarse?", hint:"Se miden coliformes, pH, grasas y otros contaminantes.", ev:"Resultados de laboratorio que analicen la calidad del agua de baño.", opts:["Sí, hacemos análisis periódicos con laboratorio certificado","Hacemos análisis ocasionales","Hemos hecho algún análisis una vez","No hacemos ningún análisis"] },
+      { n:17, q:"¿Les avisamos a los bañistas cuando el agua no está en buenas condiciones para bañarse?", hint:"Si el mar está contaminado, la gente tiene derecho a saberlo.", ev:"Carteles, mensajes o tableros donde se publique el estado del agua.", opts:["Sí, siempre informamos cuando hay algún problema","Lo hacemos a veces","Lo hemos hecho muy pocas veces","No informamos a los bañistas"] },
+      { n:18, q:"¿Controlamos que los desagües, las lanchas y los negocios no estén botando basura o aguas sucias al mar?", hint:"Los vertimientos contaminan el agua y afectan la salud de los bañistas.", ev:"Documentos de control de vertimientos o actas de inspección.", opts:["Sí, hay control y seguimiento","Hay control parcial","Lo estamos organizando","No hay ningún control"] },
+      { n:19, q:"¿Limpiamos la arena todos los días y hacemos al menos una limpieza del fondo del mar cada año?", hint:"La limpieza submarina recoge residuos que se acumulan en el fondo.", ev:"Bitácora o cuaderno de registros de limpieza con fechas y fotos.", opts:["Sí, hacemos limpieza diaria y limpieza submarina anual","Hacemos limpieza frecuente pero no del fondo del mar","La limpieza es irregular","No hacemos limpieza organizada"] },
+      { n:20, q:"¿Tenemos canecas con tapa, separadas por tipo de basura (orgánica, reciclable, ordinaria) y alejadas del mar?", hint:"Las canecas no deben tocar el suelo ni estar cerca del agua.", ev:"Fotos de las canecas bien instaladas y diferenciadas por color.", opts:["Sí, tenemos canecas diferenciadas con tapa y bien ubicadas","Tenemos canecas pero sin separación o mal ubicadas","Tenemos algunas canecas básicas","No tenemos canecas o están en mal estado"] },
+      { n:21, q:"¿Tenemos un punto donde el turista pueda tomar agua potable gratis?", hint:"La norma exige al menos un punto de agua potable gratuita en la playa.", ev:"Registro de que el punto de agua funciona y el agua es limpia.", opts:["Sí, hay un punto de agua gratuita siempre disponible","Hay agua disponible pero con restricciones o costo","Lo estamos gestionando","No hay ningún punto de agua"] },
+      { n:22, q:"¿Estamos ahorrando agua en los servicios de la playa como baños, duchas y negocios?", hint:"Buenas prácticas de ahorro: cierre de llaves, reutilización, mantenimiento de tuberías.", ev:"Programa o plan de uso eficiente del agua implementado.", opts:["Sí, tenemos un programa de ahorro de agua activo","Algunas personas ahorran pero no es organizado","Lo estamos pensando","No pensamos en el ahorro de agua"] },
+      { n:23, q:"¿Estamos usando bien la energía en la playa y pensando en energías limpias como la solar?", hint:"Apagar lo que no se usa, usar bombillas eficientes, pensar en paneles solares.", ev:"Programa de eficiencia energética o evidencia de uso de energías renovables.", opts:["Sí, tenemos un programa de eficiencia energética","Algunas iniciativas aisladas","Lo estamos discutiendo","No hemos pensado en esto"] },
+      { n:24, q:"¿Avisamos cada día cómo están el clima, las mareas y la calidad del agua?", hint:"Que los turistas sepan las condiciones antes de meterse al mar.", ev:"Tableros actualizados, mensajes por WhatsApp o avisos en la playa.", opts:["Sí, informamos diariamente por varios medios","Lo hacemos ocasionalmente","Lo hemos hecho muy pocas veces","No informamos"] },
+      { n:25, q:"¿Cuidamos y monitoreamos nuestros manglares y animales marinos al menos dos veces al año?", hint:"Según la norma, el monitoreo debe hacerse con metodologías del INVEMAR.", ev:"Informes semestrales de monitoreo de ecosistemas firmados por un técnico.", opts:["Sí, hacemos monitoreo semestral con registro","Hacemos seguimiento ocasional sin metodología formal","Lo hemos hecho alguna vez","No monitoreamos los ecosistemas"] },
+      { n:26, q:"¿Tenemos carteleras o avisos que le expliquen al turista cuáles ecosistemas tiene Piangüita y cómo cuidarlos?", hint:"Que el turista sepa que el manglar es un tesoro y cómo comportarse.", ev:"Fotos de carteleras, folletos o señalización informativa sobre los ecosistemas.", opts:["Sí, hay información visible y bien explicada","Hay algo de información pero es insuficiente","Lo estamos preparando","No hay información para el turista"] },
+      { n:27, q:"¿Manejamos bien los combustibles de las lanchas y los productos de limpieza para que no contaminen la playa?", hint:"Los derrames de aceite o gasolina dañan el mar y la arena.", ev:"Protocolo de manejo de combustibles y fichas de seguridad de productos usados.", opts:["Sí, hay protocolos claros de manejo","Hay algunas precauciones pero no son formales","Lo estamos organizando","No hay ningún control"] },
+      { n:28, q:"¿Controlamos el ruido de la música y los parlantes en la playa para no molestar a los vecinos ni espantar a los animales?", hint:"La contaminación auditiva afecta tanto a las personas como a los animales marinos.", ev:"Acuerdo o reglamento de horarios y niveles de ruido permitidos.", opts:["Sí, hay reglas de ruido que todos respetan","Hay acuerdos informales que no siempre se cumplen","Lo estamos discutiendo","No hay ningún control de ruido"] },
+    ]
+  },
+  {
+    id: 4, name: "Seguridad", ref: "§4.7 NTS-TS 001-2",
+    questions: [
+      { n:29, q:"¿Tenemos salvavidas en la playa con contrato formal, equipos completos y entrenamiento certificado?", hint:"El oleaje del Pacífico es fuerte. Los salvavidas son obligatorios según la norma.", ev:"Contratos de los salvavidas, certificados de formación y fotos de sus equipos.", opts:["Sí, hay salvavidas certificados en turno durante el horario de uso","Hay personas que ayudan pero sin certificación formal","Solo en temporada alta","No hay salvavidas"] },
+      { n:30, q:"¿Usamos el sistema de banderas de colores para avisarle a los bañistas si el mar está seguro, con precaución o peligroso?", hint:"Verde = seguro, amarilla = precaución, roja = prohibido bañarse.", ev:"Fotos del sistema de banderas instalado y funcionando en la playa.", opts:["Sí, usamos el sistema internacional de banderas correctamente","Usamos algún tipo de señal pero no el sistema oficial","Lo estamos implementando","No usamos ningún sistema de señales"] },
+      { n:31, q:"¿Estamos listos para una emergencia? ¿Sabemos todos qué hacer y a quién llamar si ocurre un desastre natural o una emergencia?", hint:"Que los vendedores, salvavidas y comunidad conozcan los pasos a seguir.", ev:"Documento del Plan de Emergencias conocido por todos y aprobado por los organismos de socorro.", opts:["Sí, tenemos el plan y todos lo conocen","Tenemos un plan pero no todo el mundo lo conoce","Lo estamos elaborando","No tenemos ningún plan de emergencias"] },
+      { n:32, q:"¿Tenemos botiquín completo, tablas de rescate y cuerdas listos y en buen estado en la playa?", hint:"Los equipos deben estar disponibles durante todo el horario de uso de la playa.", ev:"Fotos y lista de chequeo de los equipos de primeros auxilios y salvamento.", opts:["Sí, los equipos están completos y revisados regularmente","Hay algunos equipos pero incompletos","Solo tenemos un botiquín básico","No hay equipos de emergencia"] },
+      { n:33, q:"¿Tenemos un medio de comunicación confiable para llamar a la DIMAR, la Capitanía del Puerto o los bomberos cuando hay una emergencia?", hint:"Importante porque Piangüita tiene acceso solo por agua.", ev:"Radio, teléfono satelital o protocolo formal de comunicación con la Capitanía.", opts:["Sí, hay comunicación garantizada con las autoridades","Tenemos comunicación pero con limitaciones","Solo por celular cuando hay señal","No tenemos comunicación confiable"] },
+      { n:34, q:"¿Los avisos de seguridad y emergencia en la playa están escritos en español e inglés?", hint:"Los turistas extranjeros también necesitan entender las señales.", ev:"Fotos de los avisos bilingues instalados en la playa.", opts:["Sí, todos los avisos están en español e inglés","Algunos avisos están en los dos idiomas","Solo están en español","No hay avisos de seguridad"] },
+    ]
+  },
+  {
+    id: 5, name: "Servicios e Infraestructura", ref: "§4.3 y §4.4 NTS-TS 001-2",
+    questions: [
+      { n:35, q:"¿Los baños y duchas de la playa están limpios, funcionando y en buenas condiciones?", hint:"Deben tener agua, ser higiénicos y estar disponibles para todos los turistas.", ev:"Fotos recientes de los baños y registro de mantenimiento.", opts:["Sí, están en buen estado y limpios","Funcionan pero con algunas deficiencias","Están en mal estado o funcionan a medias","No hay baños o están fuera de servicio"] },
+      { n:36, q:"¿Hay un lugar o cartelera donde el turista pueda encontrar información sobre la playa, las reglas y los servicios disponibles?", hint:"Un punto de información ayuda al turista a orientarse y conocer las normas.", ev:"Fotos del punto de información o cartelería con datos de la playa.", opts:["Sí, hay un punto activo con información actualizada","Hay cartelería básica pero desactualizada","Lo estamos organizando","No hay información para el turista"] },
+      { n:37, q:"¿Hay rampas o caminos firmes para que las personas en silla de ruedas o con dificultad para caminar puedan entrar a la playa?", hint:"La norma exige accesibilidad. Una pasarela cada 500 metros es la referencia.", ev:"Fotos de las rampas o pasarelas instaladas.", opts:["Sí, hay rampas o pasarelas accesibles","Hay alguna facilidad pero es insuficiente","Lo estamos gestionando","No hay ninguna condición de accesibilidad"] },
+      { n:38, q:"¿Los vendedores de comida y bebidas preparan y venden sus productos con buenas condiciones de higiene?", hint:"Temperatura adecuada, superficies limpias, sin contacto con animales ni suciedad.", ev:"Certificados de manipulación de alimentos de los vendedores.", opts:["Sí, cumplen buenas prácticas de higiene","Algunos cumplen, otros no","Hay condiciones básicas pero deficientes","No hay control de higiene en alimentos"] },
+      { n:39, q:"¿El muelle y las embarcaciones que traen turistas están en buen estado y son seguros?", hint:"El acceso por agua a Piangüita es el principal punto de llegada del turista.", ev:"Registro de mantenimiento del muelle y certificados náuticos de las embarcaciones.", opts:["Sí, el muelle y las embarcaciones están en buen estado","Estado regular con algunas deficiencias","Estado deficiente","Muy mal estado o inseguro"] },
+      { n:40, q:"¿Tenemos un Manual de Convivencia visible que les explique a los turistas cómo comportarse en nuestra playa y en nuestra comunidad?", hint:"Las reglas de nuestra comunidad deben ser conocidas por quien nos visita.", ev:"Carteles o folletos con el Manual de Convivencia en lugares visibles.", opts:["Sí, está visible y todo el mundo lo conoce","Existe pero no está bien divulgado","Lo estamos elaborando","No existe"] },
+      { n:41, q:"¿Los vendedores y prestadores de servicios en la playa están organizados y registrados, y evitamos la venta informal desordenada?", hint:"Un censo de vendedores permite organizar mejor el espacio y el servicio.", ev:"Lista o censo de vendedores autorizados y actas de control.", opts:["Sí, hay un registro y se controla la venta informal","Hay registro parcial","Lo estamos organizando","No hay ningún registro ni control"] },
+      { n:42, q:"¿Les preguntamos a los turistas y a la comunidad si están satisfechos con la playa y usamos esas respuestas para mejorar?", hint:"Una encuesta sencilla ayuda a saber qué estamos haciendo bien y qué debemos mejorar.", ev:"Encuestas llenas por los turistas y plan de mejora basado en los resultados.", opts:["Sí, tenemos un sistema de encuestas y usamos los resultados","Preguntamos ocasionalmente pero sin sistema","Lo hemos hecho muy pocas veces","No le preguntamos a nadie"] },
+    ]
+  },
+  {
+    id: 6, name: "Sociocultural y Económico", ref: "§4.5 y §4.6 NTS-TS 001-2",
+    questions: [
+      { n:43, q:"¿La comunidad de Piangüita participa activamente en las decisiones sobre el turismo en la playa Piangüita y recibe beneficios directos?", hint:"La comunidad no solo debe trabajar en la playa sino también decidir sobre ella.", ev:"Actas de asambleas comunitarias donde se tomen decisiones sobre turismo.", opts:["Sí, participamos activamente y recibimos beneficios directos","Participamos en algunas decisiones","Somos consultados pero no decidimos","No participamos en las decisiones"] },
+      { n:44, q:"¿Promovemos y protegemos nuestra cultura afropacífica — gastronomía, música, tradiciones — como parte de la experiencia turística?", hint:"Que el turista conozca y valore lo que nos hace únicos.", ev:"Programas culturales, menús locales, presentaciones artísticas ofrecidas al turista.", opts:["Sí, nuestra cultura es parte activa de la oferta turística","Integramos nuestra cultura de forma parcial","Está presente de manera espontánea","No incluimos nuestra cultura en el turismo"] },
+      { n:45, q:"¿Respetamos los espacios y costumbres propias de la comunidad y no dejamos que el turismo los invada o los cambie sin nuestro permiso?", hint:"Algunos espacios sagrados, de pesca o de reunión comunal son propios de la comunidad.", ev:"Reglamento o acuerdo comunitario que proteja los espacios y costumbres propias.", opts:["Sí, tenemos reglas que protegen nuestros espacios y costumbres","Hay respeto informal pero sin reglas","Ha habido conflictos pero los manejamos","El turismo invade con frecuencia nuestros espacios"] },
+      { n:46, q:"¿Tenemos acciones concretas para evitar que los niños, niñas y jóvenes de la comunidad sean víctimas de abuso o explotación por parte del turismo?", hint:"Esto se llama prevención de ESCNNA (Explotación Sexual Comercial de Niños, Niñas y Adolescentes).", ev:"Programa vigente de prevención de ESCNNA, afiches informativos, capacitaciones.", opts:["Sí, tenemos un programa activo de prevención","Hacemos algunas acciones básicas de sensibilización","Lo estamos planificando","No tenemos ninguna acción al respecto"] },
+      { n:47, q:"¿Los trabajos que genera el turismo en la playa son ocupados principalmente por personas de nuestra comunidad?", hint:"Guías, salvavidas, vendedores, cocineros: ¿son de Piangüita?", ev:"Censo o registro de trabajadores del sector turístico con su lugar de origen.", opts:["Sí, más del 70% son personas de la comunidad","Entre el 40% y el 70% son de la comunidad","Menos del 40% son de la comunidad","No sabemos o no se mide"] },
+      { n:48, q:"¿Los negocios de la playa compran sus productos (pescado, frutas, artesanías) a proveedores de la misma comunidad o de la región Pacífico?", hint:"El dinero del turismo debe quedarse en la región.", ev:"Facturas o acuerdos de compra con proveedores locales.", opts:["Sí, compramos la mayoría a proveedores locales","Compramos algo local pero también de fuera","Compramos muy poco de la comunidad","No compramos a proveedores locales"] },
+      { n:49, q:"¿Parte del dinero que genera el turismo se queda en la comunidad y se reinvierte en mejorar la playa y la calidad de vida de los vecinos?", hint:"Que el turismo beneficie a toda la comunidad, no solo a unos pocos.", ev:"Mecanismos formales o informales de reinversión de ingresos turísticos en la comunidad.", opts:["Sí, hay mecanismos formales de reinversión","Hay acuerdos informales de apoyo comunitario","Lo estamos discutiendo","Los ingresos del turismo no se comparten"] },
+      { n:50, q:"¿Nos estamos capacitando en turismo, atención al visitante y manejo sostenible de la playa?", hint:"Piensa en cursos del SENA, talleres de universidades, formaciones de la alcaldía.", ev:"Certificados de los cursos de capacitación tomados por miembros de la comunidad.", opts:["Sí, hacemos capacitaciones continuas","Hemos hecho algunos cursos","Hemos hecho muy pocas capacitaciones","No nos hemos capacitado en turismo"] },
+    ]
+  }
+];
+
+// ============================================================
+// ESTADO DE LA APP
+// ============================================================
+const PIN = "1234";
+let currentGroup = null;
+let currentGroupName = "";
+let currentGroupIcon = "";
+let currentBlock = 0;
+let answers = {};
+let evidence = {};
+
+// ============================================================
+// NAVEGACIÓN
+// ============================================================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  loadSavedGroups();
+  showPage('page-welcome');
+}
+
+// ============================================================
+// SELECCIÓN DE GRUPO
+// ============================================================
+function selectGroup(id, name, icon) {
+  currentGroup = id;
+  currentGroupName = name || id;
+  currentGroupIcon = icon || '🤝';
+  document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('selected'));
+  if (id !== 'otro') {
+    document.querySelectorAll('.group-btn').forEach(b => {
+      if (b.onclick && b.onclick.toString().includes(`'${id}'`)) b.classList.add('selected');
+    });
+  }
+  document.getElementById('selected-group-display').style.display = 'block';
+  document.getElementById('selected-group-name').textContent = icon + ' ' + (name || id);
+  document.getElementById('btn-start').style.opacity = '1';
+  document.getElementById('btn-start').style.pointerEvents = 'auto';
+}
+
+function startDiagnostic() {
+  if (!currentGroup) return;
+  answers = {};
+  evidence = {};
+  currentBlock = 0;
+  document.getElementById('q-group-label').textContent = currentGroupIcon + ' ' + currentGroupName;
+  buildProgressBar();
+  renderBlock();
+  showPage('page-questions');
+}
+
+// ============================================================
+// BARRA DE PROGRESO
+// ============================================================
+function buildProgressBar() {
+  const track = document.getElementById('progress-track');
+  track.innerHTML = BLOCKS.map((b, i) =>
+    `<div class="ps ${i === 0 ? 'active' : ''}" id="pb${i}"></div>`
+  ).join('');
+}
+
+function updateProgress() {
+  BLOCKS.forEach((b, i) => {
+    const el = document.getElementById('pb' + i);
+    if (!el) return;
+    if (i < currentBlock) el.className = 'ps done';
+    else if (i === currentBlock) el.className = 'ps active';
+    else el.className = 'ps';
+  });
+  const b = BLOCKS[currentBlock];
+  document.getElementById('progress-label').textContent =
+    `Bloque ${currentBlock + 1} de ${BLOCKS.length} · ${b.name}`;
+  document.getElementById('q-btn-back').style.visibility = currentBlock === 0 ? 'hidden' : 'visible';
+  document.getElementById('q-btn-next').textContent =
+    currentBlock === BLOCKS.length - 1 ? 'Generar diagnóstico ✓' : 'Siguiente →';
+}
+
+// ============================================================
+// RENDER PREGUNTAS
+// ============================================================
+function renderBlock() {
+  updateProgress();
+  const block = BLOCKS[currentBlock];
+  let html = `<div class="block-header"><h2>${block.name}</h2><p>${block.ref}</p></div>`;
+  block.questions.forEach(q => {
+    const saved = answers[q.n];
+    const savedEv = evidence[q.n] || '';
+    html += `<div class="q-item">
+      <div class="q-num">Pregunta ${q.n} de 50</div>
+      <div class="q-text">${q.q}</div>
+      ${q.hint ? `<div class="q-hint">💡 ${q.hint}</div>` : ''}
+      <div class="q-evidence"><span>Evidencia sugerida:</span> ${q.ev}</div>
+      <div class="options">
+        ${q.opts.map((opt, i) => {
+          const letter = ['A','B','C','D'][i];
+          const sel = saved === i ? 'selected' : '';
+          return `<button class="opt-btn ${sel}" onclick="selectAnswer(${q.n},${i},this)">
+            <div class="opt-letter">${letter}</div>
+            <div class="opt-text">${opt}</div>
+          </button>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:10px">
+        <div style="font-size:11px;font-weight:600;color:#065f46;margin-bottom:4px">
+          Estado actual y evidencia <span style="color:#dc2626">*</span>
+        </div>
+        <div style="font-size:11px;color:#6b7280;margin-bottom:5px;font-style:italic">
+          Si cumples: explica cómo y qué documento lo prueba. Si estás en proceso: describe hasta dónde has llegado. Si no cumples: escribe "No cumplimos aún".
+        </div>
+        <textarea
+          id="ev-${q.n}"
+          rows="2"
+          style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;color:#111827"
+          placeholder="Escribe aquí el estado actual y las evidencias..."
+          oninput="saveEvidence(${q.n},this.value)"
+        >${savedEv}</textarea>
+      </div>
+    </div>`;
+  });
+  document.getElementById('block-content').innerHTML = html;
+  document.getElementById('q-err').style.display = 'none';
+}
+
+function selectAnswer(qNum, optIdx, btn) {
+  answers[qNum] = optIdx;
+  const parent = btn.closest('.options');
+  parent.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function saveEvidence(qNum, val) {
+  evidence[qNum] = val;
+}
+
+function blockNext() {
+  const block = BLOCKS[currentBlock];
+  // Validate answers and evidence
+  for (const q of block.questions) {
+    if (answers[q.n] === undefined) {
+      document.getElementById('q-err').textContent = 'Por favor selecciona una respuesta en todas las preguntas.';
+      document.getElementById('q-err').style.display = 'block';
+      document.getElementById('q-err').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    const evField = document.getElementById('ev-' + q.n);
+    if (evField) {
+      evidence[q.n] = evField.value.trim();
+      if (!evidence[q.n]) {
+        document.getElementById('q-err').textContent = 'Por favor describe el estado actual y la evidencia en todas las preguntas.';
+        document.getElementById('q-err').style.display = 'block';
+        evField.style.borderColor = '#dc2626';
+        evField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      evField.style.borderColor = '#d1d5db';
+    }
+  }
+  document.getElementById('q-err').style.display = 'none';
+  if (currentBlock < BLOCKS.length - 1) {
+    currentBlock++;
+    renderBlock();
+    window.scrollTo(0, 0);
+  } else {
+    generateDiagnosis();
+  }
+}
+
+function blockBack() {
+  if (currentBlock > 0) {
+    currentBlock--;
+    renderBlock();
+    window.scrollTo(0, 0);
+  }
+}
+
+// ============================================================
+// CÁLCULO DE PUNTAJES
+// ============================================================
+function calcBlockScore(blockIdx) {
+  const block = BLOCKS[blockIdx];
+  let total = 0, count = 0;
+  block.questions.forEach(q => {
+    if (answers[q.n] !== undefined) {
+      total += (3 - answers[q.n]); // A=3, B=2, C=1, D=0
+      count++;
+    }
+  });
+  return count === 0 ? 0 : Math.round((total / (count * 3)) * 100);
+}
+
+function calcTotalScore() {
+  let sum = 0;
+  BLOCKS.forEach((b, i) => { sum += calcBlockScore(i); });
+  return Math.round(sum / BLOCKS.length);
+}
+
+function getLabel(qNum) {
+  const val = answers[qNum];
+  if (val === undefined) return 'Sin responder';
+  const block = BLOCKS.find(b => b.questions.some(q => q.n === qNum));
+  const q = block.questions.find(q => q.n === qNum);
+  return ['A','B','C','D'][val] + ') ' + q.opts[val];
+}
+
+// ============================================================
+// GENERAR DIAGNÓSTICO IA
+// ============================================================
+async function generateDiagnosis() {
+  showPage('page-loading');
+  const msgs = [
+    'Calculando puntajes...', 'Evaluando gestión y gobernanza...',
+    'Revisando condiciones ambientales...', 'Verificando seguridad...',
+    'Analizando servicios e infraestructura...', 'Evaluando gestión sociocultural...',
+    'Preparando tu diagnóstico...'
+  ];
+  let mi = 0;
+  const ml = document.getElementById('load-msg');
+  const iv = setInterval(() => { mi = (mi + 1) % msgs.length; ml.textContent = msgs[mi]; }, 1800);
+
+  const scores = BLOCKS.map((b, i) => ({ name: b.name, score: calcBlockScore(i) }));
+  const total = calcTotalScore();
+
+  // Guardar resultado base (sin IA) inmediatamente
+  saveGroupResult(scores, total, null);
+
+  // Intentar generar diagnóstico IA si hay internet
+  let aiResult = null;
+  try {
+    // Include evidence summaries in prompt
+    const evidenceSummary = BLOCKS.map((b, i) =>
+      b.questions.map(q => {
+        const ev = evidence[q.n];
+        return ev ? `P${q.n}: ${ev.substring(0,80)}` : null;
+      }).filter(Boolean).join('; ')
+    ).filter(s => s.length > 0).join(' | ');
+
+    const resumenRespuestas = BLOCKS.map((b, i) =>
+      `${b.name} (${scores[i].score}%): ` + b.questions.map(q =>
+        `P${q.n}=${['A','B','C','D'][answers[q.n]]}`
+      ).join(',')
+    ).join('. ');
+
+    const prompt = `Eres auditor NTS-TS 001-2 Colombia. Grupo evaluador: ${currentGroupName}. Destino: Playa Piangüita, Bazanbocana, Buenaventura (Pacífico, comunidad afrocolombiana, manglar, acceso fluvial).
+
+Puntajes bloque (0-100): Gobernanza=${scores[0].score}%, Zonificación=${scores[1].score}%, Ambiental=${scores[2].score}%, Seguridad=${scores[3].score}%, Servicios=${scores[4].score}%, Sociocultural-Económico=${scores[5].score}%, TOTAL=${total}%.
+Respuestas: ${resumenRespuestas}. Evidencias comunidad: ${evidenceSummary.substring(0,500)}
+
+Responde SOLO JSON puro sin markdown. Campos máximo 20 palabras cada uno. Exactamente 6 acciones:
+{"nivel":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","resumen":"frase","nc":["nc1","nc2","nc3"],"diag":{"gobernanza":{"f":"frase","b":"frase","r":"frase"},"zonificacion":{"f":"frase","b":"frase","r":"frase"},"ambiental":{"f":"frase","b":"frase","r":"frase"},"seguridad":{"f":"frase","b":"frase","r":"frase"},"servicios":{"f":"frase","b":"frase","r":"frase"},"sociocultural":{"f":"frase","b":"frase","r":"frase"}},"acciones":[{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"},{"p":"BAJA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"}],"ruta":"frase"}`;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }]
+      }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+    if (resp.ok) {
+      const data = await resp.json();
+      if (!data.error) {
+        const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+        const cleaned = raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if (match) {
+          aiResult = JSON.parse(match[0]);
+          if (!aiResult.nc) aiResult.nc = [];
+          saveGroupResult(scores, total, aiResult);
+        }
+      }
+    }
+  } catch(e) {
+    // Sin internet - continúa sin IA
+    aiResult = null;
+  }
+
+  clearInterval(iv);
+  showResultsPage(scores, total, aiResult);
+}
+
+
+// ============================================================
+// GUARDAR RESULTADO EN LOCALSTORAGE
+// ============================================================
+function saveGroupResult(scores, total, aiResult) {
+  const key = 'pianguita_diagnostico';
+  const all = JSON.parse(localStorage.getItem(key) || '{}');
+  all[currentGroup] = {
+    group: currentGroup,
+    groupName: currentGroupName,
+    groupIcon: currentGroupIcon,
+    date: new Date().toLocaleDateString('es-CO'),
+    scores: scores,
+    total: total,
+    answers: { ...answers },
+    evidence: { ...evidence },
+    aiResult: aiResult
+  };
+  localStorage.setItem(key, JSON.stringify(all));
+}
+
+function loadSavedGroups() {
+  const all = JSON.parse(localStorage.getItem('pianguita_diagnostico') || '{}');
+  const keys = Object.keys(all);
+  const section = document.getElementById('saved-groups-section');
+  const list = document.getElementById('saved-groups-list');
+  if (keys.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = keys.map(k => {
+    const g = all[k];
+    const col = g.total >= 70 ? '#059669' : g.total >= 40 ? '#d97706' : '#dc2626';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #d1fae5;font-size:12px">
+      <span>${g.groupIcon} <strong>${g.groupName}</strong> · ${g.date}</span>
+      <span style="font-size:16px;font-weight:700;color:${col}">${g.total}%</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// MOSTRAR RESULTADOS INDIVIDUALES
+// ============================================================
+function scC(v) { return v >= 70 ? 'g' : v >= 40 ? 'a' : 'r'; }
+function ncC(n) { return n === 'CERTIFICABLE' || n === 'AVANZADO' ? '#059669' : n === 'EN_DESARROLLO' ? '#d97706' : '#dc2626'; }
+function ptC(p) { return p === 'ALTA' ? 'p-alta' : p === 'MEDIA' ? 'p-media' : 'p-baja'; }
+function tog(id) {
+  const b = document.getElementById(id);
+  const a = document.getElementById('a-' + id);
+  if (b.style.display === 'block') { b.style.display = 'none'; a.textContent = '▾'; }
+  else { b.style.display = 'block'; a.textContent = '▴'; }
+}
+
+function showResultsPage(scores, total, r) {
+  document.getElementById('results-group-label').textContent = currentGroupIcon + ' ' + currentGroupName + ' · Playa Piangüita';
+  const cats = [
+    { k: 'gobernanza', l: 'Gobernanza' }, { k: 'zonificacion', l: 'Zonificación' },
+    { k: 'ambiental', l: 'Ambiental' }, { k: 'seguridad', l: 'Seguridad' },
+    { k: 'servicios', l: 'Servicios' }, { k: 'sociocultural', l: 'Sociocultural' }
+  ];
+  const scoreCards = scores.map((s, i) =>
+    `<div class="score-card"><div class="sl">${cats[i].l}</div><div class="sv ${scC(s.score)}">${s.score}%</div></div>`
+  ).join('');
+
+  // Nivel basado en puntaje total si no hay IA
+  let nivel = r ? r.nivel : (total >= 70 ? 'AVANZADO' : total >= 50 ? 'EN_DESARROLLO' : total >= 30 ? 'INICIAL' : 'CRITICO');
+  let resumen = r ? r.resumen : `El grupo ${currentGroupName} obtuvo un puntaje de ${total}% en la evaluación NTS-TS 001-2. El diagnóstico detallado estará disponible cuando haya conexión a internet.`;
+
+  const ncHtml = r && r.nc && r.nc.length ? `<div class="nc-box"><div class="nc-title">Puntos críticos que deben atenderse primero:</div>
+    ${r.nc.map((n, i) => `<div class="nc-item"><div class="nc-dot">${i+1}</div><span>${n}</span></div>`).join('')}</div>` : '';
+
+  // Sin IA: mostrar tabla simple de puntajes por pregunta
+  let diagContent = '';
+  if (r && r.diag) {
+    const diagSecs = cats.map((c, i) => {
+      const d = r.diag[c.k];
+      if (!d) return '';
+      const sc = scores[i].score;
+      const id = 'db-' + c.k;
+      const lbl = sc >= 70 ? 'Bueno' : sc >= 40 ? 'En proceso' : 'Crítico';
+      const bg = sc >= 70 ? '#d1fae5' : sc >= 40 ? '#fef3c7' : '#fee2e2';
+      const col = sc >= 70 ? '#065f46' : sc >= 40 ? '#78350f' : '#7f1d1d';
+      return `<div class="diag-block"><div class="diag-hdr" onclick="tog('${id}')">
+        <span class="diag-hdr-txt">${c.l} · ${sc}%</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${bg};color:${col};font-weight:500">${lbl}</span>
+          <span id="a-${id}">▾</span>
+        </div>
+      </div>
+      <div class="diag-body" id="${id}" style="display:none">
+        <div class="diag-blk"><div class="diag-lbl">Lo que hacemos bien:</div>${d.f||'—'}</div>
+        <div class="diag-blk"><div class="diag-lbl">Lo que nos falta:</div>${d.b||'—'}</div>
+        <div class="rec-box"><strong style="color:#059669;display:block;margin-bottom:3px">Qué recomienda la norma:</strong>${d.r||'—'}</div>
+      </div></div>`;
+    }).join('');
+    diagContent = `<div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">Diagnóstico por bloque <span style="font-size:11px;color:#6b7280;font-weight:400">(toca para expandir)</span></div>${diagSecs}`;
+  } else {
+    // Sin IA: mostrar resumen visual de respuestas
+    const blockSummary = BLOCKS.map((b, bi) => {
+      const sc = scores[bi].score;
+      const bg = sc >= 70 ? '#d1fae5' : sc >= 40 ? '#fef3c7' : '#fee2e2';
+      const col = sc >= 70 ? '#065f46' : sc >= 40 ? '#78350f' : '#7f1d1d';
+      const lbl = sc >= 70 ? 'Bueno' : sc >= 40 ? 'En proceso' : 'Crítico';
+      const qRows = b.questions.map(q => {
+        const ans = answers[q.n];
+        const letter = ['A','B','C','D'][ans];
+        const qcol = ans === 0 ? '#059669' : ans === 1 ? '#d97706' : ans === 2 ? '#dc2626' : '#991b1b';
+        const ev = evidence[q.n] || '';
+        return `<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:11px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+            <span style="color:#374151;flex:1;padding-right:8px;font-weight:500">P${q.n}. ${q.q.substring(0,70)}${q.q.length>70?'...':''}</span>
+            <span style="font-weight:700;color:${qcol};min-width:20px;text-align:center">${letter}</span>
+          </div>
+          ${ev ? `<div style="color:#6b7280;font-style:italic;padding-left:4px;border-left:2px solid #e5e7eb">${ev}</div>` : ''}
+        </div>`;
+      }).join('');
+      const id = 'db-noai-' + bi;
+      return `<div class="diag-block"><div class="diag-hdr" onclick="tog('${id}')">
+        <span class="diag-hdr-txt">${b.name} · ${sc}%</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${bg};color:${col};font-weight:500">${lbl}</span>
+          <span id="a-${id}">▾</span>
+        </div>
+      </div>
+      <div class="diag-body" id="${id}" style="display:none">${qRows}</div></div>`;
+    }).join('');
+    diagContent = `
+      <div class="card" style="background:#fef3c7;border-color:#fcd34d;margin-bottom:1rem">
+        <div style="font-size:12px;font-weight:600;color:#78350f;margin-bottom:4px">Sin conexión a internet</div>
+        <div style="font-size:12px;color:#92400e;line-height:1.5">Tus respuestas están guardadas. El análisis detallado con IA se generará cuando haya conexión. Abajo puedes ver el resumen de tus respuestas.</div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">Resumen de respuestas por bloque</div>
+      ${blockSummary}`;
+  }
+
+  const acciones = r && r.acciones ? r.acciones.map((a, i) =>
+    `<div class="action-item"><div class="a-num">${i+1}</div><div>
+      <div class="a-txt">${a.acc || ''}</div>
+      <div class="a-meta"><span class="ptag ${ptC(a.p || '')}">${a.p || ''}</span>
+        <span>${a.cat || ''}</span><span>·</span><span>${a.plazo || ''}</span>
+        ${a.resp ? `<span>· ${a.resp}</span>` : ''}
+      </div>
+    </div></div>`
+  ).join('') : '';
+
+  const rutaHtml = r && r.ruta ? `<div class="ruta-box">
+    <div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:6px">Ruta hacia la certificación NTS-TS 001-2</div>
+    <div style="font-size:12px;color:#374151;line-height:1.6">${r.ruta}</div>
+  </div>` : '';
+
+  const accionesHtml = acciones ? `<div class="card" style="margin-top:1rem">
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:12px">Plan de acción prioritario</div>
+    ${acciones}
+  </div>` : '';
+
+  document.getElementById('results-content').innerHTML = `
+    <div class="card" style="text-align:center;background:#f0fdf4;border-color:#6ee7b7">
+      <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Puntaje global NTS-TS 001-2</div>
+      <div class="score-big" style="color:${ncC(nivel)}">${total}%</div>
+      <div style="font-size:13px;font-weight:600;color:${ncC(nivel)};margin:4px 0 10px">${nivel.replace('_',' ')}</div>
+      <div style="font-size:12px;color:#4b5563;line-height:1.6;text-align:left;border-top:1px solid #6ee7b7;padding-top:10px;margin-top:6px">${resumen}</div>
+    </div>
+    <div class="score-grid">${scoreCards}</div>
+    ${ncHtml}
+    ${diagContent}
+    ${accionesHtml}
+    ${rutaHtml}
+  `;
+  lastScores = scores;
+  lastTotal = total;
+  const retryBtn = document.getElementById('results-retry-btn');
+  if (retryBtn) retryBtn.style.display = r ? 'none' : 'block';
+  showPage('page-results');
+}
+
+
+// ============================================================
+// VISTA FACILITADOR - CONSOLIDADO
+// ============================================================
+function showPinOverlay() {
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').style.display = 'none';
+  document.getElementById('pin-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('pin-input').focus(), 100);
+}
+function hidePinOverlay() {
+  document.getElementById('pin-overlay').classList.remove('show');
+}
+function checkPin() {
+  const val = document.getElementById('pin-input').value;
+  if (val.length === 4) {
+    if (val === PIN) {
+      hidePinOverlay();
+      showConsolidated();
+    } else {
+      document.getElementById('pin-error').style.display = 'block';
+      document.getElementById('pin-input').value = '';
+    }
+  }
+}
+
+function showConsolidated() {
+  const all = JSON.parse(localStorage.getItem('pianguita_diagnostico') || '{}');
+  const groups = Object.values(all);
+  document.getElementById('consolidated-ai-result').innerHTML = '';
+  document.getElementById('consolidated-loading').style.display = 'none';
+
+  if (groups.length === 0) {
+    document.getElementById('consolidated-content').innerHTML = `
+      <div class="card" style="text-align:center;padding:2rem">
+        <div style="font-size:14px;color:#6b7280">Aún no hay diagnósticos guardados.</div>
+        <div style="font-size:12px;color:#9ca3af;margin-top:6px">Cuando los grupos completen su diagnóstico, aparecerán aquí.</div>
+      </div>`;
+    showPage('page-consolidated');
+    return;
+  }
+
+  const blockNames = ['Gobernanza', 'Zonificación', 'Ambiental', 'Seguridad', 'Servicios', 'Sociocultural'];
+  const totalAvg = Math.round(groups.reduce((s, g) => s + g.total, 0) / groups.length);
+
+  // Tabla comparativa
+  let tableHead = `<th>Bloque / Grupo</th>` + groups.map(g => `<th>${g.groupIcon} ${g.groupName}</th>`).join('') + `<th>Promedio</th>`;
+  let tableRows = blockNames.map((bn, bi) => {
+    const cells = groups.map(g => {
+      const sc = g.scores[bi] ? g.scores[bi].score : 0;
+      const cl = sc >= 70 ? 'cel-g' : sc >= 40 ? 'cel-a' : 'cel-r';
+      return `<td class="${cl}">${sc}%</td>`;
+    });
+    const avg = Math.round(groups.reduce((s, g) => s + (g.scores[bi] ? g.scores[bi].score : 0), 0) / groups.length);
+    const cl = avg >= 70 ? 'cel-g' : avg >= 40 ? 'cel-a' : 'cel-r';
+    return `<tr><td>${bn}</td>${cells.join('')}<td class="${cl}">${avg}%</td></tr>`;
+  }).join('');
+  const totalCells = groups.map(g => {
+    const cl = g.total >= 70 ? 'cel-g' : g.total >= 40 ? 'cel-a' : 'cel-r';
+    return `<td class="${cl}">${g.total}%</td>`;
+  }).join('');
+  const avgCl = totalAvg >= 70 ? 'cel-g' : totalAvg >= 40 ? 'cel-a' : 'cel-r';
+
+  const groupCards = groups.map(g => {
+    const col = g.total >= 70 ? '#059669' : g.total >= 40 ? '#d97706' : '#dc2626';
+    return `<div class="group-saved-item" id="gsi-${g.group}">
+      <div class="gsi-info">
+        <div class="gsi-name">${g.groupIcon} ${g.groupName}</div>
+        <div class="gsi-date">Respondido el ${g.date}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="gsi-score" style="color:${col}">${g.total}%</div>
+        <button onclick="deleteGroup('${g.group}')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500" title="Eliminar este grupo">🗑 Borrar</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('consolidated-content').innerHTML = `
+    <div class="card" style="text-align:center;background:#f0fdf4;border-color:#6ee7b7">
+      <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Puntaje promedio consolidado</div>
+      <div style="font-size:56px;font-weight:700;color:${totalAvg >= 70 ? '#059669' : totalAvg >= 40 ? '#d97706' : '#dc2626'}">${totalAvg}%</div>
+      <div style="font-size:12px;color:#6b7280;margin-top:4px">${groups.length} grupo${groups.length > 1 ? 's' : ''} evaluado${groups.length > 1 ? 's' : ''}</div>
+    </div>
+    <div class="groups-saved">${groupCards}</div>
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">Comparativo por bloque y grupo</div>
+    <div style="overflow-x:auto;margin-bottom:1.5rem">
+      <table class="comparison-table">
+        <thead><tr>${tableHead}</tr></thead>
+        <tbody>
+          ${tableRows}
+          <tr><td>TOTAL</td>${totalCells}<td class="${avgCl}">${totalAvg}%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="text-align:center">
+      <button class="btn btn-primary" onclick="generateConsolidatedAI()" style="width:100%;padding:14px">
+        Generar informe IA consolidado →
+      </button>
+      <div style="font-size:11px;color:#6b7280;margin-top:6px">Requiere conexión a internet</div>
+    </div>
+  `;
+  showPage('page-consolidated');
+}
+
+async function generateConsolidatedAI() {
+  const all = JSON.parse(localStorage.getItem('pianguita_diagnostico') || '{}');
+  const groups = Object.values(all);
+  document.getElementById('consolidated-loading').style.display = 'block';
+  document.getElementById('consolidated-ai-result').innerHTML = '';
+
+  const msgs = ['Analizando todas las voces...', 'Comparando perspectivas...', 'Construyendo consensos...', 'Generando informe participativo...'];
+  let mi = 0;
+  const ml = document.getElementById('consol-msg');
+  const iv = setInterval(() => { mi = (mi + 1) % msgs.length; ml.textContent = msgs[mi]; }, 1800);
+
+  const resumen = groups.map(g =>
+    `${g.groupName}: Total=${g.total}% (Gob=${g.scores[0].score}%,Zon=${g.scores[1].score}%,Amb=${g.scores[2].score}%,Seg=${g.scores[3].score}%,Ser=${g.scores[4].score}%,Soc=${g.scores[5].score}%)`
+  ).join('. ');
+
+  const prompt = `Eres experto en NTS-TS 001-2 y en metodologías de diagnóstico participativo. Destino: Playa Piangüita, Bazanbocana, Buenaventura (Pacífico, comunidad afrocolombiana, manglar).
+
+Resultados de ${groups.length} grupos comunitarios: ${resumen}.
+
+Genera un informe consolidado que reconozca las diferentes perspectivas, identifique consensos y divergencias, y proponga un plan de acción unificado. Responde SOLO JSON puro sin markdown. Máximo 25 palabras por campo:
+{"diagnostico_general":"frase","consensos":["consenso1","consenso2","consenso3"],"divergencias":["divergencia1","divergencia2"],"prioridades_colectivas":["prioridad1","prioridad2","prioridad3","prioridad4"],"acciones_consenso":[{"acc":"accion","resp":"actor","plazo":"plazo"},{"acc":"accion","resp":"actor","plazo":"plazo"},{"acc":"accion","resp":"actor","plazo":"plazo"},{"acc":"accion","resp":"actor","plazo":"plazo"},{"acc":"accion","resp":"actor","plazo":"plazo"}],"mensaje_comunidad":"frase motivadora para la comunidad de Piangüita","proximos_pasos":"frase"}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const match = raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim().match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Sin JSON');
+    const r = JSON.parse(match[0]);
+    clearInterval(iv);
+    document.getElementById('consolidated-loading').style.display = 'none';
+
+    const acciones = (r.acciones_consenso || []).map((a, i) =>
+      `<div class="action-item"><div class="a-num">${i+1}</div><div>
+        <div class="a-txt">${a.acc}</div>
+        <div class="a-meta"><span>${a.resp}</span><span>·</span><span>${a.plazo}</span></div>
+      </div></div>`
+    ).join('');
+
+    document.getElementById('consolidated-ai-result').innerHTML = `
+      <div class="card" style="margin-top:1rem;background:#f0fdf4;border-color:#6ee7b7">
+        <div style="font-size:13px;font-weight:600;color:#065f46;margin-bottom:8px">Diagnóstico general consolidado</div>
+        <div style="font-size:13px;color:#374151;line-height:1.6">${r.diagnostico_general || ''}</div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px">En lo que todos estamos de acuerdo:</div>
+        ${(r.consensos || []).map((c, i) => `<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:#374151"><div class="a-num" style="background:#d1fae5;color:#065f46">${i+1}</div>${c}</div>`).join('')}
+      </div>
+      <div class="card" style="border-color:#fca5a5">
+        <div style="font-size:13px;font-weight:600;color:#991b1b;margin-bottom:10px">Donde hay visiones diferentes:</div>
+        ${(r.divergencias || []).map((d, i) => `<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #fecaca;font-size:12px;color:#374151"><div class="a-num" style="background:#fee2e2;color:#991b1b">${i+1}</div>${d}</div>`).join('')}
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px">Prioridades colectivas de la comunidad:</div>
+        ${(r.prioridades_colectivas || []).map((p, i) => `<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:#374151"><div class="a-num">${i+1}</div>${p}</div>`).join('')}
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:12px">Plan de acción colectivo</div>
+        ${acciones}
+      </div>
+      <div class="ruta-box">
+        <div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:6px">Próximos pasos</div>
+        <div style="font-size:12px;color:#374151;line-height:1.6">${r.proximos_pasos || ''}</div>
+      </div>
+      <div class="card" style="background:#065f46;border-color:#065f46;text-align:center;margin-top:1rem">
+        <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:6px">Mensaje para la comunidad de Piangüita:</div>
+        <div style="font-size:15px;font-weight:600;color:white;line-height:1.6">"${r.mensaje_comunidad || ''}"</div>
+      </div>
+    `;
+  } catch (err) {
+    clearInterval(iv);
+    document.getElementById('consolidated-loading').style.display = 'none';
+    document.getElementById('consolidated-ai-result').innerHTML = `<div class="err" style="display:block">Error: ${err.message}</div>`;
+  }
+}
+
+function deleteGroup(groupKey) {
+  const all = JSON.parse(localStorage.getItem('pianguita_diagnostico') || '{}');
+  const groupName = all[groupKey] ? all[groupKey].groupName : groupKey;
+  if (confirm(`¿Seguro que quieres borrar el diagnóstico del grupo "${groupName}"? Esta acción no se puede deshacer.`)) {
+    delete all[groupKey];
+    localStorage.setItem('pianguita_diagnostico', JSON.stringify(all));
+    // Refrescar la vista
+    const el = document.getElementById('gsi-' + groupKey);
+    if (el) el.remove();
+    // Si no quedan grupos, volver al inicio
+    if (Object.keys(all).length === 0) {
+      goHome();
+    } else {
+      showConsolidated();
+    }
+  }
+}
+
+function clearAll() {
+  if (confirm('¿Seguro que quieres borrar TODOS los diagnósticos guardados? Esta acción no se puede deshacer.')) {
+    localStorage.removeItem('pianguita_diagnostico');
+    goHome();
+  }
+}
+
+// ============================================================
+// RETRY AI WHEN INTERNET AVAILABLE
+// ============================================================
+let lastScores = null;
+let lastTotal = null;
+
+function retryAI() {
+  if (!lastScores || lastTotal === null) return;
+  generateDiagnosisWithAI(lastScores, lastTotal);
+}
+
+async function generateDiagnosisWithAI(scores, total) {
+  document.getElementById('results-retry-btn').style.display = 'none';
+  showPage('page-loading');
+  document.getElementById('load-msg').textContent = 'Conectando con el análisis IA...';
+  const iv = setInterval(() => {}, 2000);
+
+  try {
+    const resumenRespuestas = BLOCKS.map((b, i) =>
+      `${b.name} (${scores[i].score}%): ` + b.questions.map(q =>
+        `P${q.n}=${['A','B','C','D'][answers[q.n]]}`
+      ).join(',')
+    ).join('. ');
+
+    const prompt = `Eres auditor NTS-TS 001-2 Colombia. Grupo evaluador: ${currentGroupName}. Destino: Playa Piangüita, Bazanbocana, Buenaventura (Pacífico, comunidad afrocolombiana, manglar, acceso fluvial).
+Puntajes bloque (0-100): Gobernanza=${scores[0].score}%, Zonificación=${scores[1].score}%, Ambiental=${scores[2].score}%, Seguridad=${scores[3].score}%, Servicios=${scores[4].score}%, Sociocultural-Económico=${scores[5].score}%, TOTAL=${total}%.
+Respuestas: ${resumenRespuestas}
+Responde SOLO JSON puro sin markdown. Campos máximo 20 palabras. Exactamente 6 acciones:
+{"nivel":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","resumen":"frase","nc":["nc1","nc2","nc3"],"diag":{"gobernanza":{"f":"frase","b":"frase","r":"frase"},"zonificacion":{"f":"frase","b":"frase","r":"frase"},"ambiental":{"f":"frase","b":"frase","r":"frase"},"seguridad":{"f":"frase","b":"frase","r":"frase"},"servicios":{"f":"frase","b":"frase","r":"frase"},"sociocultural":{"f":"frase","b":"frase","r":"frase"}},"acciones":[{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"},{"p":"BAJA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"}],"ruta":"frase"}`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000, messages: [{ role: 'user', content: prompt }] })
+    });
+    clearInterval(iv);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const match = raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim().match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Sin JSON');
+    const aiResult = JSON.parse(match[0]);
+    if (!aiResult.nc) aiResult.nc = [];
+    saveGroupResult(scores, total, aiResult);
+    showResultsPage(scores, total, aiResult);
+  } catch(err) {
+    clearInterval(iv);
+    showResultsPage(scores, total, null);
+    alert('No se pudo conectar: ' + err.message);
+  }
+}
+
+// ============================================================
+// INICIO
+// ============================================================
+loadSavedGroups();
+</script>
+</body>
+</html>
