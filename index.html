@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<title>Diagnóstico NTS-TS 001-2 · Playa Pianguita</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f0;color:#1a1a18;min-height:100vh}
+.page{display:none;min-height:100vh;padding:1.5rem}
+.page.active{display:block}
+.container{max-width:700px;margin:0 auto}
+.app-header{background:#065f46;color:white;padding:1rem 1.5rem;margin:-1.5rem -1.5rem 1.5rem}
+.app-header h1{font-size:16px;font-weight:600;margin-bottom:2px}
+.app-header p{font-size:11px;opacity:0.8}
+.card{background:white;border:1px solid #e5e7eb;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+/* SESSION NAME */
+.session-name-box{background:#065f46;color:white;border-radius:10px;padding:12px 16px;text-align:center;margin-bottom:1rem}
+.session-name-box .sn-label{font-size:10px;opacity:0.8;margin-bottom:4px}
+.session-name-box .sn-value{font-size:18px;font-weight:700}
+/* BLOCK SELECTION */
+.block-select-grid{display:grid;gap:8px;margin:0.75rem 0}
+.block-check-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border:2px solid #e5e7eb;border-radius:10px;cursor:pointer;background:white;font-family:inherit;text-align:left;transition:all 0.2s;width:100%}
+.block-check-btn:hover{border-color:#059669;background:#f0fdf4}
+.block-check-btn.selected{border-color:#059669;background:#d1fae5}
+.bc-icon{font-size:20px;min-width:28px;text-align:center}
+.bc-info{flex:1}
+.bc-name{font-size:13px;font-weight:600;color:#111827;display:block}
+.bc-count{font-size:11px;color:#6b7280}
+.bc-check{min-width:22px;height:22px;border-radius:6px;border:2px solid #d1d5db;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;color:transparent}
+.block-check-btn.selected .bc-check{background:#059669;border-color:#059669;color:white}
+/* PARTICIPANT FORM */
+.p-form{background:#f9fafb;border-radius:10px;padding:12px;margin-bottom:10px;border:1px solid #e5e7eb}
+.p-label{font-size:11px;font-weight:600;color:#374151;display:block;margin-bottom:3px;margin-top:8px}
+.p-label:first-child{margin-top:0}
+.p-input{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit;color:#111827}
+.p-input:focus{border-color:#059669;outline:none}
+.p-select{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;font-family:inherit;background:white;color:#111827}
+.p-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.participant-item{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #e5e7eb}
+.participant-item:last-child{border-bottom:none}
+/* PROGRESS */
+.progress-wrap{margin-bottom:1.2rem}
+.progress-track{display:flex;gap:4px;margin-bottom:6px}
+.ps{flex:1;height:5px;border-radius:3px;background:#e5e7eb;transition:background 0.3s}
+.ps.done{background:#059669}
+.ps.active{background:#34d399}
+.progress-label{font-size:11px;color:#6b7280;text-align:center}
+/* QUESTIONS */
+.block-header{background:#065f46;color:white;border-radius:10px;padding:12px 16px;margin-bottom:1rem}
+.block-header h2{font-size:14px;font-weight:600;margin-bottom:2px}
+.block-header p{font-size:11px;opacity:0.8}
+.q-item{background:white;border:1px solid #e5e7eb;border-radius:10px;padding:1.1rem;margin-bottom:10px}
+.q-num{font-size:10px;color:#6b7280;margin-bottom:4px;font-weight:500}
+.q-text{font-size:13px;font-weight:500;color:#111827;margin-bottom:8px;line-height:1.5}
+.q-hint{font-size:11px;color:#6b7280;margin-bottom:8px;font-style:italic;line-height:1.4}
+.q-evidence{font-size:11px;color:#059669;margin-bottom:10px;line-height:1.4}
+.q-evidence span{font-weight:500}
+.options{display:grid;gap:5px}
+.opt-btn{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;cursor:pointer;background:white;font-family:inherit;text-align:left;transition:all 0.15s;width:100%}
+.opt-btn:hover{border-color:#059669;background:#f0fdf4}
+.opt-btn.selected{border-color:#059669;background:#d1fae5}
+.opt-letter{min-width:22px;height:22px;border-radius:50%;background:#f3f4f6;color:#374151;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.opt-btn.selected .opt-letter{background:#059669;color:white}
+.opt-text{font-size:12px;color:#374151;line-height:1.4}
+/* NAV & BUTTONS */
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:1.2rem;gap:10px}
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;transition:all 0.15s;border:none}
+.btn-primary{background:#059669;color:white}
+.btn-primary:hover{background:#047857}
+.btn-outline{background:white;color:#374151;border:1px solid #d1d5db}
+.btn-outline:hover{background:#f9fafb}
+.btn-facilitator{background:#1e40af;color:white}
+.btn-danger{background:#dc2626;color:white}
+.err{background:#fef2f2;color:#991b1b;font-size:12px;padding:8px 12px;border-radius:8px;margin-top:8px;display:none;border:1px solid #fecaca}
+/* LOADING */
+.loading{text-align:center;padding:3rem 1rem}
+.spin{width:44px;height:44px;border:4px solid #d1fae5;border-top-color:#059669;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* RESULTS */
+.score-big{font-size:60px;font-weight:700;line-height:1}
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:1rem 0}
+.score-card{background:white;border:1px solid #e5e7eb;border-radius:8px;padding:10px;text-align:center}
+.score-card .sl{font-size:10px;color:#6b7280;margin-bottom:4px}
+.score-card .sv{font-size:20px;font-weight:700}
+.sv.g{color:#059669}.sv.a{color:#d97706}.sv.r{color:#dc2626}
+.nc-box{background:#fef2f2;border:1px solid #fca5a5;border-radius:10px;padding:1rem;margin:1rem 0}
+.nc-title{font-size:12px;font-weight:600;color:#991b1b;margin-bottom:8px}
+.nc-item{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #fecaca;font-size:12px;color:#1f2937}
+.nc-item:last-child{border-bottom:none}
+.nc-dot{min-width:18px;height:18px;border-radius:50%;background:#fee2e2;color:#991b1b;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.diag-block{border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px;overflow:hidden}
+.diag-hdr{padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#f9fafb;user-select:none}
+.diag-hdr:hover{background:#f3f4f6}
+.diag-hdr-txt{font-size:13px;font-weight:500;color:#111827}
+.diag-body{padding:14px;display:none;font-size:12px;color:#4b5563;line-height:1.7;background:white}
+.diag-lbl{font-size:11px;font-weight:600;color:#374151;margin-bottom:3px}
+.diag-blk{margin-bottom:10px}
+.rec-box{padding:9px 12px;background:#f0fdf4;border-radius:8px;border-left:3px solid #059669;font-size:12px;color:#374151}
+.action-item{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid #f3f4f6}
+.action-item:last-child{border-bottom:none}
+.a-num{min-width:22px;height:22px;border-radius:50%;background:#d1fae5;color:#065f46;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.a-txt{font-size:12px;color:#111827;line-height:1.5}
+.a-meta{font-size:10px;color:#6b7280;margin-top:2px;display:flex;gap:5px;flex-wrap:wrap}
+.ptag{font-size:9px;padding:1px 6px;border-radius:4px;font-weight:500}
+.p-alta{background:#fee2e2;color:#7f1d1d}
+.p-media{background:#fef3c7;color:#78350f}
+.p-baja{background:#d1fae5;color:#064e3b}
+.ruta-box{background:#f0fdf4;border:1px solid #6ee7b7;border-radius:10px;padding:1rem;margin-top:1rem}
+/* CONSOLIDATED */
+.groups-saved{display:grid;gap:8px;margin:1rem 0}
+.group-saved-item{background:white;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px}
+.comparison-table{width:100%;border-collapse:collapse;font-size:12px}
+.comparison-table th{background:#065f46;color:white;padding:8px;text-align:center;font-weight:500}
+.comparison-table th:first-child{text-align:left}
+.comparison-table td{padding:7px 8px;border-bottom:1px solid #e5e7eb;text-align:center}
+.comparison-table td:first-child{text-align:left;font-weight:500;color:#111827}
+.comparison-table tr:last-child td{border-bottom:none;font-weight:600;background:#f0fdf4}
+.cel-g{color:#059669;font-weight:600}
+.cel-a{color:#d97706;font-weight:600}
+.cel-r{color:#dc2626;font-weight:600}
+.cel-na{color:#9ca3af}
+/* WELCOME HERO */
+.welcome-hero{background:#065f46;color:white;border-radius:12px;padding:1.5rem;margin-bottom:1rem;text-align:center}
+.welcome-hero h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.welcome-hero p{font-size:13px;opacity:0.9;line-height:1.5}
+.norma-badge{display:inline-block;background:white;color:#065f46;padding:8px 20px;border-radius:12px;font-size:16px;font-weight:800;margin-bottom:12px;letter-spacing:0.2px;line-height:1.3}
+/* PIN */
+.pin-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100}
+.pin-overlay.show{display:flex}
+.pin-box{background:white;border-radius:12px;padding:1.5rem;width:300px;text-align:center}
+.pin-box h3{font-size:15px;font-weight:600;margin-bottom:8px}
+.pin-box p{font-size:12px;color:#6b7280;margin-bottom:12px}
+.pin-input{width:100%;text-align:center;font-size:24px;letter-spacing:8px;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-family:inherit;margin-bottom:10px}
+.pin-input:focus{border-color:#059669;outline:none}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 1: BIENVENIDA / REGISTRO
+════════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-welcome">
+<div class="container">
+  <div class="app-header">
+    <h1>Diagnóstico Participativo NTS-TS 001-2</h1>
+    <p>Playa Piangüita · Bazanbocana · Buenaventura</p>
+  </div>
+
+  <div class="welcome-hero">
+    <div class="norma-badge"><span style="font-size:10px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NTS-TS 001-2</span>Playas Turísticas Sostenibles</div>
+    <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
+    <p>Cada grupo responde los bloques asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
+  </div>
+
+  <!-- Grupos ya registrados hoy -->
+  <div id="today-groups-section" style="display:none">
+    <div class="card" style="border-color:#6ee7b7;background:#f0fdf4">
+      <div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:8px">Grupos registrados hoy:</div>
+      <div id="today-groups-list"></div>
+    </div>
+  </div>
+
+  <!-- Nombre de sesión auto-generado -->
+  <div class="session-name-box">
+    <div class="sn-label">Identificador de este grupo</div>
+    <div class="sn-value" id="session-name-display">Cargando...</div>
+  </div>
+
+  <!-- Selección de bloques -->
+  <div class="card">
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:4px">Bloques que responderá este grupo</div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:8px">El facilitador marca los bloques asignados a este grupo:</div>
+    <div class="block-select-grid" id="block-select-grid"></div>
+  </div>
+
+  <!-- Registro de participantes -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;color:#111827">Participantes</div>
+      <div id="participants-counter" style="font-size:11px;color:#6b7280;background:#f3f4f6;padding:2px 10px;border-radius:20px">0 participantes</div>
+    </div>
+    <div id="participants-list" style="margin-bottom:12px">
+      <div style="font-size:12px;color:#9ca3af;text-align:center;padding:12px">Aún no hay participantes registrados</div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:8px;padding-top:10px;border-top:1px solid #e5e7eb">+ Agregar participante</div>
+    <div class="p-form">
+      <label class="p-label">Nombre completo *</label>
+      <input class="p-input" id="p-nombre" type="text" placeholder="Nombre y apellidos" autocomplete="off">
+
+      <div class="p-row" style="margin-top:8px">
+        <div>
+          <label class="p-label">Tipo de documento</label>
+          <select class="p-select" id="p-tipo-doc">
+            <option value="CC">Cédula (CC)</option>
+            <option value="CE">C. Extranjería (CE)</option>
+            <option value="TI">Tarjeta identidad (TI)</option>
+            <option value="Pasaporte">Pasaporte</option>
+          </select>
+        </div>
+        <div>
+          <label class="p-label">Número</label>
+          <input class="p-input" id="p-num-doc" type="text" placeholder="Número" autocomplete="off">
+        </div>
+      </div>
+
+      <label class="p-label" style="margin-top:8px">Grupo de interés</label>
+      <select class="p-select" id="p-grupo-interes">
+        <option value="Hoteleros">🏨 Hoteleros</option>
+        <option value="Restaurantes">🍽️ Restaurantes</option>
+        <option value="Carperos">⛱️ Carperos</option>
+        <option value="Guías locales">🧭 Guías locales</option>
+        <option value="Lancheros">⛵ Lancheros</option>
+        <option value="Vecinos de Piangüita">👥 Vecinos de Piangüita</option>
+        <option value="Escuela y jóvenes">🏫 Escuela y jóvenes</option>
+      </select>
+
+      <div class="p-row" style="margin-top:8px">
+        <div>
+          <label class="p-label">Género</label>
+          <select class="p-select" id="p-genero">
+            <option value="Mujer">Mujer</option>
+            <option value="Hombre">Hombre</option>
+            <option value="Prefiero no decir">Prefiero no decir</option>
+          </select>
+        </div>
+        <div>
+          <label class="p-label">Rango de edad</label>
+          <select class="p-select" id="p-edad">
+            <option value="14-17">14 – 17 años</option>
+            <option value="18-29">18 – 29 años</option>
+            <option value="30-45">30 – 45 años</option>
+            <option value="46-60">46 – 60 años</option>
+            <option value="61+">61 años o más</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="p-label" style="margin-top:8px">Celular <span style="color:#9ca3af;font-weight:400">(opcional)</span></label>
+      <input class="p-input" id="p-celular" type="tel" placeholder="Número de celular" autocomplete="off">
+
+      <div class="err" id="p-err"></div>
+      <button class="btn btn-primary" onclick="addParticipant()" style="width:100%;margin-top:10px">Agregar participante</button>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="btn btn-facilitator" onclick="showPinOverlay()">🔒 Vista Facilitador</button>
+    <button class="btn btn-primary" id="btn-start" onclick="goToConfirm()" style="opacity:0.4;pointer-events:none">Continuar →</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 2: CONFIRMACIÓN
+════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-confirm">
+<div class="container">
+  <div class="app-header">
+    <h1 id="confirm-session-name">Confirmar grupo</h1>
+    <p>El grupo revisa y confirma antes de comenzar</p>
+  </div>
+
+  <div class="card" style="background:#fef3c7;border-color:#fcd34d">
+    <div style="font-size:12px;font-weight:600;color:#78350f;margin-bottom:4px">📋 Antes de comenzar</div>
+    <div style="font-size:12px;color:#92400e;line-height:1.5">El grupo revisa los bloques asignados y la lista de participantes. Si todo está correcto, clic en <strong>Confirmar y comenzar</strong>.</div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px">Bloques asignados a este grupo</div>
+    <div id="confirm-blocks-list"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px">Participantes registrados</div>
+    <div id="confirm-participants-list"></div>
+  </div>
+
+  <div class="nav">
+    <button class="btn btn-outline" onclick="showPage('page-welcome')">← Modificar</button>
+    <button class="btn btn-primary" onclick="startQuestions()">Confirmar y comenzar ✓</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 3: PREGUNTAS
+════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-questions">
+<div class="container">
+  <div class="app-header">
+    <h1 id="q-group-label">Diagnóstico</h1>
+    <p>Playa Piangüita · NTS-TS 001-2</p>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-track" id="progress-track"></div>
+    <div class="progress-label" id="progress-label"></div>
+  </div>
+  <div id="block-content"></div>
+  <div class="err" id="q-err">Por favor selecciona una respuesta en todas las preguntas.</div>
+  <div class="nav">
+    <button class="btn btn-outline" id="q-btn-back" onclick="blockBack()">← Anterior</button>
+    <button class="btn btn-primary" id="q-btn-next" onclick="blockNext()">Siguiente →</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 4: LOADING
+════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-loading">
+<div class="container">
+  <div class="app-header">
+    <h1>Generando diagnóstico...</h1>
+    <p>Por favor espera</p>
+  </div>
+  <div class="loading">
+    <div class="spin"></div>
+    <div style="font-size:14px;font-weight:500;color:#111827;margin-bottom:5px" id="load-msg">Analizando respuestas...</div>
+    <div style="font-size:12px;color:#6b7280">Comparando con criterios NTS-TS 001-2</div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 5: RESULTADOS
+════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-results">
+<div class="container">
+  <div class="app-header">
+    <h1>Diagnóstico listo</h1>
+    <p id="results-group-label">Playa Piangüita</p>
+  </div>
+  <div id="results-content"></div>
+  <div id="results-retry-btn" style="display:none;text-align:center;margin-bottom:1rem">
+    <button class="btn btn-primary" onclick="retryAI()" style="width:100%">Reintentar análisis IA (requiere internet) →</button>
+  </div>
+  <div class="nav" style="margin-top:0.5rem">
+    <button class="btn btn-outline" onclick="goHome()">← Inicio</button>
+    <button class="btn btn-facilitator" onclick="showPinOverlay()">🔒 Ver consolidado</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 6: CONSOLIDADO (FACILITADOR)
+════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-consolidated">
+<div class="container">
+  <div class="app-header">
+    <h1>Vista Facilitador — Consolidado</h1>
+    <p>Playa Piangüita · Todos los grupos</p>
+  </div>
+  <div id="consolidated-content"></div>
+  <div class="loading" id="consolidated-loading" style="display:none">
+    <div class="spin"></div>
+    <div style="font-size:14px;font-weight:500;color:#111827;margin-bottom:5px" id="consol-msg">Generando informe consolidado...</div>
+    <div style="font-size:12px;color:#6b7280">Analizando todas las voces de la comunidad</div>
+  </div>
+  <div id="consolidated-ai-result"></div>
+  <div class="nav" style="margin-top:1rem">
+    <button class="btn btn-outline" onclick="goHome()">← Inicio</button>
+    <button class="btn btn-danger" onclick="clearAll()" style="font-size:12px">🗑 Borrar todos los datos</button>
+  </div>
+</div>
+</div>
+
+<!-- PIN OVERLAY -->
+<div class="pin-overlay" id="pin-overlay">
+  <div class="pin-box">
+    <h3>Acceso Facilitador</h3>
+    <p>Ingresa el código para ver el consolidado</p>
+    <input class="pin-input" id="pin-input" type="text" inputmode="numeric" maxlength="4"
+      placeholder="••••" oninput="checkPin()" autocomplete="off" style="-webkit-text-security:disc">
+    <div style="font-size:11px;color:#dc2626;margin-bottom:10px;display:none" id="pin-error">Código incorrecto</div>
+    <button class="btn btn-outline" onclick="hidePinOverlay()" style="width:100%">Cancelar</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DATOS: 6 BLOQUES · 50 PREGUNTAS
+// ══════════════════════════════════════════════════════════════
+const BLOCKS = [
+  { id:1, name:"Gestión y Gobernanza", ref:"§4.1 y §4.2 NTS-TS 001-2", questions:[
+    {n:1,q:"¿Sabemos cuáles son todas las leyes y permisos que necesitamos para manejar la playa como destino turístico?",hint:"Piensa en permisos de la DIMAR, la alcaldía y el Ministerio de Medio Ambiente.",ev:"Carpeta con normas, permisos y conceptos vigentes de DIMAR, alcaldía y autoridad ambiental.",opts:["Sí, las conocemos todas y tenemos los documentos al día","Conocemos algunas, pero nos faltan otras","Las estamos averiguando, estamos en proceso","No las conocemos"]},
+    {n:2,q:"¿El municipio tiene registrado en el plan de ordenamiento que nuestra playa es de uso turístico?",hint:"Esto se llama POT (Plan de Ordenamiento Territorial).",ev:"Documento del POT de Buenaventura donde aparezca la playa como zona turística.",opts:["Sí, está registrado oficialmente","Creemos que sí, pero no tenemos el documento","Está en trámite","No sabemos o no está registrado"]},
+    {n:3,q:"¿Tenemos un grupo, comité o persona encargada de organizar y dirigir el turismo en Piangüita?",hint:"Puede ser una junta, un consejo comunitario, una asociación o un líder reconocido.",ev:"Acta de constitución o carta de reconocimiento del comité o entidad gestora.",opts:["Sí, hay un grupo formal y activo","Hay un grupo pero funciona de manera informal","Estamos organizándonos para crearlo","No hay nadie encargado"]},
+    {n:4,q:"¿Ese grupo tiene escrito quién hace qué, con qué recursos cuenta y en qué tiempo debe hacerlo?",hint:"Que cada miembro sepa cuál es su responsabilidad específica.",ev:"Actas o documentos donde estén las responsabilidades y recursos asignados.",opts:["Sí, todo está escrito y claro","Algunas cosas están escritas pero faltan otras","Lo estamos organizando","No, nada está escrito"]},
+    {n:5,q:"¿Tenemos un plan de sostenibilidad con metas claras que nos diga qué queremos lograr y cómo lo vamos a medir?",hint:"Un plan que tenga objetivos, actividades, fechas y cómo sabemos si lo logramos.",ev:"Documento del Plan de Gestión para la Sostenibilidad con objetivos, metas e indicadores.",opts:["Sí, tenemos el plan y lo seguimos","Tenemos algunas metas pero sin indicadores claros","Lo estamos construyendo","No tenemos ningún plan"]},
+    {n:6,q:"¿Ese plan tiene en cuenta que en temporada alta la playa se comporta diferente que en temporada baja?",hint:"Las Semanas Santas, diciembre y los puentes festivos traen mucha más gente.",ev:"Documento del plan donde aparezcan actividades específicas para temporada alta y baja.",opts:["Sí, el plan distingue temporadas y tiene acciones para cada una","Algo considera, pero no está bien diferenciado","No lo hemos pensado todavía","No tenemos plan"]},
+    {n:7,q:"¿Les hemos contado a los turistas, vendedores y a toda la comunidad qué dice nuestro plan y qué esperamos de cada uno?",hint:"Que todos conozcan las reglas, los acuerdos y los compromisos.",ev:"Actas de reuniones, volantes, carteleras o registros de socializaciones.",opts:["Sí, hacemos reuniones y divulgamos el plan regularmente","Lo hemos comunicado algunas veces","Lo hemos hecho una sola vez","Nunca lo hemos comunicado"]},
+    {n:8,q:"¿Revisamos nuestro plan al menos una vez al año para mejorarlo según lo que nos ha funcionado y lo que no?",hint:"Que el plan no quede guardado en un cajón sino que evolucione.",ev:"Actas o registros de reuniones de revisión y ajuste del plan.",opts:["Sí, lo revisamos y ajustamos regularmente","Lo hemos revisado alguna vez","Planeamos revisarlo pero no lo hemos hecho","No lo revisamos"]}
+  ]},
+  { id:2, name:"Delimitación y Zonificación", ref:"§4.3 NTS-TS 001-2", questions:[
+    {n:9,q:"¿Tenemos un mapa oficial que muestre exactamente hasta dónde llega nuestra playa?",hint:"Un mapa técnico que delimite el área, no solo un dibujo.",ev:"Mapas oficiales de la zona costera de Piangüita con escala y referencia cartográfica.",opts:["Sí, tenemos el mapa oficial actualizado","Tenemos un mapa básico pero no oficial","Lo estamos gestionando","No tenemos ningún mapa"]},
+    {n:10,q:"¿La playa está dividida en zonas claramente marcadas: una para bañarse, una para descansar, una para caminar, una para los negocios?",hint:"Que la gente sepa dónde puede hacer cada cosa.",ev:"Plano de zonificación y fotos de los letreros o señales en la playa.",opts:["Sí, las zonas están definidas y señalizadas","Algunas zonas están definidas, otras no","Lo estamos planeando","No hay ninguna división de zonas"]},
+    {n:11,q:"¿La zona donde la gente se baña está delimitada con boyas, según las condiciones del mar en ese punto?",hint:"Las boyas marcan el límite seguro de baño según corrientes y profundidad.",ev:"Informe técnico de instalación de boyas y fotos de la delimitación.",opts:["Sí, hay boyas instaladas según un estudio técnico","Hay algunas marcas pero sin estudio técnico","Lo estamos gestionando con la DIMAR","No hay ninguna delimitación"]},
+    {n:12,q:"¿La zona por donde camina la gente está completamente libre de mesas, quioscos o cualquier obstáculo?",hint:"La zona de tránsito debe estar despejada para que todos puedan pasar cómodamente.",ev:"Fotos que muestren la zona de circulación libre.",opts:["Sí, la zona de paso siempre está libre","Generalmente está libre pero a veces se invade","Con frecuencia hay obstáculos","Siempre hay obstáculos"]},
+    {n:13,q:"¿Hay una zona definida para deportes náuticos (surf, kayak, lanchas) separada de donde se bañan las familias?",hint:"Los deportes con equipos o motores son peligrosos cerca de los bañistas.",ev:"Documento o plano que muestre la zona de deportes náuticos y sus reglas.",opts:["Sí, hay una zona definida con reglas claras","Existe una zona aproximada pero sin reglas formales","Lo estamos planificando","No hay separación de zonas náuticas"]},
+    {n:14,q:"¿Está clara la ruta que deben seguir las lanchas y botes para no meterse en la zona donde se bañan las personas?",hint:"Los bañistas y las embarcaciones no deben mezclarse por seguridad.",ev:"Señalización o protocolo de navegación en la playa.",opts:["Sí, hay una ruta definida y señalizada","Hay acuerdos informales entre los lancheros","Lo estamos organizando","No hay ninguna separación"]},
+    {n:15,q:"¿Sabemos cuántas personas puede recibir la playa al mismo tiempo sin dañar el ecosistema ni la experiencia del visitante?",hint:"Esto se llama capacidad de carga y es obligatorio para la norma.",ev:"Estudio técnico de capacidad de carga aprobado y sistema de control de aforo.",opts:["Sí, tenemos el estudio y controlamos el acceso","Tenemos una idea aproximada pero sin estudio formal","Lo estamos gestionando","No sabemos cuántas personas soporta la playa"]}
+  ]},
+  { id:3, name:"Medio Ambiente", ref:"§4.4 NTS-TS 001-2", questions:[
+    {n:16,q:"¿Le hacemos análisis al agua del mar para saber si es segura para bañarse?",hint:"Se miden coliformes, pH, grasas y otros contaminantes.",ev:"Resultados de laboratorio que analicen la calidad del agua de baño.",opts:["Sí, hacemos análisis periódicos con laboratorio certificado","Hacemos análisis ocasionales","Hemos hecho algún análisis una vez","No hacemos ningún análisis"]},
+    {n:17,q:"¿Les avisamos a los bañistas cuando el agua no está en buenas condiciones para bañarse?",hint:"Si el mar está contaminado, la gente tiene derecho a saberlo.",ev:"Carteles, mensajes o tableros donde se publique el estado del agua.",opts:["Sí, siempre informamos cuando hay algún problema","Lo hacemos a veces","Lo hemos hecho muy pocas veces","No informamos a los bañistas"]},
+    {n:18,q:"¿Controlamos que los desagües, las lanchas y los negocios no estén botando basura o aguas sucias al mar?",hint:"Los vertimientos contaminan el agua y afectan la salud de los bañistas.",ev:"Documentos de control de vertimientos o actas de inspección.",opts:["Sí, hay control y seguimiento","Hay control parcial","Lo estamos organizando","No hay ningún control"]},
+    {n:19,q:"¿Limpiamos la arena todos los días y hacemos al menos una limpieza del fondo del mar cada año?",hint:"La limpieza submarina recoge residuos que se acumulan en el fondo.",ev:"Bitácora o cuaderno de registros de limpieza con fechas y fotos.",opts:["Sí, hacemos limpieza diaria y limpieza submarina anual","Hacemos limpieza frecuente pero no del fondo del mar","La limpieza es irregular","No hacemos limpieza organizada"]},
+    {n:20,q:"¿Tenemos canecas con tapa, separadas por tipo de basura (orgánica, reciclable, ordinaria) y alejadas del mar?",hint:"Las canecas no deben tocar el suelo ni estar cerca del agua.",ev:"Fotos de las canecas bien instaladas y diferenciadas por color.",opts:["Sí, tenemos canecas diferenciadas con tapa y bien ubicadas","Tenemos canecas pero sin separación o mal ubicadas","Tenemos algunas canecas básicas","No tenemos canecas o están en mal estado"]},
+    {n:21,q:"¿Tenemos un punto donde el turista pueda tomar agua potable gratis?",hint:"La norma exige al menos un punto de agua potable gratuita en la playa.",ev:"Registro de que el punto de agua funciona y el agua es limpia.",opts:["Sí, hay un punto de agua gratuita siempre disponible","Hay agua disponible pero con restricciones o costo","Lo estamos gestionando","No hay ningún punto de agua"]},
+    {n:22,q:"¿Estamos ahorrando agua en los servicios de la playa como baños, duchas y negocios?",hint:"Buenas prácticas de ahorro: cierre de llaves, reutilización, mantenimiento de tuberías.",ev:"Programa o plan de uso eficiente del agua implementado.",opts:["Sí, tenemos un programa de ahorro de agua activo","Algunas personas ahorran pero no es organizado","Lo estamos pensando","No pensamos en el ahorro de agua"]},
+    {n:23,q:"¿Estamos usando bien la energía en la playa y pensando en energías limpias como la solar?",hint:"Apagar lo que no se usa, usar bombillas eficientes, pensar en paneles solares.",ev:"Programa de eficiencia energética o evidencia de uso de energías renovables.",opts:["Sí, tenemos un programa de eficiencia energética","Algunas iniciativas aisladas","Lo estamos discutiendo","No hemos pensado en esto"]},
+    {n:24,q:"¿Avisamos cada día cómo están el clima, las mareas y la calidad del agua?",hint:"Que los turistas sepan las condiciones antes de meterse al mar.",ev:"Tableros actualizados, mensajes por WhatsApp o avisos en la playa.",opts:["Sí, informamos diariamente por varios medios","Lo hacemos ocasionalmente","Lo hemos hecho muy pocas veces","No informamos"]},
+    {n:25,q:"¿Cuidamos y monitoreamos nuestros manglares y animales marinos al menos dos veces al año?",hint:"Según la norma, el monitoreo debe hacerse con metodologías del INVEMAR.",ev:"Informes semestrales de monitoreo de ecosistemas firmados por un técnico.",opts:["Sí, hacemos monitoreo semestral con registro","Hacemos seguimiento ocasional sin metodología formal","Lo hemos hecho alguna vez","No monitoreamos los ecosistemas"]},
+    {n:26,q:"¿Tenemos carteleras o avisos que le expliquen al turista cuáles ecosistemas tiene Piangüita y cómo cuidarlos?",hint:"Que el turista sepa que el manglar es un tesoro y cómo comportarse.",ev:"Fotos de carteleras, folletos o señalización informativa sobre los ecosistemas.",opts:["Sí, hay información visible y bien explicada","Hay algo de información pero es insuficiente","Lo estamos preparando","No hay información para el turista"]},
+    {n:27,q:"¿Manejamos bien los combustibles de las lanchas y los productos de limpieza para que no contaminen la playa?",hint:"Los derrames de aceite o gasolina dañan el mar y la arena.",ev:"Protocolo de manejo de combustibles y fichas de seguridad de productos usados.",opts:["Sí, hay protocolos claros de manejo","Hay algunas precauciones pero no son formales","Lo estamos organizando","No hay ningún control"]},
+    {n:28,q:"¿Controlamos el ruido de la música y los parlantes en la playa para no molestar a los vecinos ni espantar a los animales?",hint:"La contaminación auditiva afecta tanto a las personas como a los animales marinos.",ev:"Acuerdo o reglamento de horarios y niveles de ruido permitidos.",opts:["Sí, hay reglas de ruido que todos respetan","Hay acuerdos informales que no siempre se cumplen","Lo estamos discutiendo","No hay ningún control de ruido"]}
+  ]},
+  { id:4, name:"Seguridad", ref:"§4.7 NTS-TS 001-2", questions:[
+    {n:29,q:"¿Tenemos salvavidas en la playa con contrato formal, equipos completos y entrenamiento certificado?",hint:"El oleaje del Pacífico es fuerte. Los salvavidas son obligatorios según la norma.",ev:"Contratos de los salvavidas, certificados de formación y fotos de sus equipos.",opts:["Sí, hay salvavidas certificados en turno durante el horario de uso","Hay personas que ayudan pero sin certificación formal","Solo en temporada alta","No hay salvavidas"]},
+    {n:30,q:"¿Usamos el sistema de banderas de colores para avisarle a los bañistas si el mar está seguro, con precaución o peligroso?",hint:"Verde = seguro, amarilla = precaución, roja = prohibido bañarse.",ev:"Fotos del sistema de banderas instalado y funcionando en la playa.",opts:["Sí, usamos el sistema internacional de banderas correctamente","Usamos algún tipo de señal pero no el sistema oficial","Lo estamos implementando","No usamos ningún sistema de señales"]},
+    {n:31,q:"¿Estamos listos para una emergencia? ¿Sabemos todos qué hacer y a quién llamar si ocurre un desastre natural?",hint:"Que los vendedores, salvavidas y comunidad conozcan los pasos a seguir.",ev:"Documento del Plan de Emergencias conocido por todos y aprobado por los organismos de socorro.",opts:["Sí, tenemos el plan y todos lo conocen","Tenemos un plan pero no todo el mundo lo conoce","Lo estamos elaborando","No tenemos ningún plan de emergencias"]},
+    {n:32,q:"¿Tenemos botiquín completo, tablas de rescate y cuerdas listos y en buen estado en la playa?",hint:"Los equipos deben estar disponibles durante todo el horario de uso de la playa.",ev:"Fotos y lista de chequeo de los equipos de primeros auxilios y salvamento.",opts:["Sí, los equipos están completos y revisados regularmente","Hay algunos equipos pero incompletos","Solo tenemos un botiquín básico","No hay equipos de emergencia"]},
+    {n:33,q:"¿Tenemos un medio de comunicación confiable para llamar a la DIMAR, la Capitanía o los bomberos en una emergencia?",hint:"Importante porque Piangüita tiene acceso solo por agua.",ev:"Radio, teléfono satelital o protocolo formal de comunicación con la Capitanía.",opts:["Sí, hay comunicación garantizada con las autoridades","Tenemos comunicación pero con limitaciones","Solo por celular cuando hay señal","No tenemos comunicación confiable"]},
+    {n:34,q:"¿Los avisos de seguridad y emergencia en la playa están escritos en español e inglés?",hint:"Los turistas extranjeros también necesitan entender las señales.",ev:"Fotos de los avisos bilingüesl instalados en la playa.",opts:["Sí, todos los avisos están en español e inglés","Algunos avisos están en los dos idiomas","Solo están en español","No hay avisos de seguridad"]}
+  ]},
+  { id:5, name:"Servicios e Infraestructura", ref:"§4.3 y §4.4 NTS-TS 001-2", questions:[
+    {n:35,q:"¿Los baños y duchas de la playa están limpios, funcionando y en buenas condiciones?",hint:"Deben tener agua, ser higiénicos y estar disponibles para todos los turistas.",ev:"Fotos recientes de los baños y registro de mantenimiento.",opts:["Sí, están en buen estado y limpios","Funcionan pero con algunas deficiencias","Están en mal estado o funcionan a medias","No hay baños o están fuera de servicio"]},
+    {n:36,q:"¿Hay un lugar o cartelera donde el turista pueda encontrar información sobre la playa, las reglas y los servicios?",hint:"Un punto de información ayuda al turista a orientarse y conocer las normas.",ev:"Fotos del punto de información o cartelería con datos de la playa.",opts:["Sí, hay un punto activo con información actualizada","Hay cartelería básica pero desactualizada","Lo estamos organizando","No hay información para el turista"]},
+    {n:37,q:"¿Hay rampas o caminos firmes para que las personas en silla de ruedas puedan entrar a la playa?",hint:"La norma exige accesibilidad. Una pasarela cada 500 metros es la referencia.",ev:"Fotos de las rampas o pasarelas instaladas.",opts:["Sí, hay rampas o pasarelas accesibles","Hay alguna facilidad pero es insuficiente","Lo estamos gestionando","No hay ninguna condición de accesibilidad"]},
+    {n:38,q:"¿Los vendedores de comida y bebidas preparan y venden sus productos con buenas condiciones de higiene?",hint:"Temperatura adecuada, superficies limpias, sin contacto con animales ni suciedad.",ev:"Certificados de manipulación de alimentos de los vendedores.",opts:["Sí, cumplen buenas prácticas de higiene","Algunos cumplen, otros no","Hay condiciones básicas pero deficientes","No hay control de higiene en alimentos"]},
+    {n:39,q:"¿El muelle y las embarcaciones que traen turistas están en buen estado y son seguros?",hint:"El acceso por agua a Piangüita es el principal punto de llegada del turista.",ev:"Registro de mantenimiento del muelle y certificados náuticos de las embarcaciones.",opts:["Sí, el muelle y las embarcaciones están en buen estado","Estado regular con algunas deficiencias","Estado deficiente","Muy mal estado o inseguro"]},
+    {n:40,q:"¿Tenemos un Manual de Convivencia visible que les explique a los turistas cómo comportarse en nuestra playa?",hint:"Las reglas de nuestra comunidad deben ser conocidas por quien nos visita.",ev:"Carteles o folletos con el Manual de Convivencia en lugares visibles.",opts:["Sí, está visible y todo el mundo lo conoce","Existe pero no está bien divulgado","Lo estamos elaborando","No existe"]},
+    {n:41,q:"¿Los vendedores y prestadores de servicios están organizados y registrados, y evitamos la venta informal desordenada?",hint:"Un censo de vendedores permite organizar mejor el espacio y el servicio.",ev:"Lista o censo de vendedores autorizados y actas de control.",opts:["Sí, hay un registro y se controla la venta informal","Hay registro parcial","Lo estamos organizando","No hay ningún registro ni control"]},
+    {n:42,q:"¿Les preguntamos a los turistas y a la comunidad si están satisfechos y usamos esas respuestas para mejorar?",hint:"Una encuesta sencilla ayuda a saber qué estamos haciendo bien y qué debemos mejorar.",ev:"Encuestas llenas por los turistas y plan de mejora basado en los resultados.",opts:["Sí, tenemos un sistema de encuestas y usamos los resultados","Preguntamos ocasionalmente pero sin sistema","Lo hemos hecho muy pocas veces","No le preguntamos a nadie"]}
+  ]},
+  { id:6, name:"Sociocultural y Económico", ref:"§4.5 y §4.6 NTS-TS 001-2", questions:[
+    {n:43,q:"¿La comunidad de Piangüita participa activamente en las decisiones sobre el turismo y recibe beneficios directos?",hint:"La comunidad no solo debe trabajar en la playa sino también decidir sobre ella.",ev:"Actas de asambleas comunitarias donde se tomen decisiones sobre turismo.",opts:["Sí, participamos activamente y recibimos beneficios directos","Participamos en algunas decisiones","Somos consultados pero no decidimos","No participamos en las decisiones"]},
+    {n:44,q:"¿Promovemos y protegemos nuestra cultura afropacífica — gastronomía, música, tradiciones — como parte de la experiencia turística?",hint:"Que el turista conozca y valore lo que nos hace únicos.",ev:"Programas culturales, menús locales, presentaciones artísticas ofrecidas al turista.",opts:["Sí, nuestra cultura es parte activa de la oferta turística","Integramos nuestra cultura de forma parcial","Está presente de manera espontánea","No incluimos nuestra cultura en el turismo"]},
+    {n:45,q:"¿Respetamos los espacios y costumbres propias de la comunidad y no dejamos que el turismo los invada sin nuestro permiso?",hint:"Algunos espacios sagrados, de pesca o de reunión comunal son propios de la comunidad.",ev:"Reglamento o acuerdo comunitario que proteja los espacios y costumbres propias.",opts:["Sí, tenemos reglas que protegen nuestros espacios y costumbres","Hay respeto informal pero sin reglas","Ha habido conflictos pero los manejamos","El turismo invade con frecuencia nuestros espacios"]},
+    {n:46,q:"¿Tenemos acciones concretas para evitar que los niños y jóvenes sean víctimas de abuso o explotación por el turismo?",hint:"Esto se llama prevención de ESCNNA (Explotación Sexual Comercial de Niños, Niñas y Adolescentes).",ev:"Programa vigente de prevención de ESCNNA, afiches informativos, capacitaciones.",opts:["Sí, tenemos un programa activo de prevención","Hacemos algunas acciones básicas de sensibilización","Lo estamos planificando","No tenemos ninguna acción al respecto"]},
+    {n:47,q:"¿Los trabajos que genera el turismo en la playa son ocupados principalmente por personas de nuestra comunidad?",hint:"Guías, salvavidas, vendedores, cocineros: ¿son de Piangüita?",ev:"Censo o registro de trabajadores del sector turístico con su lugar de origen.",opts:["Sí, más del 70% son personas de la comunidad","Entre el 40% y el 70% son de la comunidad","Menos del 40% son de la comunidad","No sabemos o no se mide"]},
+    {n:48,q:"¿Los negocios de la playa compran sus productos (pescado, frutas, artesanías) a proveedores de la comunidad o la región Pacífico?",hint:"El dinero del turismo debe quedarse en la región.",ev:"Facturas o acuerdos de compra con proveedores locales.",opts:["Sí, compramos la mayoría a proveedores locales","Compramos algo local pero también de fuera","Compramos muy poco de la comunidad","No compramos a proveedores locales"]},
+    {n:49,q:"¿Parte del dinero que genera el turismo se reinvierte en mejorar la playa y la calidad de vida de los vecinos?",hint:"Que el turismo beneficie a toda la comunidad, no solo a unos pocos.",ev:"Mecanismos formales o informales de reinversión de ingresos turísticos en la comunidad.",opts:["Sí, hay mecanismos formales de reinversión","Hay acuerdos informales de apoyo comunitario","Lo estamos discutiendo","Los ingresos del turismo no se comparten"]},
+    {n:50,q:"¿Nos estamos capacitando en turismo, atención al visitante y manejo sostenible de la playa?",hint:"Piensa en cursos del SENA, talleres de universidades, formaciones de la alcaldía.",ev:"Certificados de los cursos de capacitación tomados por miembros de la comunidad.",opts:["Sí, hacemos capacitaciones continuas","Hemos hecho algunos cursos","Hemos hecho muy pocas capacitaciones","No nos hemos capacitado en turismo"]}
+  ]}
+];
+
+const BLOCK_ICONS = ['🏛️','🗺️','🌿','🛡️','🏖️','👥'];
+
+// ══════════════════════════════════════════════════════════════
+// FIREBASE
+// ══════════════════════════════════════════════════════════════
+const FIREBASE_DB = 'https://pianguita-diagnostico-default-rtdb.firebaseio.com/diagnosticos';
+const FIREBASE_TIMEOUT = 8000;
+
+async function fb_guardar(grupo, datos) {
+  try {
+    await fetch(`${FIREBASE_DB}/${grupo}.json`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(datos)
+    });
+  } catch(e) {}
+}
+
+async function fb_leer() {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), FIREBASE_TIMEOUT);
+    const r = await fetch(`${FIREBASE_DB}.json`, { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (r.ok) { const d = await r.json(); return d || {}; }
+  } catch(e) {}
+  return null;
+}
+
+async function fb_borrar(grupo) {
+  try { await fetch(`${FIREBASE_DB}/${grupo}.json`, { method:'DELETE' }); } catch(e) {}
+}
+
+async function fb_borrar_todo() {
+  try { await fetch(`${FIREBASE_DB}.json`, { method:'DELETE' }); } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ══════════════════════════════════════════════════════════════
+const PIN = "1234";
+let currentGroup    = null;
+let currentGroupName = "";
+let currentSessionNumber = 1;
+let currentParticipants  = [];
+let selectedBlocks  = [];   // índices de BLOCKS seleccionados (0-5)
+let currentBlockStep = 0;   // índice dentro de selectedBlocks
+let answers  = {};
+let evidence = {};
+let lastScores = null;
+let lastTotal  = null;
+
+// ══════════════════════════════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goHome() { initSession(); showPage('page-welcome'); }
+
+// ══════════════════════════════════════════════════════════════
+// INICIALIZACIÓN DE SESIÓN
+// ══════════════════════════════════════════════════════════════
+function getTodayStr() {
+  return new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
+}
+function getTodayISO() { return new Date().toISOString().split('T')[0]; }
+
+async function initSession() {
+  selectedBlocks = []; currentParticipants = []; answers = {}; evidence = {};
+  renderBlockSelectors(); renderParticipants(); checkStartButton();
+
+  const fb = await fb_leer();
+  const all = fb || JSON.parse(localStorage.getItem('pianguita_diagnostico') || '{}');
+  if (fb && Object.keys(fb).length > 0) localStorage.setItem('pianguita_diagnostico', JSON.stringify(fb));
+
+  const hoy = getTodayISO();
+  const sesionesHoy = Object.values(all).filter(g => g.fechaISO === hoy);
+  currentSessionNumber = sesionesHoy.length + 1;
+  currentGroupName = `Grupo ${currentSessionNumber} · ${getTodayStr()}`;
+  currentGroup = `grupo_${currentSessionNumber}_${hoy}`;
+
+  document.getElementById('session-name-display').textContent = currentGroupName;
+  renderTodayGroups(sesionesHoy);
+}
+
+function renderTodayGroups(groups) {
+  const sec = document.getElementById('today-groups-section');
+  if (!groups || groups.length === 0) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  document.getElementById('today-groups-list').innerHTML = groups.map(g => {
+    const col = g.total>=70?'#059669':g.total>=40?'#d97706':'#dc2626';
+    const bloques = g.bloques ? g.bloques.map(bi => BLOCKS[bi].name).join(', ') : '—';
+    const np = g.participantes ? g.participantes.length : 0;
+    return `<div style="padding:6px 0;border-bottom:1px solid #d1fae5;font-size:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong>${g.nombre}</strong>
+        <span style="font-size:15px;font-weight:700;color:${col}">${g.total}%</span>
+      </div>
+      <div style="color:#6b7280;font-size:11px;margin-top:2px">${np} participante${np!==1?'s':''} · ${bloques}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// SELECCIÓN DE BLOQUES
+// ══════════════════════════════════════════════════════════════
+function renderBlockSelectors() {
+  const grid = document.getElementById('block-select-grid');
+  if (!grid) return;
+  grid.innerHTML = BLOCKS.map((b,i) => {
+    const sel = selectedBlocks.includes(i) ? 'selected' : '';
+    const chk = selectedBlocks.includes(i) ? '✓' : '';
+    return `<button class="block-check-btn ${sel}" onclick="toggleBlock(${i})">
+      <span class="bc-icon">${BLOCK_ICONS[i]}</span>
+      <span class="bc-info">
+        <span class="bc-name">${b.name}</span>
+        <span class="bc-count">${b.questions.length} preguntas · ${b.ref}</span>
+      </span>
+      <span class="bc-check">${chk}</span>
+    </button>`;
+  }).join('');
+}
+
+function toggleBlock(i) {
+  const idx = selectedBlocks.indexOf(i);
+  if (idx===-1) selectedBlocks.push(i); else selectedBlocks.splice(idx,1);
+  selectedBlocks.sort((a,b)=>a-b);
+  renderBlockSelectors(); checkStartButton();
+}
+
+// ══════════════════════════════════════════════════════════════
+// PARTICIPANTES
+// ══════════════════════════════════════════════════════════════
+function addParticipant() {
+  const nombre = document.getElementById('p-nombre').value.trim();
+  const tipoDoc = document.getElementById('p-tipo-doc').value;
+  const numDoc  = document.getElementById('p-num-doc').value.trim();
+  const grupoInteres = document.getElementById('p-grupo-interes').value;
+  const genero = document.getElementById('p-genero').value;
+  const edad = document.getElementById('p-edad').value;
+  const celular = document.getElementById('p-celular').value.trim();
+  const err = document.getElementById('p-err');
+  if (!nombre) { err.textContent='El nombre completo es obligatorio.'; err.style.display='block'; return; }
+  err.style.display = 'none';
+  currentParticipants.push({nombre,tipoDoc,numDoc,grupoInteres,genero,edad,celular});
+  renderParticipants(); checkStartButton();
+  document.getElementById('p-nombre').value = '';
+  document.getElementById('p-num-doc').value = '';
+  document.getElementById('p-celular').value = '';
+  document.getElementById('p-genero').selectedIndex = 0;
+  document.getElementById('p-edad').selectedIndex = 0;
+  document.getElementById('p-nombre').focus();
+}
+
+function removeParticipant(i) {
+  currentParticipants.splice(i,1); renderParticipants(); checkStartButton();
+}
+
+function renderParticipants() {
+  const list = document.getElementById('participants-list');
+  const ctr  = document.getElementById('participants-counter');
+  if (!list) return;
+  if (currentParticipants.length === 0) {
+    list.innerHTML = '<div style="font-size:12px;color:#9ca3af;text-align:center;padding:12px">Aún no hay participantes registrados</div>';
+    ctr.textContent = '0 participantes'; return;
+  }
+  ctr.textContent = `${currentParticipants.length} participante${currentParticipants.length>1?'s':''}`;
+  list.innerHTML = currentParticipants.map((p,i) =>
+    `<div class="participant-item">
+      <div style="font-size:12px;flex:1">
+        <div style="font-weight:600;color:#111827">${p.nombre}</div>
+        <div style="color:#6b7280;margin-top:2px">${p.grupoInteres} · ${p.genero||''} · ${p.edad||''} años · ${p.tipoDoc} ${p.numDoc}${p.celular?' · 📱 '+p.celular:''}</div>
+      </div>
+      <button onclick="removeParticipant(${i})" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit;margin-left:8px;flex-shrink:0">✕</button>
+    </div>`
+  ).join('');
+}
+
+function checkStartButton() {
+  const btn = document.getElementById('btn-start');
+  if (!btn) return;
+  const ok = currentParticipants.length>=1 && selectedBlocks.length>=1;
+  btn.style.opacity = ok?'1':'0.4';
+  btn.style.pointerEvents = ok?'auto':'none';
+}
+
+// ══════════════════════════════════════════════════════════════
+// CONFIRMACIÓN
+// ══════════════════════════════════════════════════════════════
+function goToConfirm() {
+  if (currentParticipants.length<1 || selectedBlocks.length<1) return;
+  document.getElementById('confirm-session-name').textContent = currentGroupName;
+  document.getElementById('confirm-blocks-list').innerHTML = selectedBlocks.map(bi =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #e5e7eb;font-size:13px">
+      <span style="font-size:20px">${BLOCK_ICONS[bi]}</span>
+      <div>
+        <div style="font-weight:600;color:#111827">${BLOCKS[bi].name}</div>
+        <div style="font-size:11px;color:#6b7280">${BLOCKS[bi].questions.length} preguntas</div>
+      </div>
+    </div>`
+  ).join('');
+  document.getElementById('confirm-participants-list').innerHTML = currentParticipants.map(p =>
+    `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #e5e7eb;font-size:12px">
+      <div style="min-width:28px;height:28px;border-radius:50%;background:#d1fae5;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${p.nombre.charAt(0).toUpperCase()}</div>
+      <div>
+        <div style="font-weight:600;color:#111827">${p.nombre}</div>
+        <div style="color:#6b7280">${p.grupoInteres} · ${p.tipoDoc} ${p.numDoc}</div>
+      </div>
+    </div>`
+  ).join('');
+  showPage('page-confirm');
+}
+
+function startQuestions() {
+  currentBlockStep=0; answers={}; evidence={};
+  document.getElementById('q-group-label').textContent = currentGroupName;
+  buildProgressBar(); renderBlock(); showPage('page-questions');
+}
+
+// ══════════════════════════════════════════════════════════════
+// BARRA DE PROGRESO
+// ══════════════════════════════════════════════════════════════
+function buildProgressBar() {
+  document.getElementById('progress-track').innerHTML =
+    selectedBlocks.map((bi,i) => `<div class="ps ${i===0?'active':''}" id="pb${i}"></div>`).join('');
+}
+function updateProgress() {
+  selectedBlocks.forEach((bi,i) => {
+    const el = document.getElementById('pb'+i);
+    if (!el) return;
+    el.className = 'ps' + (i<currentBlockStep?' done':i===currentBlockStep?' active':'');
+  });
+  const b = BLOCKS[selectedBlocks[currentBlockStep]];
+  document.getElementById('progress-label').textContent =
+    `Bloque ${currentBlockStep+1} de ${selectedBlocks.length} · ${b.name}`;
+  document.getElementById('q-btn-back').style.visibility = currentBlockStep===0?'hidden':'visible';
+  document.getElementById('q-btn-next').textContent =
+    currentBlockStep===selectedBlocks.length-1?'Generar diagnóstico ✓':'Siguiente →';
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER PREGUNTAS
+// ══════════════════════════════════════════════════════════════
+function renderBlock() {
+  updateProgress();
+  const block = BLOCKS[selectedBlocks[currentBlockStep]];
+  let html = `<div class="block-header"><h2>${block.name}</h2><p>${block.ref}</p></div>`;
+  block.questions.forEach(q => {
+    const saved = answers[q.n]; const savedEv = evidence[q.n]||'';
+    html += `<div class="q-item">
+      <div class="q-num">Pregunta ${q.n}</div>
+      <div class="q-text">${q.q}</div>
+      ${q.hint?`<div class="q-hint">💡 ${q.hint}</div>`:''}
+      <div class="q-evidence"><span>Evidencia sugerida:</span> ${q.ev}</div>
+      <div class="options">
+        ${q.opts.map((opt,i) => {
+          const letter=['A','B','C','D'][i];
+          return `<button class="opt-btn ${saved===i?'selected':''}" onclick="selectAnswer(${q.n},${i},this)">
+            <div class="opt-letter">${letter}</div>
+            <div class="opt-text">${opt}</div>
+          </button>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:10px">
+        <div style="font-size:11px;font-weight:600;color:#065f46;margin-bottom:4px">Estado actual y evidencia <span style="color:#9ca3af;font-weight:400">(opcional)</span></div>
+        <textarea id="ev-${q.n}" rows="2"
+          style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;color:#111827"
+          placeholder="Describe el estado actual o la evidencia que tienen... (opcional)"
+          oninput="saveEvidence(${q.n},this.value)">${savedEv}</textarea>
+      </div>
+    </div>`;
+  });
+  document.getElementById('block-content').innerHTML = html;
+  document.getElementById('q-err').style.display = 'none';
+}
+
+function selectAnswer(qNum,optIdx,btn) {
+  answers[qNum]=optIdx;
+  btn.closest('.options').querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function saveEvidence(qNum,val) { evidence[qNum]=val; }
+
+function blockNext() {
+  const block = BLOCKS[selectedBlocks[currentBlockStep]];
+  for (const q of block.questions) {
+    if (answers[q.n]===undefined) {
+      const er=document.getElementById('q-err');
+      er.style.display='block'; er.scrollIntoView({behavior:'smooth',block:'center'}); return;
+    }
+    const ev=document.getElementById('ev-'+q.n); if(ev) evidence[q.n]=ev.value.trim();
+  }
+  document.getElementById('q-err').style.display='none';
+  if (currentBlockStep < selectedBlocks.length-1) { currentBlockStep++; renderBlock(); window.scrollTo(0,0); }
+  else { generateDiagnosis(); }
+}
+function blockBack() { if(currentBlockStep>0){ currentBlockStep--; renderBlock(); window.scrollTo(0,0); } }
+
+// ══════════════════════════════════════════════════════════════
+// CÁLCULO DE PUNTAJES
+// ══════════════════════════════════════════════════════════════
+function calcBlockScore(bi) {
+  const block=BLOCKS[bi]; let tot=0,cnt=0;
+  block.questions.forEach(q=>{ if(answers[q.n]!==undefined){ tot+=(3-answers[q.n]); cnt++; } });
+  return cnt===0?0:Math.round((tot/(cnt*3))*100);
+}
+function calcSelectedScores() {
+  return selectedBlocks.map(bi=>({name:BLOCKS[bi].name, blockIndex:bi, score:calcBlockScore(bi)}));
+}
+function calcTotalScore(scores) {
+  if(!scores||scores.length===0) return 0;
+  return Math.round(scores.reduce((s,b)=>s+b.score,0)/scores.length);
+}
+
+// ══════════════════════════════════════════════════════════════
+// GENERAR DIAGNÓSTICO IA
+// ══════════════════════════════════════════════════════════════
+async function generateDiagnosis() {
+  showPage('page-loading');
+  const msgs=['Calculando puntajes...','Evaluando criterios NTS-TS 001-2...','Analizando respuestas...','Preparando diagnóstico...'];
+  let mi=0; const ml=document.getElementById('load-msg');
+  const iv=setInterval(()=>{ mi=(mi+1)%msgs.length; ml.textContent=msgs[mi]; },1800);
+
+  const scores=calcSelectedScores(); const total=calcTotalScore(scores);
+  saveGroupResult(scores,total,null);
+
+  let aiResult=null;
+  try {
+    const blocksStr=scores.map(s=>`${s.name}:${s.score}%`).join(', ');
+    const parStr=[...new Set(currentParticipants.map(p=>p.grupoInteres))].join(', ');
+    const evStr=selectedBlocks.map(bi=>BLOCKS[bi].questions.map(q=>evidence[q.n]?`P${q.n}:${evidence[q.n].substring(0,50)}`:null).filter(Boolean).join('; ')).filter(s=>s.length>0).join(' | ');
+    const prompt=`Eres auditor NTS-TS 001-2 Colombia. Grupo: ${currentGroupName}. Participantes: ${currentParticipants.length} (${parStr}). Destino: Playa Piangüita, Bazanbocana, Buenaventura (Pacífico, comunidad afrocolombiana, manglar, acceso fluvial).
+Bloques evaluados: ${blocksStr}. Promedio: ${total}%.
+Evidencias: ${evStr.substring(0,300)}
+Responde SOLO JSON puro sin markdown. Máximo 20 palabras por campo. Exactamente 4 acciones:
+{"nivel":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","resumen":"frase","nc":["nc1","nc2"],"diag":{${scores.map(s=>`"b${s.blockIndex}":{"f":"frase","b":"frase","r":"frase"}`).join(',')}},"acciones":[{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"BAJA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"}],"ruta":"frase"}`;
+    const ctrl=new AbortController();
+    const tout=setTimeout(()=>ctrl.abort(),15000);
+    const resp=await fetch('https://pianguita-proxy.onrender.com/api/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
+        system:'Eres auditor NTS-TS 001-2 Colombia. Responde SOLO JSON válido sin markdown.',
+        messages:[{role:'user',content:prompt}]}),
+      signal:ctrl.signal
+    });
+    clearTimeout(tout);
+    if(resp.ok){
+      const data=await resp.json();
+      if(!data.error){
+        const raw=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+        const match=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim().match(/\{[\s\S]*\}/);
+        if(match){ aiResult=JSON.parse(match[0]); if(!aiResult.nc) aiResult.nc=[]; saveGroupResult(scores,total,aiResult); }
+      }
+    }
+  } catch(e){ aiResult=null; }
+  clearInterval(iv);
+  showResultsPage(scores,total,aiResult);
+}
+
+// ══════════════════════════════════════════════════════════════
+// GUARDAR RESULTADO
+// ══════════════════════════════════════════════════════════════
+function saveGroupResult(scores,total,aiResult) {
+  const key='pianguita_diagnostico';
+  const all=JSON.parse(localStorage.getItem(key)||'{}');
+  const datos={
+    group:currentGroup, nombre:currentGroupName,
+    fecha:getTodayStr(), fechaISO:getTodayISO(), numero:currentSessionNumber,
+    participantes:[...currentParticipants], bloques:[...selectedBlocks],
+    scores, total, answers:{...answers}, evidence:{...evidence}, aiResult
+  };
+  all[currentGroup]=datos;
+  localStorage.setItem(key,JSON.stringify(all));
+  fb_guardar(currentGroup,datos);
+}
+
+// ══════════════════════════════════════════════════════════════
+// MOSTRAR RESULTADOS
+// ══════════════════════════════════════════════════════════════
+function scC(v){return v>=70?'g':v>=40?'a':'r';}
+function ncC(n){return n==='AVANZADO'?'#059669':n==='EN_DESARROLLO'?'#d97706':'#dc2626';}
+function ptC(p){return p==='ALTA'?'p-alta':p==='MEDIA'?'p-media':'p-baja';}
+function toggleEv(id){const el=document.getElementById(id);if(el) el.style.display=el.style.display==='none'?'block':'none';}
+function tog(id){
+  const b=document.getElementById(id); const a=document.getElementById('a-'+id);
+  if(b.style.display==='block'){b.style.display='none';a.textContent='▾';}
+  else{b.style.display='block';a.textContent='▴';}
+}
+
+function showResultsPage(scores,total,r) {
+  document.getElementById('results-group-label').textContent = currentGroupName;
+  const nivel = r?r.nivel:(total>=70?'AVANZADO':total>=50?'EN_DESARROLLO':total>=30?'INICIAL':'CRITICO');
+  const resumen = r?r.resumen:`${currentGroupName} evaluó ${scores.length} bloque${scores.length>1?'s':''} con un puntaje de ${total}%. El análisis IA estará disponible con conexión a internet.`;
+  const scoreCards = scores.map(s=>`<div class="score-card"><div class="sl">${s.name}</div><div class="sv ${scC(s.score)}">${s.score}%</div></div>`).join('');
+  const ncHtml = r&&r.nc&&r.nc.length?`<div class="nc-box"><div class="nc-title">Puntos críticos:</div>${r.nc.map((n,i)=>`<div class="nc-item"><div class="nc-dot">${i+1}</div><span>${n}</span></div>`).join('')}</div>`:'';
+
+  let diagContent='';
+  if(r&&r.diag){
+    diagContent=scores.map((s,i)=>{
+      const key='b'+s.blockIndex;
+      const d=r.diag[key]||r.diag[Object.keys(r.diag)[i]];
+      if(!d) return '';
+      const id='db-'+i;
+      const bg=s.score>=70?'#d1fae5':s.score>=40?'#fef3c7':'#fee2e2';
+      const col=s.score>=70?'#065f46':s.score>=40?'#78350f':'#7f1d1d';
+      const lbl=s.score>=70?'Bueno':s.score>=40?'En proceso':'Crítico';
+      return `<div class="diag-block"><div class="diag-hdr" onclick="tog('${id}')">
+        <span class="diag-hdr-txt">${BLOCK_ICONS[s.blockIndex]} ${s.name} · ${s.score}%</span>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${bg};color:${col};font-weight:500">${lbl}</span><span id="a-${id}">▾</span></div>
+      </div>
+      <div class="diag-body" id="${id}" style="display:none">
+        <div class="diag-blk"><div class="diag-lbl">Lo que hacemos bien:</div>${d.f||'—'}</div>
+        <div class="diag-blk"><div class="diag-lbl">Lo que nos falta:</div>${d.b||'—'}</div>
+        <div class="rec-box"><strong style="color:#059669;display:block;margin-bottom:3px">Qué recomienda la norma:</strong>${d.r||'—'}</div>
+      </div></div>`;
+    }).join('');
+  } else {
+    const noAI=scores.map((s,si)=>{
+      const block=BLOCKS[selectedBlocks[si]]; const id='dbn-'+si;
+      const bg=s.score>=70?'#d1fae5':s.score>=40?'#fef3c7':'#fee2e2';
+      const col=s.score>=70?'#065f46':s.score>=40?'#78350f':'#7f1d1d';
+      const lbl=s.score>=70?'Bueno':s.score>=40?'En proceso':'Crítico';
+      const qRows=block.questions.map(q=>{
+        const ans=answers[q.n]; const letter=['A','B','C','D'][ans];
+        const qcol=ans===0?'#059669':ans===1?'#d97706':ans===2?'#dc2626':'#991b1b';
+        const ev=evidence[q.n]||'';
+        return `<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:11px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+            <span style="color:#374151;flex:1;padding-right:8px;font-weight:500">P${q.n}. ${q.q.substring(0,70)}${q.q.length>70?'...':''}</span>
+            <span style="font-weight:700;color:${qcol};min-width:20px;text-align:center">${letter}</span>
+          </div>
+          ${ev?`<div style="color:#6b7280;font-style:italic;padding-left:4px;border-left:2px solid #e5e7eb">${ev}</div>`:''}
+        </div>`;
+      }).join('');
+      return `<div class="diag-block"><div class="diag-hdr" onclick="tog('${id}')">
+        <span class="diag-hdr-txt">${BLOCK_ICONS[s.blockIndex]} ${s.name} · ${s.score}%</span>
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${bg};color:${col};font-weight:500">${lbl}</span><span id="a-${id}">▾</span></div>
+      </div><div class="diag-body" id="${id}" style="display:none">${qRows}</div></div>`;
+    }).join('');
+    diagContent=`<div class="card" style="background:#fef3c7;border-color:#fcd34d;margin-bottom:1rem">
+      <div style="font-size:12px;font-weight:600;color:#78350f;margin-bottom:4px">Sin conexión a internet</div>
+      <div style="font-size:12px;color:#92400e;line-height:1.5">Tus respuestas están guardadas. Usa el botón de abajo para reintentar el análisis IA cuando haya señal.</div>
+    </div>${noAI}`;
+  }
+
+  const acciones=r&&r.acciones?r.acciones.map((a,i)=>
+    `<div class="action-item"><div class="a-num">${i+1}</div><div>
+      <div class="a-txt">${a.acc||''}</div>
+      <div class="a-meta"><span class="ptag ${ptC(a.p||'')}">${a.p||''}</span><span>${a.cat||''}</span><span>·</span><span>${a.plazo||''}</span>${a.resp?`<span>· ${a.resp}</span>`:''}</div>
+    </div></div>`
+  ).join(''):'';
+
+  const rutaHtml=r&&r.ruta?`<div class="ruta-box"><div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:6px">Ruta hacia la certificación</div><div style="font-size:12px;color:#374151;line-height:1.6">${r.ruta}</div></div>`:'';
+
+  const partHtml=`<div class="card" style="background:#f8fafc;border-color:#e2e8f0;margin-bottom:1rem">
+    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">Participantes de esta sesión (${currentParticipants.length})</div>
+    ${currentParticipants.map(p=>`<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #e5e7eb;font-size:12px">
+      <div style="min-width:26px;height:26px;border-radius:50%;background:#d1fae5;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${p.nombre.charAt(0)}</div>
+      <div><div style="font-weight:500">${p.nombre}</div><div style="color:#6b7280;font-size:11px">${p.grupoInteres}</div></div>
+    </div>`).join('')}
+  </div>`;
+
+  document.getElementById('results-content').innerHTML = `
+    ${partHtml}
+    <div class="card" style="text-align:center;background:#f0fdf4;border-color:#6ee7b7">
+      <div style="font-size:11px;color:#6b7280;margin-bottom:4px">${scores.length} bloque${scores.length>1?'s':''} evaluado${scores.length>1?'s':''}</div>
+      <div class="score-big" style="color:${ncC(nivel)}">${total}%</div>
+      <div style="font-size:13px;font-weight:600;color:${ncC(nivel)};margin:4px 0 10px">${nivel.replace('_',' ')}</div>
+      <div style="font-size:12px;color:#4b5563;line-height:1.6;text-align:left;border-top:1px solid #6ee7b7;padding-top:10px;margin-top:6px">${resumen}</div>
+    </div>
+    <div class="score-grid">${scoreCards}</div>
+    ${ncHtml}${diagContent}
+    ${acciones?`<div class="card" style="margin-top:1rem"><div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:12px">Plan de acción</div>${acciones}</div>`:''}
+    ${rutaHtml}`;
+
+  lastScores=scores; lastTotal=total;
+  const rb=document.getElementById('results-retry-btn');
+  if(rb) rb.style.display=r?'none':'block';
+  showPage('page-results');
+}
+
+// ══════════════════════════════════════════════════════════════
+// RETRY IA
+// ══════════════════════════════════════════════════════════════
+function retryAI() { if(!lastScores||lastTotal===null) return; generateDiagnosisWithAI(lastScores,lastTotal); }
+
+async function generateDiagnosisWithAI(scores,total) {
+  document.getElementById('results-retry-btn').style.display='none';
+  showPage('page-loading'); document.getElementById('load-msg').textContent='Conectando con el análisis IA...';
+  try {
+    const blocksStr=scores.map(s=>`${s.name}:${s.score}%`).join(', ');
+    const parStr=[...new Set(currentParticipants.map(p=>p.grupoInteres))].join(', ');
+    const prompt=`Eres auditor NTS-TS 001-2 Colombia. Grupo: ${currentGroupName}. Participantes: ${currentParticipants.length} (${parStr}).
+Bloques evaluados: ${blocksStr}. Promedio: ${total}%.
+Responde SOLO JSON puro sin markdown. Máximo 20 palabras por campo. Exactamente 4 acciones:
+{"nivel":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","resumen":"frase","nc":["nc1","nc2"],"diag":{${scores.map(s=>`"b${s.blockIndex}":{"f":"frase","b":"frase","r":"frase"}`).join(',')}},"acciones":[{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"BAJA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"}],"ruta":"frase"}`;
+    const resp=await fetch('https://pianguita-proxy.onrender.com/api/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+    });
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const data=await resp.json();
+    const raw=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const match=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim().match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('Sin JSON');
+    const ai=JSON.parse(match[0]); if(!ai.nc) ai.nc=[];
+    saveGroupResult(scores,total,ai); showResultsPage(scores,total,ai);
+  } catch(e) { showResultsPage(scores,total,null); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// VISTA CONSOLIDADO (FACILITADOR)
+// ══════════════════════════════════════════════════════════════
+function showPinOverlay() {
+  setTimeout(()=>{ document.getElementById('pin-input').value=''; },50);
+  document.getElementById('pin-error').style.display='none';
+  document.getElementById('pin-overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('pin-input').focus(),150);
+}
+function hidePinOverlay() { document.getElementById('pin-overlay').classList.remove('show'); }
+function checkPin() {
+  const v=document.getElementById('pin-input').value;
+  if(v.length===4){
+    if(v===PIN){ hidePinOverlay(); showConsolidated(); }
+    else{ document.getElementById('pin-error').style.display='block'; document.getElementById('pin-input').value=''; }
+  }
+}
+
+async function showConsolidated() {
+  const fb=await fb_leer();
+  if(fb&&Object.keys(fb).length>0) localStorage.setItem('pianguita_diagnostico',JSON.stringify(fb));
+  const all=fb||JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+  const groups=Object.values(all).sort((a,b)=>{ if(a.fechaISO!==b.fechaISO) return a.fechaISO>b.fechaISO?1:-1; return (a.numero||0)-(b.numero||0); });
+
+  document.getElementById('consolidated-ai-result').innerHTML='';
+  document.getElementById('consolidated-loading').style.display='none';
+
+  if(groups.length===0){
+    document.getElementById('consolidated-content').innerHTML=`<div class="card" style="text-align:center;padding:2rem">
+      <div style="font-size:14px;color:#6b7280">Aún no hay diagnósticos guardados.</div>
+      <div style="font-size:12px;color:#9ca3af;margin-top:6px">Cuando los grupos completen su diagnóstico, aparecerán aquí.</div>
+    </div>`;
+    showPage('page-consolidated'); return;
+  }
+
+  // Promedio por bloque
+  const blockAvgs=BLOCKS.map((b,bi)=>{
+    const ans=groups.filter(g=>g.bloques&&g.bloques.includes(bi));
+    if(ans.length===0) return null;
+    return Math.round(ans.reduce((s,g)=>{ const sc=g.scores?(g.scores.find(s=>s.blockIndex===bi)||{score:0}).score:0; return s+sc; },0)/ans.length);
+  });
+  const groupTotals=groups.map(g=>g.total||0);
+  const grandAvg=groupTotals.length>0?Math.round(groupTotals.reduce((s,t)=>s+t,0)/groupTotals.length):0;
+  const grandCol=grandAvg>=70?'#059669':grandAvg>=40?'#d97706':'#dc2626';
+  const grandCl=grandAvg>=70?'cel-g':grandAvg>=40?'cel-a':'cel-r';
+  const totalPart=groups.reduce((s,g)=>s+(g.participantes?g.participantes.length:0),0);
+
+  // Tabla comparativa
+  const thead=`<th>Bloque</th>`+groups.map(g=>`<th>${g.nombre}</th>`).join('')+`<th>Promedio</th>`;
+  const tbody=BLOCKS.map((b,bi)=>{
+    const cualquiera=groups.some(g=>g.bloques&&g.bloques.includes(bi));
+    if(!cualquiera) return '';
+    const cells=groups.map(g=>{
+      if(!g.bloques||!g.bloques.includes(bi)) return `<td class="cel-na">—</td>`;
+      const s=g.scores?g.scores.find(s=>s.blockIndex===bi):null;
+      const sc=s?s.score:0;
+      return `<td class="${sc>=70?'cel-g':sc>=40?'cel-a':'cel-r'}">${sc}%</td>`;
+    });
+    const avg=blockAvgs[bi];
+    return `<tr><td>${BLOCK_ICONS[bi]} ${b.name}</td>${cells.join('')}<td class="${avg>=70?'cel-g':avg>=40?'cel-a':'cel-r'}">${avg}%</td></tr>`;
+  }).join('');
+  const totCells=groups.map((g,i)=>`<td class="${groupTotals[i]>=70?'cel-g':groupTotals[i]>=40?'cel-a':'cel-r'}">${groupTotals[i]}%</td>`).join('');
+
+  // Tarjetas por grupo
+  const groupCards=groups.map(g=>{
+    const col=g.total>=70?'#059669':g.total>=40?'#d97706':'#dc2626';
+    const gid='gev-'+g.group; const np=g.participantes?g.participantes.length:0;
+    const partList=g.participantes?g.participantes.map(p=>
+      `<div style="display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid #f3f4f6;font-size:12px">
+        <div style="min-width:24px;height:24px;border-radius:50%;background:#d1fae5;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${p.nombre.charAt(0)}</div>
+        <div><div style="font-weight:500">${p.nombre}</div><div style="color:#6b7280;font-size:11px">${p.grupoInteres} · ${p.tipoDoc} ${p.numDoc}${p.celular?' · 📱 '+p.celular:''}</div></div>
+      </div>`
+    ).join(''):'';
+    const bloqList=g.bloques?g.bloques.map(bi=>{
+      const s=g.scores?g.scores.find(s=>s.blockIndex===bi):null; const sc=s?s.score:0;
+      const c=sc>=70?'#059669':sc>=40?'#d97706':'#dc2626';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;border-bottom:1px solid #f3f4f6">
+        <span>${BLOCK_ICONS[bi]} ${BLOCKS[bi].name}</span>
+        <span style="font-weight:700;color:${c}">${sc}%</span>
+      </div>`;
+    }).join(''):'';
+    return `<div class="group-saved-item">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#111827">📋 ${g.nombre}</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:1px">${g.fecha} · ${np} participante${np!==1?'s':''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:22px;font-weight:700;color:${col}">${g.total}%</div>
+          <button onclick="toggleEv('${gid}')" style="background:#e0f2fe;border:1px solid #7dd3fc;color:#0369a1;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500">Ver detalles</button>
+          <button onclick="deleteGroup('${g.group}')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑</button>
+        </div>
+      </div>
+      <div id="${gid}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb">
+        <div style="font-size:11px;font-weight:600;color:#065f46;margin-bottom:6px">PARTICIPANTES</div>
+        ${partList}
+        <div style="font-size:11px;font-weight:600;color:#065f46;margin:10px 0 6px">BLOQUES EVALUADOS</div>
+        ${bloqList}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('consolidated-content').innerHTML = `
+    <div class="card" style="background:#f0fdf4;border-color:#6ee7b7;padding:1.5rem">
+      <div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:12px;text-align:center">Acción y Legado</div>
+      <p style="font-size:14px;color:#1a1a18;line-height:1.7;text-align:center;margin-bottom:16px">
+        🤝 Juntos trazamos la ruta: El
+        <span style="font-size:42px;font-weight:800;color:${grandCol};display:inline-block;line-height:1;vertical-align:middle;margin:0 4px">${grandAvg}%</span>
+        de sostenibilidad alcanzado por Piangüita es el reflejo de nuestro compromiso colectivo por proteger y honrar nuestra playa 🌱.
+      </p>
+      <div style="font-size:12px;color:#6b7280;text-align:center">${groups.length} grupo${groups.length>1?'s':''} · ${totalPart} participantes en total</div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">Grupos evaluados</div>
+    <div class="groups-saved">${groupCards}</div>
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">Comparativo por bloque</div>
+    <div style="overflow-x:auto;margin-bottom:1.5rem">
+      <table class="comparison-table">
+        <thead><tr>${thead}</tr></thead>
+        <tbody>${tbody}<tr><td><strong>TOTAL</strong></td>${totCells}<td class="${grandCl}">${grandAvg}%</td></tr></tbody>
+      </table>
+    </div>
+    <button class="btn btn-primary" onclick="generateConsolidatedAI()" style="width:100%;padding:14px;font-size:14px">
+      Generar informe IA consolidado →
+    </button>
+    <div style="font-size:11px;color:#6b7280;margin-top:6px;text-align:center">Requiere conexión a internet</div>`;
+  showPage('page-consolidated');
+}
+
+// ══════════════════════════════════════════════════════════════
+// IA CONSOLIDADO
+// ══════════════════════════════════════════════════════════════
+async function generateConsolidatedAI() {
+  const all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+  const groups=Object.values(all);
+  document.getElementById('consolidated-loading').style.display='block';
+  document.getElementById('consolidated-ai-result').innerHTML='';
+  const msgs=['Analizando voces de la comunidad...','Identificando consensos...','Construyendo diagnóstico participativo...','Generando plan de acción colectivo...'];
+  let mi=0; const ml=document.getElementById('consol-msg');
+  const iv=setInterval(()=>{ mi=(mi+1)%msgs.length; ml.textContent=msgs[mi]; },1800);
+  try {
+    const totPart=groups.reduce((s,g)=>s+(g.participantes?g.participantes.length:0),0);
+    const todosGrupos=[...new Set(groups.flatMap(g=>g.participantes?g.participantes.map(p=>p.grupoInteres):[]))].join(', ');
+    const cob=BLOCKS.map((b,bi)=>{
+      const ans=groups.filter(g=>g.bloques&&g.bloques.includes(bi));
+      if(ans.length===0) return null;
+      const avg=Math.round(ans.reduce((s,g)=>{const sc=g.scores?(g.scores.find(s=>s.blockIndex===bi)||{score:0}).score:0;return s+sc;},0)/ans.length);
+      return `${b.name}:${avg}%`;
+    }).filter(Boolean).join(', ');
+    const det=groups.map(g=>`${g.nombre}(${g.total}%)[${g.bloques?g.bloques.map(bi=>{const sc=g.scores?(g.scores.find(s=>s.blockIndex===bi)||{score:0}).score:0;return BLOCKS[bi].name+':'+sc+'%';}).join(','):''}]`).join('; ');
+    const prompt=`Eres auditor NTS-TS 001-2 Colombia. Diagnóstico participativo Playa Piangüita, Buenaventura. ${groups.length} grupos focales, ${totPart} participantes (${todosGrupos}).
+Bloques evaluados: ${cob}. Detalle: ${det.substring(0,400)}.
+Responde SOLO JSON puro sin markdown:
+{"nivel_general":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","diagnostico_general":"párrafo 40 palabras","consensos":["consenso1","consenso2","consenso3"],"brechas_criticas":["brecha1","brecha2","brecha3"],"acciones_prioritarias":[{"prioridad":"ALTA","accion":"acción concreta","responsable":"actor","plazo":"0-3m"},{"prioridad":"ALTA","accion":"acción","responsable":"actor","plazo":"0-3m"},{"prioridad":"MEDIA","accion":"acción","responsable":"actor","plazo":"3-6m"},{"prioridad":"BAJA","accion":"acción","responsable":"actor","plazo":"6-12m"}],"proximos_pasos":"párrafo 30 palabras","mensaje_comunidad":"frase motivadora 20 palabras"}`;
+    const resp=await fetch('https://pianguita-proxy.onrender.com/api/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
+        system:'Eres auditor NTS-TS 001-2 Colombia. Responde SOLO JSON válido sin markdown.',
+        messages:[{role:'user',content:prompt}]})
+    });
+    clearInterval(iv); document.getElementById('consolidated-loading').style.display='none';
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const data=await resp.json();
+    const raw=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    const match=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim().match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('Sin JSON');
+    const r=JSON.parse(match[0]);
+    const nCol=r.nivel_general==='AVANZADO'?'#059669':r.nivel_general==='EN_DESARROLLO'?'#d97706':'#dc2626';
+    const accHtml=r.acciones_prioritarias?r.acciones_prioritarias.map((a,i)=>
+      `<div class="action-item"><div class="a-num">${i+1}</div><div>
+        <div class="a-txt">${a.accion||''}</div>
+        <div class="a-meta"><span class="ptag ${a.prioridad==='ALTA'?'p-alta':a.prioridad==='MEDIA'?'p-media':'p-baja'}">${a.prioridad||''}</span><span>${a.plazo||''}</span>${a.responsable?`<span>· ${a.responsable}</span>`:''}</div>
+      </div></div>`
+    ).join(''):'';
+    document.getElementById('consolidated-ai-result').innerHTML=`
+      <div class="card" style="text-align:center;background:#f0fdf4;border-color:#6ee7b7;margin-top:1rem">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Nivel general del diagnóstico participativo</div>
+        <div style="font-size:28px;font-weight:700;color:${nCol};margin-bottom:6px">${(r.nivel_general||'').replace('_',' ')}</div>
+        <div style="font-size:13px;color:#374151;line-height:1.6;text-align:left">${r.diagnostico_general||''}</div>
+      </div>
+      ${r.consensos?`<div class="card"><div style="font-size:13px;font-weight:600;color:#065f46;margin-bottom:8px">✅ Consensos de la comunidad</div>${r.consensos.map((c,i)=>`<div class="nc-item" style="border-color:#d1fae5"><div class="nc-dot" style="background:#d1fae5;color:#065f46">${i+1}</div><span>${c}</span></div>`).join('')}</div>`:''}
+      ${r.brechas_criticas?`<div class="nc-box"><div class="nc-title">⚠️ Brechas críticas identificadas</div>${r.brechas_criticas.map((b,i)=>`<div class="nc-item"><div class="nc-dot">${i+1}</div><span>${b}</span></div>`).join('')}</div>`:''}
+      <div class="card" style="margin-top:1rem"><div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:12px">Plan de acción consolidado</div>${accHtml}</div>
+      <div class="ruta-box" style="margin-top:1rem"><div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:6px">Próximos pasos</div><div style="font-size:12px;color:#374151;line-height:1.6">${r.proximos_pasos||''}</div></div>
+      <div class="card" style="background:#065f46;border-color:#065f46;text-align:center;margin-top:1rem">
+        <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:6px">La comunidad de Piangüita dice:</div>
+        <div style="font-size:15px;font-weight:600;color:white;line-height:1.6">"${r.mensaje_comunidad||''}"</div>
+      </div>
+      <div style="text-align:center;margin-top:1.5rem;padding-bottom:1rem">
+        <button onclick="descargarPDF()" style="background:#065f46;color:white;border:none;padding:14px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;width:100%;font-family:inherit">Descargar informe consolidado en PDF</button>
+      </div>`;
+  } catch(err) {
+    clearInterval(iv); document.getElementById('consolidated-loading').style.display='none';
+    document.getElementById('consolidated-ai-result').innerHTML=`<div class="err" style="display:block;margin-top:1rem">Error al generar informe: ${err.message}</div>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// BORRAR
+// ══════════════════════════════════════════════════════════════
+function deleteGroup(group) {
+  if(!confirm('¿Seguro que quieres borrar este grupo? Esta acción no se puede deshacer.')) return;
+  const all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+  delete all[group];
+  localStorage.setItem('pianguita_diagnostico',JSON.stringify(all));
+  fb_borrar(group); showConsolidated();
+}
+function clearAll() {
+  if(!confirm('¿Seguro que quieres borrar TODOS los diagnósticos guardados? Esta acción no se puede deshacer.')) return;
+  localStorage.removeItem('pianguita_diagnostico');
+  fb_borrar_todo(); goHome();
+}
+
+// ══════════════════════════════════════════════════════════════
+// PDF
+// ══════════════════════════════════════════════════════════════
+function descargarPDF() {
+  const btns=document.querySelectorAll('[onclick="descargarPDF()"]');
+  btns.forEach(b=>{ b.textContent='Generando PDF...'; b.disabled=true; });
+  const wrap=document.createElement('div');
+  wrap.style.cssText='font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:0 auto;color:#111827;';
+  const tit=document.createElement('div');
+  tit.style.cssText='text-align:center;margin-bottom:20px;padding-bottom:12px;border-bottom:3px solid #065f46;';
+  tit.innerHTML='<h1 style="font-size:18px;color:#065f46;margin-bottom:4px">Diagnóstico Participativo NTS-TS 001-2</h1>'+
+    '<h2 style="font-size:14px;color:#374151;font-weight:normal;margin-bottom:4px">Playa Piangüita · Bazanbocana · Buenaventura</h2>'+
+    '<p style="font-size:12px;color:#6b7280;margin:0">Informe Consolidado · '+new Date().toLocaleDateString('es-CO')+'</p>';
+  wrap.appendChild(tit);
+  const c1=document.getElementById('consolidated-content');
+  const c2=document.getElementById('consolidated-ai-result');
+  if(c1){ const cl=c1.cloneNode(true); cl.querySelectorAll('button').forEach(b=>b.remove()); wrap.appendChild(cl); }
+  if(c2){ const cl=c2.cloneNode(true); cl.querySelectorAll('button').forEach(b=>b.remove()); wrap.appendChild(cl); }
+  html2pdf().set({
+    margin:[15,15,15,15], filename:'Diagnostico_Consolidado_Pianguita.pdf',
+    image:{type:'jpeg',quality:0.95},
+    html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(wrap).save().then(()=>{ btns.forEach(b=>{ b.textContent='Descargar informe en PDF'; b.disabled=false; }); })
+    .catch(()=>{ btns.forEach(b=>{ b.textContent='Descargar informe en PDF'; b.disabled=false; }); });
+}
+
+// ══════════════════════════════════════════════════════════════
+// INICIO
+// ══════════════════════════════════════════════════════════════
+initSession();
+</script>
+</body>
+</html>
