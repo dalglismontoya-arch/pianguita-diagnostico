@@ -169,8 +169,8 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
 <div class="page active" id="page-welcome">
 <div class="container">
   <div class="app-header">
-    <h1>Diagnóstico Participativo NTS TS 001-02</h1>
-    <p>Playa Piangüita · Bazanbocana · Buenaventura</p>
+    <h1>Sembrando el Compromiso: ¿Quiénes nos sumamos?</h1>
+    <p>Bienvenida, registro de participantes y definición de roles · Playa Piangüita</p>
   </div>
 
   <div class="welcome-hero">
@@ -287,8 +287,8 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
 <div class="page" id="page-confirm">
 <div class="container">
   <div class="app-header">
-    <h1 id="confirm-session-name">Confirmar grupo</h1>
-    <p>El grupo revisa y confirma antes de comenzar</p>
+    <h1 id="confirm-session-name">Cada Tripulación con su Rumbo</h1>
+    <p>Selección de los componentes que el grupo va a evaluar</p>
   </div>
 
   <div class="card" style="background:#fef3c7;border-color:#fcd34d">
@@ -319,8 +319,8 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
 <div class="page" id="page-questions">
 <div class="container">
   <div class="app-header">
-    <h1 id="q-group-label">Diagnóstico</h1>
-    <p>Playa Piangüita · NTS TS 001-02</p>
+    <h1 id="q-group-label">Midiendo nuestros pasos: ¿Dónde estamos hoy?</h1>
+    <p>El diagnóstico · Playa Piangüita · NTS TS 001-02</p>
   </div>
   <div class="progress-wrap">
     <div class="progress-track" id="progress-track"></div>
@@ -358,8 +358,8 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
 <div class="page" id="page-results">
 <div class="container">
   <div class="app-header">
-    <h1>Diagnóstico listo</h1>
-    <p id="results-group-label">Playa Piangüita</p>
+    <h1>Nuestro Balance: ¿Qué hay y qué falta?</h1>
+    <p id="results-group-label">Visualización de resultados y vacíos del grupo · Playa Piangüita</p>
   </div>
   <div id="results-content"></div>
   <div id="results-retry-btn" style="display:none;text-align:center;margin-bottom:1rem">
@@ -378,8 +378,8 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
 <div class="page" id="page-consolidated">
 <div class="container">
   <div class="app-header">
-    <h1>Vista Facilitador — Consolidado</h1>
-    <p>Playa Piangüita · Todos los grupos</p>
+    <h1>El Mapa de Piangüita: La mirada de toda la comunidad</h1>
+    <p>Vista consolidada · Todos los grupos · Playa Piangüita</p>
   </div>
   <div id="consolidated-content"></div>
   <div class="loading" id="consolidated-loading" style="display:none">
@@ -1042,7 +1042,8 @@ function renderBlock() {
   ];
   let html = `<div class="block-header"><h2>${block.name}</h2><p>${block.ref}</p></div>
   <div class="stair-intro">
-    <div class="stair-intro-title">¿En qué nivel estamos? — Selecciona en cada pregunta el peldaño que mejor describe la situación actual de Piangüita</div>
+    <div class="stair-intro-title" style="font-size:14px;font-weight:700;color:#065f46;margin-bottom:4px">🧭 Nuestra Ruta a la Sostenibilidad</div>
+    <div class="stair-intro-title" style="font-weight:400;color:#6b7280">Selecciona en cada pregunta el peldaño que mejor describe la situación actual de Piangüita</div>
     <div class="stair-row">
       ${[0,1,2,3].map(i=>`
       <div class="stair-step" id="intro-step-${i}" style="height:${NIVEL_INTRO_H[i]};background:${NIVEL_COLS[i]}" onclick="showIntroDesc(${i})">
