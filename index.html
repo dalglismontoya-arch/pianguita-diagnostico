@@ -134,6 +134,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pin-box p{font-size:12px;color:#6b7280;margin-bottom:12px}
 .pin-input{width:100%;text-align:center;font-size:24px;letter-spacing:8px;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-family:inherit;margin-bottom:10px}
 .pin-input:focus{border-color:#059669;outline:none}
+
+/* PROTECCIÓN DE CONTENIDO */
+body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; }
+
+/* ── ESCALERITA DE NIVELES ── */
+.stair-intro{background:white;border:1px solid #e5e7eb;border-radius:12px;padding:14px 14px 0 14px;margin-bottom:1rem}
+.stair-intro-title{font-size:11px;font-weight:600;color:#374151;margin-bottom:10px;text-align:center;letter-spacing:0.3px}
+.stair-row{display:flex;align-items:flex-end;gap:5px;height:130px;padding:0 4px}
+.stair-step{flex:1;border-radius:8px 8px 0 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:8px;transition:all 0.2s;color:white;text-align:center;position:relative;font-family:inherit}
+.stair-step:hover{filter:brightness(1.1);transform:scaleY(1.03);transform-origin:bottom}
+.stair-step.active{outline:3px solid #111827;outline-offset:2px}
+.stair-step .s-num{font-size:22px;font-weight:800;line-height:1}
+.stair-step .s-name{font-size:8px;font-weight:700;opacity:0.95;margin-top:4px;padding:0 4px;line-height:1.3;text-transform:uppercase;letter-spacing:0.3px}
+.stair-step .s-tag{font-size:9px;opacity:0.85;margin-top:3px;padding:0 4px;line-height:1.3;font-style:italic}
+.stair-desc-panel{background:#f9fafb;border-radius:0 0 10px 10px;border:1px solid #e5e7eb;border-top:3px solid;padding:10px 12px;font-size:12px;color:#374151;line-height:1.6;min-height:40px}
+/* Question staircases */
+.q-stair-wrap{margin:8px 0}
+.q-stair-row{display:flex;align-items:flex-end;gap:4px;height:190px;padding:0 2px}
+.q-stair{flex:1;border-radius:5px 5px 0 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:8px;transition:all 0.15s;color:white;text-align:center;font-family:inherit;border:none;outline:none}
+.q-stair:hover{filter:brightness(1.1);transform:scaleY(1.04);transform-origin:bottom}
+.q-stair.sel{outline:3px solid #111827;outline-offset:2px;filter:brightness(1.05)}
+.q-stair .qs-n{font-size:10px;font-weight:800;line-height:1.3;padding:0 4px}
+.q-stair .qs-t{font-size:8px;font-weight:700;opacity:0.9;padding:0 3px;margin-top:4px;line-height:1.3;text-transform:uppercase;letter-spacing:0.5px}
+.q-stair-desc{padding:8px 10px;font-size:11px;color:#374151;background:#f9fafb;border:1px solid #e5e7eb;border-radius:0 0 7px 7px;line-height:1.6;border-top:3px solid;transition:background 0.2s}
+/* Colors: N1=naranja N2=celeste N3=morado N4=verde */
 </style>
 </head>
 <body>
@@ -144,14 +169,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="page active" id="page-welcome">
 <div class="container">
   <div class="app-header">
-    <h1>Diagnóstico Participativo NTS-TS 001-2</h1>
+    <h1>Diagnóstico Participativo NTS TS 001-02</h1>
     <p>Playa Piangüita · Bazanbocana · Buenaventura</p>
   </div>
 
   <div class="welcome-hero">
-    <div class="norma-badge"><span style="font-size:10px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NTS-TS 001-2</span>Playas Turísticas Sostenibles</div>
+    <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
-    <p>Cada grupo responde los bloques asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
+    <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
   </div>
 
   <!-- Grupos ya registrados hoy -->
@@ -166,13 +191,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="session-name-box">
     <div class="sn-label">Identificador de este grupo</div>
     <div class="sn-value" id="session-name-display">Cargando...</div>
-  </div>
-
-  <!-- Selección de bloques -->
-  <div class="card">
-    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:4px">Bloques que responderá este grupo</div>
-    <div style="font-size:11px;color:#6b7280;margin-bottom:8px">El facilitador marca los bloques asignados a este grupo:</div>
-    <div class="block-select-grid" id="block-select-grid"></div>
   </div>
 
   <!-- Registro de participantes -->
@@ -214,7 +232,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <option value="Guías locales">🧭 Guías locales</option>
         <option value="Lancheros">⛵ Lancheros</option>
         <option value="Vecinos de Piangüita">👥 Vecinos de Piangüita</option>
-        <option value="Escuela y jóvenes">🏫 Escuela y jóvenes</option>
+        <option value="Vendedores ambulantes">🛒 Vendedores ambulantes</option>
+        <option value="Autoridad local">🏛️ Autoridad local</option>
+        <option value="Cámara de comercio">💼 Cámara de comercio</option>
+        <option value="Institución educativa">🎓 Institución educativa</option>
       </select>
 
       <div class="p-row" style="margin-top:8px">
@@ -246,6 +267,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
   </div>
 
+  <!-- Selección de componentes -->
+  <div class="card">
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:4px">Componentes que responderá este grupo</div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:8px">El facilitador marca los componentes asignados a este grupo:</div>
+    <div class="block-select-grid" id="block-select-grid"></div>
+  </div>
+
   <div class="nav">
     <button class="btn btn-facilitator" onclick="showPinOverlay()">🔒 Vista Facilitador</button>
     <button class="btn btn-primary" id="btn-start" onclick="goToConfirm()" style="opacity:0.4;pointer-events:none">Continuar →</button>
@@ -265,11 +293,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <div class="card" style="background:#fef3c7;border-color:#fcd34d">
     <div style="font-size:12px;font-weight:600;color:#78350f;margin-bottom:4px">📋 Antes de comenzar</div>
-    <div style="font-size:12px;color:#92400e;line-height:1.5">El grupo revisa los bloques asignados y la lista de participantes. Si todo está correcto, clic en <strong>Confirmar y comenzar</strong>.</div>
+    <div style="font-size:12px;color:#92400e;line-height:1.5">El grupo revisa los componentes asignados y la lista de participantes. Si todo está correcto, clic en <strong>Confirmar y comenzar</strong>.</div>
   </div>
 
   <div class="card">
-    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px">Bloques asignados a este grupo</div>
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px">Componentes asignados a este grupo</div>
     <div id="confirm-blocks-list"></div>
   </div>
 
@@ -292,7 +320,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="container">
   <div class="app-header">
     <h1 id="q-group-label">Diagnóstico</h1>
-    <p>Playa Piangüita · NTS-TS 001-2</p>
+    <p>Playa Piangüita · NTS TS 001-02</p>
   </div>
   <div class="progress-wrap">
     <div class="progress-track" id="progress-track"></div>
@@ -319,7 +347,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="loading">
     <div class="spin"></div>
     <div style="font-size:14px;font-weight:500;color:#111827;margin-bottom:5px" id="load-msg">Analizando respuestas...</div>
-    <div style="font-size:12px;color:#6b7280">Comparando con criterios NTS-TS 001-2</div>
+    <div style="font-size:12px;color:#6b7280">Comparando con criterios NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</div>
   </div>
 </div>
 </div>
@@ -381,74 +409,376 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script>
 // ══════════════════════════════════════════════════════════════
-// DATOS: 6 BLOQUES · 50 PREGUNTAS
+// DATOS: 7 COMPONENTES · 56 PREGUNTAS · 4 NIVELES
+// opts[0]=N1 Planeación (peor) → opts[3]=N4 Mejoramiento (mejor)
 // ══════════════════════════════════════════════════════════════
 const BLOCKS = [
-  { id:1, name:"Gestión y Gobernanza", ref:"§4.1 y §4.2 NTS-TS 001-2", questions:[
-    {n:1,q:"¿Sabemos cuáles son todas las leyes y permisos que necesitamos para manejar la playa como destino turístico?",hint:"Piensa en permisos de la DIMAR, la alcaldía y el Ministerio de Medio Ambiente.",ev:"Carpeta con normas, permisos y conceptos vigentes de DIMAR, alcaldía y autoridad ambiental.",opts:["Sí, las conocemos todas y tenemos los documentos al día","Conocemos algunas, pero nos faltan otras","Las estamos averiguando, estamos en proceso","No las conocemos"]},
-    {n:2,q:"¿El municipio tiene registrado en el plan de ordenamiento que nuestra playa es de uso turístico?",hint:"Esto se llama POT (Plan de Ordenamiento Territorial).",ev:"Documento del POT de Buenaventura donde aparezca la playa como zona turística.",opts:["Sí, está registrado oficialmente","Creemos que sí, pero no tenemos el documento","Está en trámite","No sabemos o no está registrado"]},
-    {n:3,q:"¿Tenemos un grupo, comité o persona encargada de organizar y dirigir el turismo en Piangüita?",hint:"Puede ser una junta, un consejo comunitario, una asociación o un líder reconocido.",ev:"Acta de constitución o carta de reconocimiento del comité o entidad gestora.",opts:["Sí, hay un grupo formal y activo","Hay un grupo pero funciona de manera informal","Estamos organizándonos para crearlo","No hay nadie encargado"]},
-    {n:4,q:"¿Ese grupo tiene escrito quién hace qué, con qué recursos cuenta y en qué tiempo debe hacerlo?",hint:"Que cada miembro sepa cuál es su responsabilidad específica.",ev:"Actas o documentos donde estén las responsabilidades y recursos asignados.",opts:["Sí, todo está escrito y claro","Algunas cosas están escritas pero faltan otras","Lo estamos organizando","No, nada está escrito"]},
-    {n:5,q:"¿Tenemos un plan de sostenibilidad con metas claras que nos diga qué queremos lograr y cómo lo vamos a medir?",hint:"Un plan que tenga objetivos, actividades, fechas y cómo sabemos si lo logramos.",ev:"Documento del Plan de Gestión para la Sostenibilidad con objetivos, metas e indicadores.",opts:["Sí, tenemos el plan y lo seguimos","Tenemos algunas metas pero sin indicadores claros","Lo estamos construyendo","No tenemos ningún plan"]},
-    {n:6,q:"¿Ese plan tiene en cuenta que en temporada alta la playa se comporta diferente que en temporada baja?",hint:"Las Semanas Santas, diciembre y los puentes festivos traen mucha más gente.",ev:"Documento del plan donde aparezcan actividades específicas para temporada alta y baja.",opts:["Sí, el plan distingue temporadas y tiene acciones para cada una","Algo considera, pero no está bien diferenciado","No lo hemos pensado todavía","No tenemos plan"]},
-    {n:7,q:"¿Les hemos contado a los turistas, vendedores y a toda la comunidad qué dice nuestro plan y qué esperamos de cada uno?",hint:"Que todos conozcan las reglas, los acuerdos y los compromisos.",ev:"Actas de reuniones, volantes, carteleras o registros de socializaciones.",opts:["Sí, hacemos reuniones y divulgamos el plan regularmente","Lo hemos comunicado algunas veces","Lo hemos hecho una sola vez","Nunca lo hemos comunicado"]},
-    {n:8,q:"¿Revisamos nuestro plan al menos una vez al año para mejorarlo según lo que nos ha funcionado y lo que no?",hint:"Que el plan no quede guardado en un cajón sino que evolucione.",ev:"Actas o registros de reuniones de revisión y ajuste del plan.",opts:["Sí, lo revisamos y ajustamos regularmente","Lo hemos revisado alguna vez","Planeamos revisarlo pero no lo hemos hecho","No lo revisamos"]}
+  { id:1, name:"Gobernanza y Gestión", ref:"§4.1 y §4.2 · NTS TS 001-02", questions:[
+    {n:1,q:"¿Conocemos y cumplimos todas las leyes y permisos que exige la norma para manejar la playa como destino turístico?",hint:"Piensa en permisos de la DIMAR, la alcaldía, el Ministerio de Ambiente y el Registro Nacional de Turismo.",obs:"Carpeta con normas, permisos y conceptos vigentes de DIMAR, alcaldía y autoridad ambiental.",opts:[
+      "Hemos documentado los permisos y requisitos legales que exige la norma, pero aún no los hemos gestionado ni ejecutado de forma organizada.",
+      "Hemos documentado los requisitos y estamos gestionando los permisos activamente, pero aún no medimos avances ni hemos socializado el estado de cumplimiento con la comunidad.",
+      "Gestionamos los permisos, medimos y controlamos su estado de manera sistemática, llevamos registros actualizados y la comunidad conoce el nivel de cumplimiento legal.",
+      "Gestionamos, medimos y divulgamos el cumplimiento legal, y lo mejoramos continuamente: renovamos permisos antes de vencer e incorporamos cambios normativos de forma preventiva."
+    ]},
+    {n:2,q:"¿El municipio tiene registrado en el Plan de Ordenamiento Territorial que nuestra playa es de uso turístico?",hint:"El Plan de Ordenamiento Territorial define los usos del suelo del municipio. Sin este registro, el turismo puede ser cuestionado.",obs:"Documento del Plan de Ordenamiento Territorial de Buenaventura donde aparezca la playa como zona turística.",opts:[
+      "Hemos documentado la importancia del registro en el POT y formulado las gestiones necesarias, pero aún no hemos iniciado trámites concretos ante la alcaldía.",
+      "Hemos documentado el requisito y estamos adelantando trámites ante la alcaldía, pero aún no verificamos el resultado ni hemos informado a la comunidad sobre el avance.",
+      "Hemos verificado y confirmado el registro de la playa en el POT, llevamos evidencias documentadas y la comunidad conoce el estado de este requisito.",
+      "El registro en el POT está confirmado, lo revisamos periódicamente y gestionamos su actualización cuando hay cambios en el ordenamiento territorial."
+    ]},
+    {n:3,q:"¿Tenemos un Plan de Gestión de Sostenibilidad Turística escrito con metas, responsables y fechas?",hint:"Un plan que diga qué queremos lograr, quién lo hace, con qué recursos y en cuánto tiempo.",obs:"Documento del Plan de Gestión de Sostenibilidad Turística con objetivos, metas, indicadores y cronograma.",opts:[
+      "Hemos formulado y documentado el Plan de Gestión de Sostenibilidad Turística con metas, responsables y fechas, pero aún no lo hemos ejecutado de forma organizada.",
+      "Tenemos el plan documentado y estamos implementando sus acciones, pero aún no medimos los avances ni lo hemos socializado con toda la comunidad.",
+      "Implementamos el plan, medimos el avance de sus metas, llevamos registros periódicos y toda la comunidad conoce su contenido y estado.",
+      "Implementamos, medimos y divulgamos el plan, y lo actualizamos periódicamente con base en los resultados para mejorar de manera continua."
+    ]},
+    {n:4,q:"¿Hemos elegido a las personas o grupos encargados de dirigir el turismo y cada uno tiene claro qué tareas debe cumplir?",hint:"Puede ser una junta, consejo comunitario, asociación o líder reconocido por todos.",obs:"Acta de constitución o documento donde estén escritas las responsabilidades de cada responsable.",opts:[
+      "Hemos documentado y formulado los roles y responsabilidades de quienes dirigen el turismo, pero aún no funcionan de manera organizada ni sistemática.",
+      "Los roles están documentados y las personas asignadas están ejerciendo sus funciones, pero aún no controlamos su desempeño ni lo hemos comunicado a toda la comunidad.",
+      "La estructura organizativa está en funcionamiento, controlamos el desempeño de cada rol, llevamos registros y toda la comunidad la conoce.",
+      "Evaluamos periódicamente la estructura, identificamos oportunidades de mejora y hacemos ajustes para fortalecer la gestión del turismo."
+    ]},
+    {n:5,q:"¿Sabemos con qué recursos contamos para trabajar y nos hemos puesto fechas claras para terminar cada tarea?",hint:"Un cronograma con fechas reales y recursos definidos (dinero, materiales, personas).",obs:"Cronograma escrito con tareas, responsables, fechas y recursos asignados.",opts:[
+      "Hemos documentado y formulado un cronograma con tareas, fechas y recursos, pero aún no lo estamos ejecutando de manera organizada.",
+      "Tenemos el cronograma documentado y estamos ejecutando las tareas, pero aún no medimos el cumplimiento ni hemos socializado los avances con la comunidad.",
+      "Ejecutamos el cronograma, medimos el cumplimiento de tareas y plazos, llevamos registros y la comunidad conoce el estado de avance.",
+      "Ejecutamos, medimos y ajustamos el cronograma en cada ciclo con base en los resultados, optimizando el uso de recursos de manera continua."
+    ]},
+    {n:6,q:"¿Nuestro plan considera que en temporada alta la playa se comporta diferente que en temporada baja?",hint:"Semanas Santas, diciembre y puentes festivos traen mucha más gente. El plan debe tener acciones para cada momento.",obs:"Documento del plan con actividades específicas para temporada alta y temporada baja.",opts:[
+      "Hemos documentado y formulado acciones diferenciadas para temporada alta y baja, pero aún no las ejecutamos de forma planificada.",
+      "Tenemos las acciones por temporada documentadas y las estamos implementando, pero aún no medimos su efectividad ni hemos informado los resultados a la comunidad.",
+      "Implementamos acciones diferenciadas por temporada, medimos su impacto, llevamos registros y la comunidad conoce las medidas de cada período.",
+      "Implementamos, medimos y mejoramos las acciones por temporada, introduciendo ajustes continuos con base en la experiencia acumulada de cada ciclo."
+    ]},
+    {n:7,q:"¿Les hemos contado a los turistas, vendedores y a toda la comunidad qué dice nuestro plan y qué esperamos de cada uno?",hint:"Que todos conozcan las reglas, los acuerdos y los compromisos del destino.",obs:"Actas de reuniones, volantes, carteleras o registros de socializaciones realizadas.",opts:[
+      "Hemos documentado y formulado la estrategia de comunicación del plan, pero aún no hemos realizado socializaciones organizadas con la comunidad ni los actores clave.",
+      "Tenemos la estrategia documentada y hemos iniciado socializaciones del plan, pero aún no medimos el alcance ni hemos llegado a todos los actores.",
+      "Socializamos el plan de manera sistemática, medimos el alcance de la divulgación, llevamos registros de las actividades y todos los actores clave lo conocen.",
+      "Socializamos, medimos y mejoramos continuamente la comunicación del plan, usando distintos canales para asegurar que ningún actor quede sin información."
+    ]},
+    {n:8,q:"¿Tenemos una forma de vigilar constantemente el destino para darnos cuenta a tiempo si algo está fallando en nuestro plan?",hint:"Un sistema de rondas, registros o reportes que permita detectar problemas antes de que se agraven.",obs:"Bitácora o formato de seguimiento con registros de hallazgos y acciones correctivas tomadas.",opts:[
+      "Hemos documentado y formulado un sistema de vigilancia del destino, pero aún no lo aplicamos de manera organizada ni sistemática.",
+      "Tenemos el sistema documentado y estamos realizando rondas y revisiones, pero aún no controlamos los hallazgos ni los hemos divulgado a toda la comunidad.",
+      "Aplicamos el sistema de seguimiento de manera sistemática, registramos los hallazgos, los reportamos periódicamente y la comunidad conoce los resultados.",
+      "Aplicamos, medimos y mejoramos continuamente el sistema de seguimiento, usando los reportes para prevenir problemas y fortalecer la gestión del destino."
+    ]}
   ]},
-  { id:2, name:"Delimitación y Zonificación", ref:"§4.3 NTS-TS 001-2", questions:[
-    {n:9,q:"¿Tenemos un mapa oficial que muestre exactamente hasta dónde llega nuestra playa?",hint:"Un mapa técnico que delimite el área, no solo un dibujo.",ev:"Mapas oficiales de la zona costera de Piangüita con escala y referencia cartográfica.",opts:["Sí, tenemos el mapa oficial actualizado","Tenemos un mapa básico pero no oficial","Lo estamos gestionando","No tenemos ningún mapa"]},
-    {n:10,q:"¿La playa está dividida en zonas claramente marcadas: una para bañarse, una para descansar, una para caminar, una para los negocios?",hint:"Que la gente sepa dónde puede hacer cada cosa.",ev:"Plano de zonificación y fotos de los letreros o señales en la playa.",opts:["Sí, las zonas están definidas y señalizadas","Algunas zonas están definidas, otras no","Lo estamos planeando","No hay ninguna división de zonas"]},
-    {n:11,q:"¿La zona donde la gente se baña está delimitada con boyas, según las condiciones del mar en ese punto?",hint:"Las boyas marcan el límite seguro de baño según corrientes y profundidad.",ev:"Informe técnico de instalación de boyas y fotos de la delimitación.",opts:["Sí, hay boyas instaladas según un estudio técnico","Hay algunas marcas pero sin estudio técnico","Lo estamos gestionando con la DIMAR","No hay ninguna delimitación"]},
-    {n:12,q:"¿La zona por donde camina la gente está completamente libre de mesas, quioscos o cualquier obstáculo?",hint:"La zona de tránsito debe estar despejada para que todos puedan pasar cómodamente.",ev:"Fotos que muestren la zona de circulación libre.",opts:["Sí, la zona de paso siempre está libre","Generalmente está libre pero a veces se invade","Con frecuencia hay obstáculos","Siempre hay obstáculos"]},
-    {n:13,q:"¿Hay una zona definida para deportes náuticos (surf, kayak, lanchas) separada de donde se bañan las familias?",hint:"Los deportes con equipos o motores son peligrosos cerca de los bañistas.",ev:"Documento o plano que muestre la zona de deportes náuticos y sus reglas.",opts:["Sí, hay una zona definida con reglas claras","Existe una zona aproximada pero sin reglas formales","Lo estamos planificando","No hay separación de zonas náuticas"]},
-    {n:14,q:"¿Está clara la ruta que deben seguir las lanchas y botes para no meterse en la zona donde se bañan las personas?",hint:"Los bañistas y las embarcaciones no deben mezclarse por seguridad.",ev:"Señalización o protocolo de navegación en la playa.",opts:["Sí, hay una ruta definida y señalizada","Hay acuerdos informales entre los lancheros","Lo estamos organizando","No hay ninguna separación"]},
-    {n:15,q:"¿Sabemos cuántas personas puede recibir la playa al mismo tiempo sin dañar el ecosistema ni la experiencia del visitante?",hint:"Esto se llama capacidad de carga y es obligatorio para la norma.",ev:"Estudio técnico de capacidad de carga aprobado y sistema de control de aforo.",opts:["Sí, tenemos el estudio y controlamos el acceso","Tenemos una idea aproximada pero sin estudio formal","Lo estamos gestionando","No sabemos cuántas personas soporta la playa"]}
+  { id:2, name:"Delimitación y Zonificación", ref:"§4.3 · NTS TS 001-02", questions:[
+    {n:9,q:"¿Tenemos un mapa o cartografía oficial que muestre exactamente el área geográfica que conforma nuestro destino de playa?",hint:"Un mapa técnico aprobado por autoridad competente, no solo un dibujo aproximado.",obs:"Mapa oficial con cartografía básica del destino, escala y referencia cartográfica.",opts:[
+      "Hemos documentado la necesidad de un mapa oficial y formulado las gestiones requeridas, pero aún no lo hemos obtenido ni validado formalmente.",
+      "Hemos iniciado gestiones para obtener el mapa oficial y contamos con un mapa básico, pero aún no está técnicamente validado ni socializado con la comunidad.",
+      "Contamos con un mapa oficial validado, lo usamos en la gestión del destino, llevamos registros de su uso y toda la comunidad y los actores clave lo conocen.",
+      "Mantenemos el mapa oficial actualizado, lo revisamos periódicamente con las autoridades e incorporamos los cambios del territorio de manera continua."
+    ]},
+    {n:10,q:"¿Tenemos un programa de zonificación escrito que diga qué actividades se pueden hacer en cada parte de la playa?",hint:"La norma exige identificar y delimitar zonas: servicios, enlace, transición, reposo, activa, bañistas, náuticos y embarcaciones.",obs:"Plan de zonificación escrito con criterios para cada zona y registros de seguimiento.",opts:[
+      "Hemos documentado y formulado el programa de zonificación con los usos permitidos en cada área, pero aún no lo hemos implementado en el terreno.",
+      "Tenemos el programa documentado y estamos delimitando las zonas en el terreno, pero aún no controlamos su cumplimiento ni lo hemos divulgado a toda la comunidad.",
+      "El programa está implementado, controlamos el uso de cada zona, llevamos registros y toda la comunidad conoce y respeta la zonificación.",
+      "Implementamos, controlamos y mejoramos el programa de zonificación, ajustando las zonas según los conflictos y necesidades detectados en cada temporada."
+    ]},
+    {n:11,q:"¿Hemos marcado claramente las zonas de descanso, la zona activa, la zona de bañistas y el canal de tránsito de embarcaciones?",hint:"Cada zona debe tener límites visibles para que todos respeten su función.",obs:"Plano o señalización que delimita las zonas y registros de control de cumplimiento.",opts:[
+      "Hemos documentado y formulado el plan de delimitación de zonas, pero aún no hemos instalado señalización formal ni límites físicos en el terreno.",
+      "Hemos formulado el plan y estamos instalando los límites físicos de las zonas, pero aún no controlamos su cumplimiento ni lo hemos divulgado a toda la comunidad.",
+      "Las zonas están delimitadas y señalizadas, controlamos que se respeten, llevamos registros y toda la comunidad conoce los límites de cada zona.",
+      "Mantenemos la delimitación, medimos su efectividad y la mejoramos con base en los incidentes y la experiencia de cada temporada."
+    ]},
+    {n:12,q:"¿Nos aseguramos de que la zona activa (donde la gente camina y juega) esté siempre libre de construcciones, muebles o ventas?",hint:"La zona activa debe estar completamente despejada para el tránsito libre de todas las personas.",obs:"Fotos o registros que muestren la zona de circulación libre de obstáculos.",opts:[
+      "Hemos documentado y formulado la norma de despeje de la zona activa, pero aún no la aplicamos de manera organizada ni sistemática.",
+      "Tenemos la norma documentada y estamos despejando la zona activa, pero aún no controlamos sistemáticamente su cumplimiento ni lo hemos socializado con todos.",
+      "Mantenemos la zona activa despejada de manera sistemática, controlamos el cumplimiento, llevamos registros y toda la comunidad conoce la norma.",
+      "Controlamos, medimos y mejoramos continuamente el despeje de la zona activa, tomando medidas correctivas inmediatas ante cualquier infracción."
+    ]},
+    {n:13,q:"¿Existe una zona de reposo exclusiva, con solo mobiliario apto (carpas, sillas), libre de ventas y otras actividades?",hint:"La zona de reposo debe ser tranquila, sin vendedores ni actividades que interfieran con el descanso. §4.3 lo exige.",obs:"Plano que muestre la zona de reposo delimitada y fotos que muestren su uso exclusivo.",opts:[
+      "Hemos documentado y formulado la zona de reposo en el plano de zonificación, pero aún no está demarcada ni diferenciada en el terreno.",
+      "Tenemos la zona documentada y estamos demarcándola en el terreno, pero aún no controlamos que permanezca libre de ventas ni lo hemos divulgado a todos.",
+      "La zona de reposo está demarcada, controlamos su uso exclusivo, llevamos registros y toda la comunidad la respeta y la conoce.",
+      "Controlamos, medimos y mejoramos la zona de reposo, ajustando su delimitación y dotación según las necesidades detectadas en cada temporada."
+    ]},
+    {n:14,q:"¿La zona de bañistas está marcada con boyas, según un estudio técnico que justifique esa distancia como segura?",hint:"Las boyas marcan el límite seguro de baño según corrientes y profundidad. Se necesita soporte técnico.",obs:"Informe técnico que justifique la delimitación y fotos de las boyas instaladas y en buen estado.",opts:[
+      "Hemos documentado la necesidad de instalar boyas con soporte técnico, pero aún no hemos realizado el estudio ni instalado la delimitación.",
+      "Contamos con el estudio técnico documentado y estamos instalando las boyas, pero aún no controlamos su estado ni hemos informado a la comunidad sobre los límites seguros.",
+      "Las boyas están instaladas con soporte técnico, controlamos su estado periódicamente, llevamos registros y toda la comunidad conoce los límites seguros de baño.",
+      "Mantenemos, controlamos y mejoramos la delimitación, ajustando la posición de las boyas según las condiciones del mar y la dinámica costera."
+    ]},
+    {n:15,q:"¿Hemos definido cuáles deportes en el agua (kayak, surf, gusano) se pueden hacer y cómo garantizar que nadie salga lastimado?",hint:"Los deportes náuticos deben tener zonas asignadas y reglas de seguridad para prestadores y usuarios.",obs:"Listado de deportes permitidos, reglas de seguridad y registros de control a prestadores.",opts:[
+      "Hemos documentado y formulado las reglas y zonas para los deportes náuticos, pero aún no las aplicamos ni controlamos de manera organizada.",
+      "Tenemos las reglas documentadas y estamos asignando zonas a los prestadores, pero aún no controlamos el cumplimiento ni lo hemos socializado con toda la comunidad.",
+      "Las zonas y reglas para deportes náuticos están vigentes, controlamos su cumplimiento, llevamos registros y todos los prestadores y visitantes las conocen.",
+      "Controlamos, medimos y mejoramos las reglas de deportes náuticos, actualizándolas con base en los incidentes y la experiencia acumulada."
+    ]},
+    {n:16,q:"¿Sabemos cuántas personas puede recibir la playa al mismo tiempo sin dañar el ecosistema ni la experiencia del visitante?",hint:"Esto se llama capacidad de carga y es obligatorio según la norma. Debe ser definida por autoridad competente.",obs:"Estudio técnico de capacidad de carga aprobado y sistema de control de aforo.",opts:[
+      "Hemos documentado la necesidad de definir la capacidad de carga y formulado los pasos para el estudio técnico, pero aún no lo hemos realizado ni controlamos el aforo.",
+      "Hemos iniciado el estudio de capacidad de carga y contamos con una estimación básica, pero aún no controlamos el aforo ni hemos divulgado el límite a toda la comunidad.",
+      "Contamos con un estudio técnico de capacidad de carga, controlamos el aforo, llevamos registros y toda la comunidad conoce el límite establecido.",
+      "Controlamos, medimos y ajustamos la capacidad de carga de manera continua, incorporando los impactos observados para proteger el ecosistema y la experiencia del visitante."
+    ]}
   ]},
-  { id:3, name:"Medio Ambiente", ref:"§4.4 NTS-TS 001-2", questions:[
-    {n:16,q:"¿Le hacemos análisis al agua del mar para saber si es segura para bañarse?",hint:"Se miden coliformes, pH, grasas y otros contaminantes.",ev:"Resultados de laboratorio que analicen la calidad del agua de baño.",opts:["Sí, hacemos análisis periódicos con laboratorio certificado","Hacemos análisis ocasionales","Hemos hecho algún análisis una vez","No hacemos ningún análisis"]},
-    {n:17,q:"¿Les avisamos a los bañistas cuando el agua no está en buenas condiciones para bañarse?",hint:"Si el mar está contaminado, la gente tiene derecho a saberlo.",ev:"Carteles, mensajes o tableros donde se publique el estado del agua.",opts:["Sí, siempre informamos cuando hay algún problema","Lo hacemos a veces","Lo hemos hecho muy pocas veces","No informamos a los bañistas"]},
-    {n:18,q:"¿Controlamos que los desagües, las lanchas y los negocios no estén botando basura o aguas sucias al mar?",hint:"Los vertimientos contaminan el agua y afectan la salud de los bañistas.",ev:"Documentos de control de vertimientos o actas de inspección.",opts:["Sí, hay control y seguimiento","Hay control parcial","Lo estamos organizando","No hay ningún control"]},
-    {n:19,q:"¿Limpiamos la arena todos los días y hacemos al menos una limpieza del fondo del mar cada año?",hint:"La limpieza submarina recoge residuos que se acumulan en el fondo.",ev:"Bitácora o cuaderno de registros de limpieza con fechas y fotos.",opts:["Sí, hacemos limpieza diaria y limpieza submarina anual","Hacemos limpieza frecuente pero no del fondo del mar","La limpieza es irregular","No hacemos limpieza organizada"]},
-    {n:20,q:"¿Tenemos canecas con tapa, separadas por tipo de basura (orgánica, reciclable, ordinaria) y alejadas del mar?",hint:"Las canecas no deben tocar el suelo ni estar cerca del agua.",ev:"Fotos de las canecas bien instaladas y diferenciadas por color.",opts:["Sí, tenemos canecas diferenciadas con tapa y bien ubicadas","Tenemos canecas pero sin separación o mal ubicadas","Tenemos algunas canecas básicas","No tenemos canecas o están en mal estado"]},
-    {n:21,q:"¿Tenemos un punto donde el turista pueda tomar agua potable gratis?",hint:"La norma exige al menos un punto de agua potable gratuita en la playa.",ev:"Registro de que el punto de agua funciona y el agua es limpia.",opts:["Sí, hay un punto de agua gratuita siempre disponible","Hay agua disponible pero con restricciones o costo","Lo estamos gestionando","No hay ningún punto de agua"]},
-    {n:22,q:"¿Estamos ahorrando agua en los servicios de la playa como baños, duchas y negocios?",hint:"Buenas prácticas de ahorro: cierre de llaves, reutilización, mantenimiento de tuberías.",ev:"Programa o plan de uso eficiente del agua implementado.",opts:["Sí, tenemos un programa de ahorro de agua activo","Algunas personas ahorran pero no es organizado","Lo estamos pensando","No pensamos en el ahorro de agua"]},
-    {n:23,q:"¿Estamos usando bien la energía en la playa y pensando en energías limpias como la solar?",hint:"Apagar lo que no se usa, usar bombillas eficientes, pensar en paneles solares.",ev:"Programa de eficiencia energética o evidencia de uso de energías renovables.",opts:["Sí, tenemos un programa de eficiencia energética","Algunas iniciativas aisladas","Lo estamos discutiendo","No hemos pensado en esto"]},
-    {n:24,q:"¿Avisamos cada día cómo están el clima, las mareas y la calidad del agua?",hint:"Que los turistas sepan las condiciones antes de meterse al mar.",ev:"Tableros actualizados, mensajes por WhatsApp o avisos en la playa.",opts:["Sí, informamos diariamente por varios medios","Lo hacemos ocasionalmente","Lo hemos hecho muy pocas veces","No informamos"]},
-    {n:25,q:"¿Cuidamos y monitoreamos nuestros manglares y animales marinos al menos dos veces al año?",hint:"Según la norma, el monitoreo debe hacerse con metodologías del INVEMAR.",ev:"Informes semestrales de monitoreo de ecosistemas firmados por un técnico.",opts:["Sí, hacemos monitoreo semestral con registro","Hacemos seguimiento ocasional sin metodología formal","Lo hemos hecho alguna vez","No monitoreamos los ecosistemas"]},
-    {n:26,q:"¿Tenemos carteleras o avisos que le expliquen al turista cuáles ecosistemas tiene Piangüita y cómo cuidarlos?",hint:"Que el turista sepa que el manglar es un tesoro y cómo comportarse.",ev:"Fotos de carteleras, folletos o señalización informativa sobre los ecosistemas.",opts:["Sí, hay información visible y bien explicada","Hay algo de información pero es insuficiente","Lo estamos preparando","No hay información para el turista"]},
-    {n:27,q:"¿Manejamos bien los combustibles de las lanchas y los productos de limpieza para que no contaminen la playa?",hint:"Los derrames de aceite o gasolina dañan el mar y la arena.",ev:"Protocolo de manejo de combustibles y fichas de seguridad de productos usados.",opts:["Sí, hay protocolos claros de manejo","Hay algunas precauciones pero no son formales","Lo estamos organizando","No hay ningún control"]},
-    {n:28,q:"¿Controlamos el ruido de la música y los parlantes en la playa para no molestar a los vecinos ni espantar a los animales?",hint:"La contaminación auditiva afecta tanto a las personas como a los animales marinos.",ev:"Acuerdo o reglamento de horarios y niveles de ruido permitidos.",opts:["Sí, hay reglas de ruido que todos respetan","Hay acuerdos informales que no siempre se cumplen","Lo estamos discutiendo","No hay ningún control de ruido"]}
+  { id:3, name:"Agua y Residuos", ref:"§4.4.1 – §4.4.3 · NTS TS 001-02", questions:[
+    {n:17,q:"¿Le hacemos análisis periódicos al agua del mar para saber si es segura para bañarse?",hint:"Se miden coliformes, pH, grasas y otros contaminantes. Debe realizarlo un laboratorio certificado.",obs:"Resultados de laboratorio certificado que analiza la calidad del agua de baño con periodicidad definida.",opts:[
+      "Hemos documentado y formulado el programa de análisis de agua del mar, pero aún no lo realizamos de manera periódica ni con laboratorio certificado.",
+      "Tenemos el programa documentado y hemos iniciado algunos análisis del agua, pero aún no los hacemos con periodicidad definida ni hemos divulgado los resultados a la comunidad.",
+      "Realizamos análisis periódicos con laboratorio certificado, controlamos los resultados, llevamos registros históricos y la comunidad conoce el estado del agua.",
+      "Realizamos, controlamos y mejoramos el programa de análisis, usando la serie histórica para tomar medidas preventivas antes de los picos de contaminación."
+    ]},
+    {n:18,q:"¿Les avisamos a los bañistas cuando el agua no está en buenas condiciones para meterse al mar?",hint:"La norma exige informar al público sobre la calidad del agua. Si está contaminada, la gente tiene derecho a saberlo.",obs:"Carteles, tableros o sistema de avisos donde se publica el estado del agua en tiempo real.",opts:[
+      "Hemos documentado y formulado el sistema de avisos sobre la calidad del agua, pero aún no lo hemos implementado de manera organizada.",
+      "Tenemos el sistema documentado y estamos publicando avisos cuando hay situaciones críticas, pero aún no lo hacemos de forma diaria ni sistemática.",
+      "Informamos diariamente sobre el estado del agua de manera sistemática, los avisos son visibles, llevamos registros y todos los bañistas acceden a esa información.",
+      "Informamos, controlamos y mejoramos el sistema de avisos, ampliando los canales para que la información llegue a más visitantes de manera oportuna."
+    ]},
+    {n:19,q:"¿Controlamos que los desagües, las lanchas y los negocios no estén vertiendo basura o aguas sucias al mar?",hint:"Los vertimientos contaminan el agua y afectan la salud de los bañistas y los ecosistemas.",obs:"Documentos de control de vertimientos, actas de inspección y acciones correctivas tomadas.",opts:[
+      "Hemos documentado y formulado el sistema de control de vertimientos, pero aún no lo aplicamos de manera organizada ni sistemática.",
+      "Tenemos el sistema documentado y estamos realizando inspecciones, pero aún no controlamos todas las fuentes de forma sistemática ni hemos divulgado los resultados.",
+      "Controlamos los vertimientos de manera sistemática, realizamos inspecciones periódicas, llevamos registros y la comunidad conoce los acuerdos vigentes.",
+      "Controlamos, medimos y mejoramos el sistema de control de vertimientos, ajustando los protocolos cuando detectamos nuevos riesgos de contaminación."
+    ]},
+    {n:20,q:"¿Monitoreamos también la calidad del agua de las lagunas, ciénagas, humedales y ríos que están dentro del destino?",hint:"La norma §4.4.1 exige que el monitoreo no sea solo del mar sino de todos los cuerpos de agua del destino.",obs:"Informes de monitoreo de cuerpos de agua internos del destino (lagunas, ríos, humedales).",opts:[
+      "Hemos documentado y formulado la necesidad de monitorear los cuerpos de agua internos del destino, pero aún no lo hemos implementado.",
+      "Hemos identificado los cuerpos de agua internos y estamos realizando algunas mediciones, pero aún no tenemos periodicidad definida ni hemos divulgado los resultados.",
+      "Monitoreamos todos los cuerpos de agua con periodicidad definida, llevamos registros de los resultados y la comunidad conoce el estado ambiental del destino.",
+      "Monitoreamos, controlamos y mejoramos el sistema de seguimiento, integrando los resultados en las decisiones ambientales del destino de manera continua."
+    ]},
+    {n:21,q:"¿Limpiamos la arena todos los días y hacemos al menos una limpieza submarina del fondo del mar cada año?",hint:"La limpieza diaria previene acumulación de residuos. La limpieza submarina recoge lo que se acumula en el fondo.",obs:"Bitácora o cuaderno de registros de limpieza con fechas, firmas y fotos de las jornadas.",opts:[
+      "Hemos documentado y formulado el programa de limpieza diaria y submarina anual, pero aún no lo ejecutamos de manera sistemática.",
+      "Tenemos el programa documentado y realizamos limpiezas con cierta frecuencia, pero aún no llevamos registros sistemáticos ni hemos realizado jornadas submarinas.",
+      "Realizamos limpieza diaria de arena y al menos una limpieza submarina anual, llevamos registros de cada jornada y la comunidad conoce el programa.",
+      "Realizamos, controlamos y mejoramos el programa de limpieza, ajustando la frecuencia según la carga de visitantes y los resultados de cada temporada."
+    ]},
+    {n:22,q:"¿Tenemos un programa de residuos sólidos con recipientes diferenciados por tipo de basura, con tapa y alejados del mar?",hint:"Las canecas deben separar orgánico, reciclable y ordinario; no deben tocar el suelo ni estar cerca del agua.",obs:"Fotos de las canecas diferenciadas bien instaladas y documento del programa de residuos sólidos.",opts:[
+      "Hemos documentado y formulado el programa de residuos sólidos con canecas diferenciadas, pero aún no lo hemos implementado de manera organizada.",
+      "Tenemos el programa documentado y hemos instalado canecas básicas, pero aún no están diferenciadas por tipo de residuo ni controlamos la recolección sistemáticamente.",
+      "El programa está implementado con canecas diferenciadas, controlamos la recolección periódicamente, llevamos registros y la comunidad conoce el sistema.",
+      "Implementamos, controlamos y mejoramos el programa de residuos, ajustando la cobertura y el estado de las canecas según los resultados obtenidos."
+    ]},
+    {n:23,q:"¿Identificamos y controlamos las fuentes de contaminación que llegan a nuestra playa desde áreas adyacentes?",hint:"Según §4.4.2.5, el destino debe identificar fuentes puntuales de contaminación externas (fincas, asentamientos, industrias vecinas).",obs:"Mapa o registro de fuentes externas de contaminación identificadas y acciones de gestión ante las autoridades.",opts:[
+      "Hemos documentado y formulado la necesidad de identificar las fuentes externas de contaminación, pero aún no las hemos mapeado ni gestionado ante las autoridades.",
+      "Hemos identificado algunas fuentes externas de contaminación y estamos iniciando gestiones ante las autoridades, pero aún no hacemos seguimiento sistemático.",
+      "Hemos mapeado las fuentes externas, realizamos gestiones documentadas ante las autoridades ambientales y la comunidad conoce los riesgos identificados.",
+      "Identificamos, gestionamos y mejoramos continuamente el seguimiento a fuentes externas, verificando periódicamente los compromisos de mitigación asumidos."
+    ]},
+    {n:24,q:"¿Hay un punto en la playa donde el turista pueda tomar agua potable gratis?",hint:"La norma exige al menos un punto de agua potable gratuita disponible para los visitantes.",obs:"Registro fotográfico y de mantenimiento del punto de agua gratuita disponible en la playa.",opts:[
+      "Hemos documentado y formulado la necesidad de instalar un punto de agua potable gratuita, pero aún no lo hemos implementado.",
+      "Hemos formulado el plan y estamos habilitando el punto de agua potable, pero aún no controlamos su disponibilidad continua ni lo hemos informado a todos los visitantes.",
+      "El punto de agua potable está operativo durante todo el horario de uso, controlamos su funcionamiento, llevamos registros y los visitantes lo conocen y usan.",
+      "Mantenemos, controlamos y mejoramos el punto de agua gratuita, evaluando su ubicación, calidad y cobertura según la demanda de cada temporada."
+    ]},
+    {n:25,q:"¿Estamos ahorrando agua en los servicios de la playa como baños, duchas y negocios?",hint:"Buenas prácticas de ahorro: cerrar llaves, reparar fugas, usar equipos eficientes, concientizar a los vendedores.",obs:"Programa de uso eficiente del agua implementado con registros de consumo.",opts:[
+      "Hemos documentado y formulado el programa de uso eficiente del agua, pero aún no lo aplicamos de manera organizada ni sistemática.",
+      "Tenemos el programa documentado y estamos aplicando algunas prácticas de ahorro, pero aún no medimos el consumo ni hemos socializado el programa con todos los prestadores.",
+      "Aplicamos el programa de uso eficiente, medimos el consumo periódicamente, llevamos registros y todos los prestadores conocen y aplican las prácticas de ahorro.",
+      "Aplicamos, medimos y mejoramos el programa de ahorro de agua, ajustando las prácticas según los datos de consumo registrados por temporada."
+    ]}
   ]},
-  { id:4, name:"Seguridad", ref:"§4.7 NTS-TS 001-2", questions:[
-    {n:29,q:"¿Tenemos salvavidas en la playa con contrato formal, equipos completos y entrenamiento certificado?",hint:"El oleaje del Pacífico es fuerte. Los salvavidas son obligatorios según la norma.",ev:"Contratos de los salvavidas, certificados de formación y fotos de sus equipos.",opts:["Sí, hay salvavidas certificados en turno durante el horario de uso","Hay personas que ayudan pero sin certificación formal","Solo en temporada alta","No hay salvavidas"]},
-    {n:30,q:"¿Usamos el sistema de banderas de colores para avisarle a los bañistas si el mar está seguro, con precaución o peligroso?",hint:"Verde = seguro, amarilla = precaución, roja = prohibido bañarse.",ev:"Fotos del sistema de banderas instalado y funcionando en la playa.",opts:["Sí, usamos el sistema internacional de banderas correctamente","Usamos algún tipo de señal pero no el sistema oficial","Lo estamos implementando","No usamos ningún sistema de señales"]},
-    {n:31,q:"¿Estamos listos para una emergencia? ¿Sabemos todos qué hacer y a quién llamar si ocurre un desastre natural?",hint:"Que los vendedores, salvavidas y comunidad conozcan los pasos a seguir.",ev:"Documento del Plan de Emergencias conocido por todos y aprobado por los organismos de socorro.",opts:["Sí, tenemos el plan y todos lo conocen","Tenemos un plan pero no todo el mundo lo conoce","Lo estamos elaborando","No tenemos ningún plan de emergencias"]},
-    {n:32,q:"¿Tenemos botiquín completo, tablas de rescate y cuerdas listos y en buen estado en la playa?",hint:"Los equipos deben estar disponibles durante todo el horario de uso de la playa.",ev:"Fotos y lista de chequeo de los equipos de primeros auxilios y salvamento.",opts:["Sí, los equipos están completos y revisados regularmente","Hay algunos equipos pero incompletos","Solo tenemos un botiquín básico","No hay equipos de emergencia"]},
-    {n:33,q:"¿Tenemos un medio de comunicación confiable para llamar a la DIMAR, la Capitanía o los bomberos en una emergencia?",hint:"Importante porque Piangüita tiene acceso solo por agua.",ev:"Radio, teléfono satelital o protocolo formal de comunicación con la Capitanía.",opts:["Sí, hay comunicación garantizada con las autoridades","Tenemos comunicación pero con limitaciones","Solo por celular cuando hay señal","No tenemos comunicación confiable"]},
-    {n:34,q:"¿Los avisos de seguridad y emergencia en la playa están escritos en español e inglés?",hint:"Los turistas extranjeros también necesitan entender las señales.",ev:"Fotos de los avisos bilingüesl instalados en la playa.",opts:["Sí, todos los avisos están en español e inglés","Algunos avisos están en los dos idiomas","Solo están en español","No hay avisos de seguridad"]}
+  { id:4, name:"Ecosistemas e Impactos", ref:"§4.4.4 – §4.4.7 · NTS TS 001-02", questions:[
+    {n:26,q:"¿Estamos usando bien la energía en la playa y avanzando hacia el uso de energías limpias como la solar?",hint:"Apagar lo que no se usa, usar bombillas eficientes, pensar en paneles solares para reducir el impacto ambiental.",obs:"Programa de eficiencia energética con registros de implementación y reducción de consumo.",opts:[
+      "Hemos documentado y formulado el programa de eficiencia energética y uso de energías limpias, pero aún no lo aplicamos de manera organizada.",
+      "Tenemos el programa documentado y estamos implementando algunas acciones de ahorro, pero aún no medimos el consumo ni lo hemos socializado con toda la comunidad.",
+      "Implementamos el programa, medimos el consumo energético periódicamente, llevamos registros y toda la comunidad conoce las acciones en marcha.",
+      "Implementamos, medimos y mejoramos el programa energético, introduciendo nuevas tecnologías y reduciendo el consumo de manera continua."
+    ]},
+    {n:27,q:"¿Tenemos carteleras o avisos que le expliquen al turista cuáles ecosistemas tiene Piangüita y cómo cuidarlos?",hint:"Que el turista sepa que el manglar es un tesoro único del Pacífico y cómo comportarse para protegerlo.",obs:"Fotos de carteleras, folletos o señalización informativa sobre los ecosistemas del destino.",opts:[
+      "Hemos documentado y formulado el plan de información sobre los ecosistemas de Piangüita, pero aún no hemos instalado carteleras ni material visible para el turista.",
+      "Tenemos el plan documentado y hemos instalado algunos avisos, pero aún no controlamos su actualización ni lo hemos divulgado a todos los visitantes.",
+      "Contamos con información visible y actualizada sobre los ecosistemas, controlamos su estado periódicamente y todos los visitantes tienen acceso a ella.",
+      "Mantenemos, controlamos y mejoramos la información sobre ecosistemas, generando mayor conciencia y respeto en los visitantes de manera continua."
+    ]},
+    {n:28,q:"¿Cuidamos y monitoreamos nuestros manglares, fauna y flora marina al menos dos veces al año?",hint:"Según la norma, el monitoreo debe hacerse con metodologías reconocidas (INVEMAR) y tener registro semestral.",obs:"Informes semestrales de monitoreo de ecosistemas firmados por técnico competente.",opts:[
+      "Hemos documentado y formulado el programa de monitoreo semestral de manglares, fauna y flora marina, pero aún no lo hemos implementado con metodología formal.",
+      "Tenemos el programa documentado y hemos iniciado visitas y registros a los ecosistemas, pero aún no usamos metodología reconocida ni hemos divulgado los resultados.",
+      "Monitoreamos los ecosistemas semestralmente con metodología reconocida, llevamos registros firmados por técnico competente y la comunidad conoce los resultados.",
+      "Monitoreamos, analizamos y mejoramos continuamente el estado de los ecosistemas, usando los datos para diseñar acciones de protección y compartirlos con la comunidad."
+    ]},
+    {n:29,q:"¿Tenemos planes de manejo para los ecosistemas del destino que incluyan prevención y mitigación de impactos?",hint:"§4.4.5.3 exige planes de manejo que vayan más allá del monitoreo: deben incluir acciones concretas de protección.",obs:"Planes de manejo de ecosistemas con medidas de prevención, mitigación y responsables.",opts:[
+      "Hemos documentado y formulado los planes de manejo de los ecosistemas, pero aún no los hemos implementado con medidas concretas de prevención.",
+      "Tenemos los planes documentados y estamos implementando medidas de manejo, pero aún no controlamos su efectividad ni los hemos divulgado a toda la comunidad.",
+      "Los planes de manejo están vigentes, implementamos medidas de prevención y mitigación, llevamos registros y la comunidad conoce el contenido de cada plan.",
+      "Implementamos, evaluamos y mejoramos los planes de manejo, actualizándolos con base en los resultados del monitoreo y los nuevos impactos detectados."
+    ]},
+    {n:30,q:"¿Evitamos la instalación de redes eléctricas y transformadores dentro de la zona costera del destino?",hint:"§4.4.6.1: las redes eléctricas en la zona costera generan impactos ambientales y riesgos para los bañistas.",obs:"Documento o acuerdo con la empresa de energía que ubica las instalaciones fuera de la zona costera.",opts:[
+      "Hemos documentado y formulado la necesidad de evitar redes eléctricas en la zona costera, pero aún no hemos gestionado su revisión ni reubicación.",
+      "Hemos identificado las instalaciones eléctricas en la zona costera y estamos iniciando gestiones con la empresa de energía, pero aún no hemos formalizado compromisos.",
+      "Hemos gestionado y documentado la reubicación de instalaciones eléctricas, controlamos que no aparezcan nuevas y la comunidad conoce el acuerdo vigente.",
+      "Controlamos, medimos y mejoramos la gestión eléctrica costera, verificando periódicamente que no existan nuevas instalaciones y gestionando las existentes."
+    ]},
+    {n:31,q:"¿Manejamos bien los combustibles de las lanchas y prohibimos el ingreso de vehículos a la playa?",hint:"Los derrames de gasolina o aceite dañan la arena y el mar. Los vehículos compactan la arena y ahuyentan fauna.",obs:"Protocolo de manejo de combustibles y registros del control de ingreso de vehículos.",opts:[
+      "Hemos documentado y formulado los protocolos de manejo de combustibles y restricción de vehículos, pero aún no los aplicamos de forma organizada.",
+      "Tenemos los protocolos documentados y los estamos aplicando, pero aún no controlamos sistemáticamente el cumplimiento ni hemos divulgado las normas a todos.",
+      "Aplicamos los protocolos de combustibles, controlamos el ingreso de vehículos, llevamos registros de cumplimiento y toda la comunidad conoce las normas.",
+      "Aplicamos, controlamos y mejoramos los protocolos, ajustando las medidas cuando detectamos nuevos riesgos de contaminación."
+    ]},
+    {n:32,q:"¿Controlamos el ruido de la música y los parlantes para proteger a los visitantes y a la fauna marina?",hint:"La contaminación auditiva afecta tanto a las personas como a las tortugas, delfines y otras especies del Pacífico.",obs:"Acuerdo o reglamento de horarios y niveles de ruido permitidos en el destino.",opts:[
+      "Hemos documentado y formulado el reglamento de horarios y niveles de ruido permitidos, pero aún no lo aplicamos de manera sistemática.",
+      "Tenemos el reglamento documentado y estamos controlando algunos aspectos del ruido, pero aún no hacemos seguimiento sistemático ni lo hemos divulgado a todos.",
+      "Aplicamos el reglamento de ruido, controlamos su cumplimiento, llevamos registros de quejas e infracciones y toda la comunidad lo conoce.",
+      "Aplicamos, controlamos y mejoramos el reglamento de ruido, ajustándolo según el impacto en la fauna y la satisfacción de los visitantes."
+    ]},
+    {n:33,q:"¿Estamos preparados para una emergencia o desastre natural? ¿Tenemos un plan conocido y aprobado por las autoridades de socorro?",hint:"El plan debe cubrir tsunamis, mar de leva, incendios, accidentes acuáticos. Debe estar concertado y divulgado.",obs:"Documento del Plan de Prevención y Atención de Desastres aprobado por organismos de socorro.",opts:[
+      "Hemos documentado y formulado el Plan de Prevención y Atención de Desastres, pero aún no ha sido aprobado por los organismos de socorro ni aplicado en la práctica.",
+      "Tenemos el plan formulado y estamos coordinando con las autoridades de socorro, pero aún no lo hemos divulgado ni probado con toda la comunidad.",
+      "El plan está aprobado, lo aplicamos ante emergencias, llevamos registros de los ejercicios realizados y todos los actores clave lo conocen.",
+      "Aplicamos, evaluamos y mejoramos el plan con base en simulacros y lecciones aprendidas, fortaleciéndolo de manera continua."
+    ]}
   ]},
-  { id:5, name:"Servicios e Infraestructura", ref:"§4.3 y §4.4 NTS-TS 001-2", questions:[
-    {n:35,q:"¿Los baños y duchas de la playa están limpios, funcionando y en buenas condiciones?",hint:"Deben tener agua, ser higiénicos y estar disponibles para todos los turistas.",ev:"Fotos recientes de los baños y registro de mantenimiento.",opts:["Sí, están en buen estado y limpios","Funcionan pero con algunas deficiencias","Están en mal estado o funcionan a medias","No hay baños o están fuera de servicio"]},
-    {n:36,q:"¿Hay un lugar o cartelera donde el turista pueda encontrar información sobre la playa, las reglas y los servicios?",hint:"Un punto de información ayuda al turista a orientarse y conocer las normas.",ev:"Fotos del punto de información o cartelería con datos de la playa.",opts:["Sí, hay un punto activo con información actualizada","Hay cartelería básica pero desactualizada","Lo estamos organizando","No hay información para el turista"]},
-    {n:37,q:"¿Hay rampas o caminos firmes para que las personas en silla de ruedas puedan entrar a la playa?",hint:"La norma exige accesibilidad. Una pasarela cada 500 metros es la referencia.",ev:"Fotos de las rampas o pasarelas instaladas.",opts:["Sí, hay rampas o pasarelas accesibles","Hay alguna facilidad pero es insuficiente","Lo estamos gestionando","No hay ninguna condición de accesibilidad"]},
-    {n:38,q:"¿Los vendedores de comida y bebidas preparan y venden sus productos con buenas condiciones de higiene?",hint:"Temperatura adecuada, superficies limpias, sin contacto con animales ni suciedad.",ev:"Certificados de manipulación de alimentos de los vendedores.",opts:["Sí, cumplen buenas prácticas de higiene","Algunos cumplen, otros no","Hay condiciones básicas pero deficientes","No hay control de higiene en alimentos"]},
-    {n:39,q:"¿El muelle y las embarcaciones que traen turistas están en buen estado y son seguros?",hint:"El acceso por agua a Piangüita es el principal punto de llegada del turista.",ev:"Registro de mantenimiento del muelle y certificados náuticos de las embarcaciones.",opts:["Sí, el muelle y las embarcaciones están en buen estado","Estado regular con algunas deficiencias","Estado deficiente","Muy mal estado o inseguro"]},
-    {n:40,q:"¿Tenemos un Manual de Convivencia visible que les explique a los turistas cómo comportarse en nuestra playa?",hint:"Las reglas de nuestra comunidad deben ser conocidas por quien nos visita.",ev:"Carteles o folletos con el Manual de Convivencia en lugares visibles.",opts:["Sí, está visible y todo el mundo lo conoce","Existe pero no está bien divulgado","Lo estamos elaborando","No existe"]},
-    {n:41,q:"¿Los vendedores y prestadores de servicios están organizados y registrados, y evitamos la venta informal desordenada?",hint:"Un censo de vendedores permite organizar mejor el espacio y el servicio.",ev:"Lista o censo de vendedores autorizados y actas de control.",opts:["Sí, hay un registro y se controla la venta informal","Hay registro parcial","Lo estamos organizando","No hay ningún registro ni control"]},
-    {n:42,q:"¿Les preguntamos a los turistas y a la comunidad si están satisfechos y usamos esas respuestas para mejorar?",hint:"Una encuesta sencilla ayuda a saber qué estamos haciendo bien y qué debemos mejorar.",ev:"Encuestas llenas por los turistas y plan de mejora basado en los resultados.",opts:["Sí, tenemos un sistema de encuestas y usamos los resultados","Preguntamos ocasionalmente pero sin sistema","Lo hemos hecho muy pocas veces","No le preguntamos a nadie"]}
+  { id:5, name:"Seguridad Turística", ref:"§4.7 · NTS TS 001-02", questions:[
+    {n:34,q:"¿Tenemos un plan de seguridad turística que incluya horario oficial de apertura y cierre de la playa?",hint:"§4.7.1 exige un plan de seguridad que defina horarios. Fuera de ese horario no debe permitirse el uso de la playa.",obs:"Documento del plan de seguridad turística con horarios oficiales y avisos publicados en la playa.",opts:[
+      "Hemos documentado y formulado el plan de seguridad turística con horarios oficiales, pero aún no lo hemos implementado ni publicado en la playa.",
+      "Tenemos el plan documentado y estamos aplicando los horarios, pero aún no controlamos su cumplimiento ni hemos divulgado el plan a toda la comunidad.",
+      "El plan de seguridad está vigente, los horarios están publicados, controlamos su cumplimiento, llevamos registros y toda la comunidad lo conoce.",
+      "Implementamos, controlamos y mejoramos el plan de seguridad, actualizándolo en función de los incidentes y los cambios estacionales."
+    ]},
+    {n:35,q:"¿Tenemos mecanismos para detectar y prevenir delitos contra los turistas en el destino?",hint:"§4.7.1 incluye la detección y prevención de hurtos, estafas y otros delitos contra visitantes.",obs:"Protocolo o acuerdo con autoridades locales para prevención de delitos, con registros de incidentes.",opts:[
+      "Hemos documentado y formulado los mecanismos de prevención de delitos contra los turistas, pero aún no los hemos implementado en coordinación con las autoridades.",
+      "Tenemos los mecanismos documentados y estamos coordinando con la autoridad local, pero aún no registramos incidentes ni hemos divulgado los protocolos a la comunidad.",
+      "Aplicamos el protocolo de prevención, coordinamos con las autoridades, llevamos registros de incidentes y la comunidad conoce los mecanismos vigentes.",
+      "Aplicamos, analizamos y mejoramos los mecanismos de prevención, ajustándolos según los patrones de incidentes identificados."
+    ]},
+    {n:36,q:"¿Estamos preparados para proteger a los visitantes ante actos ilícitos, terrorismo o situaciones de emergencia pública?",hint:"§4.7.1 exige medidas de protección ante emergencias de orden público, más allá de los accidentes acuáticos.",obs:"Protocolos de respuesta ante emergencias de orden público coordinados con autoridades competentes.",opts:[
+      "Hemos documentado y formulado los protocolos de protección ante emergencias de orden público, pero aún no los hemos implementado formalmente.",
+      "Tenemos los protocolos documentados y mantenemos comunicación básica con la Policía y la Armada, pero aún no hay capacitación formal ni divulgación a toda la comunidad.",
+      "Los protocolos están coordinados con las autoridades, hemos capacitado a los actores del destino, llevamos registros y la comunidad conoce los procedimientos.",
+      "Aplicamos, evaluamos y mejoramos los protocolos de seguridad pública, actualizándolos según los cambios en el contexto de seguridad de la región."
+    ]},
+    {n:37,q:"¿La playa tiene señalización completa que incluya servicios, restricciones, actividades permitidas, áreas de riesgo y rutas de emergencia?",hint:"La señalización debe ser completa, visible y fácil de entender para todos los visitantes.",obs:"Inventario fotográfico de la señalización instalada en la playa con indicadores de ubicación.",opts:[
+      "Hemos documentado y formulado el plan de señalización de la playa, pero aún no la hemos instalado de manera completa ni organizada.",
+      "Tenemos el plan documentado y hemos instalado señalización básica, pero aún no cubre todos los servicios, restricciones y áreas de riesgo requeridos.",
+      "La señalización está completa, en buen estado y cubre instalaciones, restricciones, servicios y emergencias; controlamos su estado periódicamente y llevamos registros.",
+      "Mantenemos, controlamos y mejoramos la señalización, actualizándola o reponiéndola según el estado y las necesidades del destino."
+    ]},
+    {n:38,q:"¿Nuestra señalización cumple con los lineamientos del Manual de Señalización del Viceministerio de Turismo?",hint:"§4.7.2 exige que la señalización turística siga el manual oficial. Incluye colores, pictogramas y materiales definidos.",obs:"Cotejo entre la señalización instalada y los lineamientos del Manual del Viceministerio de Turismo.",opts:[
+      "Hemos documentado y estudiado los lineamientos del Manual del Viceministerio, pero aún no los hemos aplicado en la señalización instalada.",
+      "Conocemos los lineamientos del Manual y estamos adecuando la señalización, pero aún no cumplimos todos los estándares ni lo hemos verificado formalmente.",
+      "La señalización cumple con los pictogramas, colores y materiales del Manual del Viceministerio, lo verificamos periódicamente y llevamos registros del cotejo.",
+      "Verificamos, controlamos y mejoramos la señalización, actualizándola cuando el Viceministerio publique nuevos lineamientos o cuando detectemos deterioro."
+    ]},
+    {n:39,q:"¿Avisamos diariamente a los visitantes sobre las condiciones del mar, las mareas y el clima antes de que se metan al agua?",hint:"§4.7.3: los turistas deben conocer las condiciones antes de ingresar al mar. En el Pacífico las corrientes son fuertes.",obs:"Tableros actualizados, avisos diarios o mensajes en los puntos de acceso a la playa.",opts:[
+      "Hemos documentado y formulado el sistema de avisos diarios sobre el estado del mar, las mareas y el clima, pero aún no lo aplicamos de manera sistemática.",
+      "Tenemos el sistema documentado y estamos publicando avisos en situaciones críticas, pero aún no lo hacemos de forma diaria ni lo hemos divulgado a todos los visitantes.",
+      "Publicamos avisos diarios sobre las condiciones del mar, medimos su visibilidad y alcance, llevamos registros y todos los visitantes acceden a esta información.",
+      "Publicamos, medimos y mejoramos el sistema de avisos, garantizando que la información llegue a todos de manera oportuna y comprensible."
+    ]},
+    {n:40,q:"¿Toda la información de seguridad y servicios de la playa está disponible en español e inglés como mínimo?",hint:"La norma exige información en al menos dos idiomas. Los turistas extranjeros también deben poder leerla.",obs:"Fotos de señales y documentos bilingüesl instalados en la playa.",opts:[
+      "Hemos documentado y formulado la necesidad de ofrecer información bilingüe, pero aún no hemos traducido ni publicado los avisos en un segundo idioma.",
+      "Hemos identificado la necesidad y traducido algunos avisos al inglés, pero aún no cubrimos toda la información de seguridad ni lo hemos verificado formalmente.",
+      "Los principales avisos de seguridad y servicios están disponibles en español e inglés, controlamos su actualización y los visitantes acceden a ellos fácilmente.",
+      "Mantenemos, controlamos y mejoramos la información multilingüe, ampliando los idiomas según la procedencia de los visitantes del destino."
+    ]},
+    {n:41,q:"¿Las vías de acceso al destino están en buen estado, señalizadas y son seguras para llegar a la playa?",hint:"§4.7.4.2: el acceso al destino (fluvial para Piangüita) debe estar en condiciones seguras y bien señalizado.",obs:"Registro del estado de las vías o rutas de acceso y su señalización, incluyendo el acceso fluvial.",opts:[
+      "Hemos documentado y formulado la evaluación de las vías de acceso al destino, pero aún no hemos implementado acciones de mantenimiento ni señalización formal.",
+      "Hemos evaluado las condiciones del acceso y estamos realizando mantenimiento, pero aún no controlamos su estado de manera sistemática ni lo hemos comunicado a todos.",
+      "Las rutas de acceso están en buen estado y señalizadas, controlamos su condición periódicamente, llevamos registros y la comunidad conoce el estado del acceso.",
+      "Mantenemos, controlamos y mejoramos las vías de acceso, planificando el mantenimiento de forma preventiva antes de cada temporada alta."
+    ]},
+    {n:42,q:"¿Existe al menos un punto de acceso al público por cada 500 metros de playa, conforme exige la norma?",hint:"§4.7.4.3: la norma establece accesos al público cada 500m. Estos deben estar señalizados y en buen estado.",obs:"Plano o inventario de los puntos de acceso a la playa con sus distancias.",opts:[
+      "Hemos documentado y formulado el diagnóstico de accesos públicos por kilómetro de playa, pero aún no hemos verificado el cumplimiento del requisito de la norma.",
+      "Hemos identificado los accesos existentes y estamos gestionando nuevos puntos, pero aún no controlamos que cumplan la distancia requerida ni lo hemos comunicado a todos.",
+      "Los accesos al público están inventariados, señalizados y cumplen con la distancia requerida; controlamos su estado y la comunidad los conoce.",
+      "Mantenemos, controlamos y mejoramos los accesos, gestionando nuevos puntos cuando la demanda o la ocupación de la playa lo requieren."
+    ]}
   ]},
-  { id:6, name:"Sociocultural y Económico", ref:"§4.5 y §4.6 NTS-TS 001-2", questions:[
-    {n:43,q:"¿La comunidad de Piangüita participa activamente en las decisiones sobre el turismo y recibe beneficios directos?",hint:"La comunidad no solo debe trabajar en la playa sino también decidir sobre ella.",ev:"Actas de asambleas comunitarias donde se tomen decisiones sobre turismo.",opts:["Sí, participamos activamente y recibimos beneficios directos","Participamos en algunas decisiones","Somos consultados pero no decidimos","No participamos en las decisiones"]},
-    {n:44,q:"¿Promovemos y protegemos nuestra cultura afropacífica — gastronomía, música, tradiciones — como parte de la experiencia turística?",hint:"Que el turista conozca y valore lo que nos hace únicos.",ev:"Programas culturales, menús locales, presentaciones artísticas ofrecidas al turista.",opts:["Sí, nuestra cultura es parte activa de la oferta turística","Integramos nuestra cultura de forma parcial","Está presente de manera espontánea","No incluimos nuestra cultura en el turismo"]},
-    {n:45,q:"¿Respetamos los espacios y costumbres propias de la comunidad y no dejamos que el turismo los invada sin nuestro permiso?",hint:"Algunos espacios sagrados, de pesca o de reunión comunal son propios de la comunidad.",ev:"Reglamento o acuerdo comunitario que proteja los espacios y costumbres propias.",opts:["Sí, tenemos reglas que protegen nuestros espacios y costumbres","Hay respeto informal pero sin reglas","Ha habido conflictos pero los manejamos","El turismo invade con frecuencia nuestros espacios"]},
-    {n:46,q:"¿Tenemos acciones concretas para evitar que los niños y jóvenes sean víctimas de abuso o explotación por el turismo?",hint:"Esto se llama prevención de ESCNNA (Explotación Sexual Comercial de Niños, Niñas y Adolescentes).",ev:"Programa vigente de prevención de ESCNNA, afiches informativos, capacitaciones.",opts:["Sí, tenemos un programa activo de prevención","Hacemos algunas acciones básicas de sensibilización","Lo estamos planificando","No tenemos ninguna acción al respecto"]},
-    {n:47,q:"¿Los trabajos que genera el turismo en la playa son ocupados principalmente por personas de nuestra comunidad?",hint:"Guías, salvavidas, vendedores, cocineros: ¿son de Piangüita?",ev:"Censo o registro de trabajadores del sector turístico con su lugar de origen.",opts:["Sí, más del 70% son personas de la comunidad","Entre el 40% y el 70% son de la comunidad","Menos del 40% son de la comunidad","No sabemos o no se mide"]},
-    {n:48,q:"¿Los negocios de la playa compran sus productos (pescado, frutas, artesanías) a proveedores de la comunidad o la región Pacífico?",hint:"El dinero del turismo debe quedarse en la región.",ev:"Facturas o acuerdos de compra con proveedores locales.",opts:["Sí, compramos la mayoría a proveedores locales","Compramos algo local pero también de fuera","Compramos muy poco de la comunidad","No compramos a proveedores locales"]},
-    {n:49,q:"¿Parte del dinero que genera el turismo se reinvierte en mejorar la playa y la calidad de vida de los vecinos?",hint:"Que el turismo beneficie a toda la comunidad, no solo a unos pocos.",ev:"Mecanismos formales o informales de reinversión de ingresos turísticos en la comunidad.",opts:["Sí, hay mecanismos formales de reinversión","Hay acuerdos informales de apoyo comunitario","Lo estamos discutiendo","Los ingresos del turismo no se comparten"]},
-    {n:50,q:"¿Nos estamos capacitando en turismo, atención al visitante y manejo sostenible de la playa?",hint:"Piensa en cursos del SENA, talleres de universidades, formaciones de la alcaldía.",ev:"Certificados de los cursos de capacitación tomados por miembros de la comunidad.",opts:["Sí, hacemos capacitaciones continuas","Hemos hecho algunos cursos","Hemos hecho muy pocas capacitaciones","No nos hemos capacitado en turismo"]}
+  { id:6, name:"Infraestructura y Servicios", ref:"§4.7.4 · NTS TS 001-02", questions:[
+    {n:43,q:"¿Tenemos salvavidas en la playa con contrato formal, equipos completos y certificación vigente?",hint:"El oleaje del Pacífico es fuerte. Los salvavidas certificados con tablas, cuerdas y botiquín son obligatorios.",obs:"Contratos de los salvavidas, certificados de formación y fotos de sus equipos de rescate.",opts:[
+      "Hemos documentado y formulado los requisitos de contratación y certificación de salvavidas, pero aún no contamos con personal formalmente certificado ni equipos completos.",
+      "Tenemos los requisitos documentados y estamos gestionando la contratación, pero aún no todos los salvavidas cuentan con certificación vigente ni equipos completos.",
+      "Los salvavidas están en turno durante el horario de uso, con certificación vigente y equipos en buen estado; controlamos su desempeño y llevamos registros.",
+      "Controlamos, evaluamos y mejoramos el servicio de salvavidas, ajustando el número y los protocolos según los incidentes registrados."
+    ]},
+    {n:44,q:"¿Los baños y duchas de la playa están limpios, funcionando bien y son suficientes para los visitantes?",hint:"Deben tener agua, ser higiénicos y estar disponibles para todos durante el horario de uso.",obs:"Fotos recientes del estado de los baños y duchas, y registro de mantenimiento.",opts:[
+      "Hemos documentado y formulado el plan de mantenimiento de baños y duchas, pero aún no lo aplicamos de manera organizada ni sistemática.",
+      "Tenemos el plan documentado y estamos realizando mantenimiento, pero aún no controlamos la higiene y el funcionamiento de manera sistemática ni lo hemos comunicado a los visitantes.",
+      "Los baños y duchas están limpios y en buen estado durante el horario de uso, controlamos su mantenimiento periódicamente y llevamos registros.",
+      "Controlamos, evaluamos y mejoramos el estado de los baños, ajustando la dotación y la frecuencia de mantenimiento según la capacidad de carga del destino."
+    ]},
+    {n:45,q:"¿Hay botiquín completo, tablas de rescate y cuerdas de salvamento listos y en buen estado en la playa?",hint:"Los equipos de primeros auxilios y rescate deben estar disponibles durante todo el horario de uso de la playa.",obs:"Lista de chequeo de equipos de emergencia con fechas de revisión y fotos.",opts:[
+      "Hemos documentado y formulado el inventario de equipos de emergencia requeridos, pero aún no los hemos adquirido ni organizado completamente.",
+      "Tenemos algunos equipos básicos adquiridos, pero el kit está incompleto y aún no controlamos su revisión periódica ni lo hemos informado a toda la comunidad.",
+      "Los equipos de emergencia están completos, en buen estado y accesibles; controlamos su estado con registros periódicos y la comunidad sabe dónde encontrarlos.",
+      "Controlamos, revisamos y mejoramos los equipos de emergencia, reponiéndolos después de cada temporada y manteniendo el registro de revisión al día."
+    ]},
+    {n:46,q:"¿Hay un punto donde el turista encuentre información sobre la playa, los servicios, los horarios y las normas?",hint:"Un punto de información activo orienta al visitante y reduce conflictos por desconocimiento de las normas.",obs:"Fotos del punto de información o cartelería actualizada con datos de servicios y normas de la playa.",opts:[
+      "Hemos documentado y formulado el plan del punto de información turística, pero aún no lo hemos habilitado de manera organizada.",
+      "Tenemos el punto de información habilitado con cartelería básica, pero la información está desactualizada y aún no controlamos ni divulgamos su contenido a todos.",
+      "El punto de información está activo con contenidos actualizados de servicios, normas y mapas; controlamos su estado y los visitantes acceden a él fácilmente.",
+      "Mantenemos, controlamos y mejoramos el punto de información, actualizando los contenidos según las dudas frecuentes y las necesidades de los visitantes."
+    ]},
+    {n:47,q:"¿Hay rampas, pasarelas o caminos firmes para que personas con movilidad reducida puedan acceder a la playa?",hint:"La norma exige condiciones de accesibilidad. Una pasarela cada 500 metros es la referencia.",obs:"Fotos de rampas o pasarelas instaladas y registro de su mantenimiento.",opts:[
+      "Hemos documentado y formulado el plan de accesibilidad para personas con movilidad reducida, pero aún no hemos instalado rampas ni pasarelas.",
+      "Tenemos el plan documentado y hemos instalado algunas facilidades de acceso, pero aún no cumplen todos los estándares de la norma ni lo hemos verificado formalmente.",
+      "Contamos con rampas o pasarelas que permiten el acceso a personas con movilidad reducida, controlamos su estado y llevamos registros de mantenimiento.",
+      "Mantenemos, controlamos y mejoramos las condiciones de accesibilidad, evaluando la experiencia de usuarios con movilidad reducida e introduciendo ajustes continuos."
+    ]},
+    {n:48,q:"¿El muelle y las embarcaciones que traen turistas a Piangüita están en buen estado, son seguros y tienen certificación?",hint:"El acceso fluvial es el principal punto de llegada del turista. Las embarcaciones deben tener certificado de la DIMAR.",obs:"Registro de mantenimiento del muelle, certificados náuticos de las embarcaciones y chalecos disponibles.",opts:[
+      "Hemos documentado y formulado los requisitos de certificación del muelle y las embarcaciones ante la DIMAR, pero aún no hemos regularizado toda la documentación.",
+      "Tenemos los requisitos documentados y estamos gestionando las certificaciones, pero aún hay deficiencias de mantenimiento o documentación desactualizada.",
+      "El muelle está en buen estado y las embarcaciones tienen certificación vigente de la DIMAR; controlamos el estado del muelle y llevamos registros de los certificados.",
+      "Mantenemos, controlamos y mejoramos el muelle y la flota de manera preventiva, renovando certificaciones antes de vencer y planificando el mantenimiento con anticipación."
+    ]}
+  ]},
+  { id:7, name:"Sociocultural y Económico", ref:"§4.5 y §4.6 · NTS TS 001-02", questions:[
+    {n:49,q:"¿Tenemos un Manual de Convivencia visible que les explique a los turistas cómo comportarse en nuestra playa?",hint:"Las reglas de la comunidad deben ser conocidas por quien nos visita: respeto por los espacios, la fauna y las personas.",obs:"Carteles o folletos con el Manual de Convivencia ubicados en lugares visibles del destino.",opts:[
+      "Hemos documentado y formulado el Manual de Convivencia para los turistas, pero aún no lo hemos publicado ni socializado en el destino.",
+      "Tenemos el Manual documentado y lo hemos publicado en algunos puntos, pero aún no controlamos su alcance ni lo hemos divulgado a todos los visitantes.",
+      "El Manual de Convivencia está publicado en lugares visibles, controlamos su actualización, llevamos registros y la mayoría de los visitantes lo conocen.",
+      "Publicamos, controlamos y mejoramos el Manual de Convivencia, actualizándolo según los conflictos detectados y los cambios en el comportamiento de los visitantes."
+    ]},
+    {n:50,q:"¿Los vendedores ambulantes y prestadores de servicios están organizados, registrados y evitamos la venta informal desordenada?",hint:"Un censo de vendedores permite organizar el espacio, garantizar higiene y mejorar la experiencia del visitante.",obs:"Lista o censo de vendedores autorizados, actas de control y documentos de capacitación.",opts:[
+      "Hemos documentado y formulado el censo y las normas para los vendedores y prestadores de servicios, pero aún no los aplicamos de manera organizada.",
+      "Tenemos el censo documentado y estamos aplicando las normas a los vendedores registrados, pero aún no controlamos la venta informal de manera sistemática.",
+      "Los vendedores están registrados, aplicamos las normas, controlamos la venta informal, llevamos registros y todos los prestadores conocen las reglas.",
+      "Controlamos, evaluamos y mejoramos el sistema de registro y normas de operación, ajustándolas para mejorar la calidad del servicio de manera continua."
+    ]},
+    {n:51,q:"¿Les preguntamos a los turistas y a la comunidad si están satisfechos y usamos esas respuestas para mejorar el destino?",hint:"Una encuesta sencilla ayuda a saber qué estamos haciendo bien y qué debemos mejorar.",obs:"Encuestas aplicadas y plan de mejora basado en los resultados obtenidos.",opts:[
+      "Hemos documentado y formulado el sistema de medición de satisfacción de turistas y comunidad, pero aún no lo hemos aplicado de manera organizada.",
+      "Tenemos el sistema documentado y estamos aplicando algunas encuestas, pero aún no analizamos los resultados ni los hemos divulgado a la comunidad.",
+      "Aplicamos el sistema de medición, analizamos los resultados, llevamos registros periódicos y toda la comunidad conoce los niveles de satisfacción del destino.",
+      "Aplicamos, analizamos y mejoramos continuamente con base en los resultados de satisfacción, comunicando los avances a la comunidad de manera permanente."
+    ]},
+    {n:52,q:"¿La comunidad de Piangüita participa activamente en las decisiones sobre el turismo y recibe beneficios directos?",hint:"La comunidad no solo debe trabajar en la playa sino también decidir sobre su futuro turístico.",obs:"Actas de asambleas comunitarias donde se tomen decisiones sobre turismo.",opts:[
+      "Hemos documentado y formulado los mecanismos de participación comunitaria en las decisiones turísticas, pero aún no funcionan de manera organizada.",
+      "Tenemos los mecanismos documentados y estamos realizando algunas asambleas, pero aún no llevamos registros formales ni garantizamos que todos los actores participen.",
+      "Los espacios de participación funcionan, llevamos registros de los acuerdos, controlamos que los beneficios lleguen a la comunidad y todos pueden participar.",
+      "Fortalecemos, evaluamos y mejoramos los mecanismos de participación, ampliando el acceso de más familias a los beneficios del turismo de manera continua."
+    ]},
+    {n:53,q:"¿Promovemos y protegemos nuestra cultura afropacífica — gastronomía, música, tradiciones — como parte de la experiencia turística?",hint:"Que el turista conozca y valore lo que nos hace únicos. La cultura local es nuestro mayor diferenciador.",obs:"Programas culturales, menús locales, presentaciones artísticas y artesanías ofrecidas al turista.",opts:[
+      "Hemos documentado y formulado la estrategia de integración de la cultura afropacífica en la oferta turística, pero aún no la hemos implementado de manera organizada.",
+      "Tenemos la estrategia documentada y estamos ofreciendo algunas actividades culturales, pero aún no las programamos de manera sistemática ni medimos su impacto.",
+      "Ofrecemos actividades culturales de manera programada, medimos la respuesta de los visitantes, llevamos registros y la cultura local es parte reconocida de la oferta.",
+      "Programamos, medimos y mejoramos la oferta cultural, incorporando nuevas expresiones auténticas con base en la satisfacción de los visitantes."
+    ]},
+    {n:54,q:"¿Respetamos los espacios y costumbres propias de la comunidad y no dejamos que el turismo los invada sin nuestro permiso?",hint:"Espacios sagrados, de pesca y de reunión comunal deben estar protegidos de la intervención turística.",obs:"Reglamento o acuerdo comunitario que proteja los espacios y costumbres propias de la comunidad.",opts:[
+      "Hemos documentado y formulado el reglamento de protección de los espacios y costumbres propias de la comunidad, pero aún no lo aplicamos de manera organizada.",
+      "Tenemos el reglamento documentado y estamos aplicando restricciones básicas, pero aún no controlamos sistemáticamente el cumplimiento ni lo hemos divulgado a todos.",
+      "El reglamento está vigente, controlamos que el turismo respete los espacios comunitarios, llevamos registros y toda la comunidad y los visitantes lo conocen.",
+      "Controlamos, evaluamos y mejoramos el reglamento, actualizándolo cuando surgen nuevos conflictos entre el turismo y la comunidad."
+    ]},
+    {n:55,q:"¿Los trabajos que genera el turismo en la playa son ocupados principalmente por personas de nuestra comunidad?",hint:"Guías, salvavidas, vendedores, cocineros: ¿son de Piangüita? El empleo local fortalece la economía comunitaria.",obs:"Censo o registro de trabajadores del sector turístico con indicador de porcentaje de origen local.",opts:[
+      "Hemos documentado y formulado la necesidad de priorizar el empleo local en el sector turístico, pero aún no contamos con datos ni mecanismos formales para garantizarlo.",
+      "Tenemos identificada la necesidad y estamos priorizando la contratación local, pero aún no medimos el porcentaje de empleo comunitario ni lo hemos divulgado formalmente.",
+      "Llevamos registro del porcentaje de empleo local, controlamos los mecanismos de contratación y la comunidad conoce su nivel de participación en el turismo.",
+      "Medimos, evaluamos y mejoramos el empleo local, diseñando programas de formación para aumentar la empleabilidad de la comunidad de manera continua."
+    ]},
+    {n:56,q:"¿Nos estamos capacitando en turismo sostenible, atención al visitante y manejo de playa?",hint:"Cursos del SENA, talleres de universidades, formaciones de la alcaldía o del Ministerio de Comercio.",obs:"Certificados de los cursos de capacitación tomados por miembros de la comunidad.",opts:[
+      "Hemos documentado y formulado el plan de capacitación en turismo sostenible, atención al visitante y manejo de playa, pero aún no lo hemos implementado de forma organizada.",
+      "Tenemos el plan documentado y hemos realizado algunas capacitaciones, pero aún no las hacemos de manera continua ni medimos su impacto en la comunidad.",
+      "Implementamos el plan de capacitación, medimos sus resultados, llevamos registros de los certificados obtenidos y la comunidad conoce el programa de formación.",
+      "Implementamos, evaluamos y mejoramos el plan de capacitación, identificando nuevas brechas y gestionando recursos para cubrirlas de manera continua."
+    ]}
   ]}
 ];
 
-const BLOCK_ICONS = ['🏛️','🗺️','🌿','🛡️','🏖️','👥'];
+const BLOCK_ICONS = ['🏛️','🗺️','💧','🌿','🛡️','🏖️','👥'];
+
+// Numerales NTS TS 001-02 por pregunta
+const QUESTION_NORMS = {
+  1:'§4.1', 2:'§4.1', 3:'§4.2.1', 4:'§4.2.2', 5:'§4.2.3', 6:'§4.2.4', 7:'§4.2.5', 8:'§4.2.6',
+  9:'§4.3.1', 10:'§4.3.2', 11:'§4.3.3', 12:'§4.3.4', 13:'§4.3', 14:'§4.3.6', 15:'§4.3.7', 16:'§4.3.8',
+  17:'§4.4.1.1', 18:'§4.4.1.2', 19:'§4.4.1.3', 20:'§4.4.1', 21:'§4.4.2.1', 22:'§4.4.2.2', 23:'§4.4.2.5', 24:'§4.4.3.1', 25:'§4.4.3.2',
+  26:'§4.4.4', 27:'§4.4.5.1', 28:'§4.4.5.2', 29:'§4.4.5.3', 30:'§4.4.6.1', 31:'§4.4.6.2', 32:'§4.4.6.3', 33:'§4.4.7',
+  34:'§4.7.1', 35:'§4.7.1', 36:'§4.7.1', 37:'§4.7.2', 38:'§4.7.2', 39:'§4.7.3', 40:'§4.7.3', 41:'§4.7.4.2', 42:'§4.7.4.3',
+  43:'§4.7.4.1', 44:'§4.7.4.4', 45:'§4.7.4.5', 46:'§4.7.4.6', 47:'§4.7.4.7', 48:'§4.7.4.8',
+  49:'§4.5.1', 50:'§4.5.2', 51:'§4.5.3', 52:'§4.6.1', 53:'§4.5.4', 54:'§4.5.5', 55:'§4.6.2', 56:'§4.6.3'
+};
+
+
 
 // ══════════════════════════════════════════════════════════════
 // FIREBASE
@@ -683,7 +1013,7 @@ function updateProgress() {
   });
   const b = BLOCKS[selectedBlocks[currentBlockStep]];
   document.getElementById('progress-label').textContent =
-    `Bloque ${currentBlockStep+1} de ${selectedBlocks.length} · ${b.name}`;
+    `Componente ${currentBlockStep+1} de ${selectedBlocks.length} · ${b.name}`;
   document.getElementById('q-btn-back').style.visibility = currentBlockStep===0?'hidden':'visible';
   document.getElementById('q-btn-next').textContent =
     currentBlockStep===selectedBlocks.length-1?'Generar diagnóstico ✓':'Siguiente →';
@@ -692,31 +1022,62 @@ function updateProgress() {
 // ══════════════════════════════════════════════════════════════
 // RENDER PREGUNTAS
 // ══════════════════════════════════════════════════════════════
+// Escalerita config
+const NIVEL_COLS = ['#F59E0B','#06B6D4','#6366F1','#059669'];
+const NIVEL_NAMES = ['¡Sembrando la Idea!','¡Manos a la Obra!','¡Sabemos Cómo Vamos!','¡Lo Hacemos Cada Vez Mejor!'];
+const NIVEL_TAGS = ['(Planeación)','(Ejecución)','(Seguimiento)','(Mejoramiento)'];
+const NIVEL_ETIQUETAS = ['En Planeación','En Ejecución','En Medición','En Mejoramiento'];
+const NIVEL_HEIGHTS = ['35%','57%','78%','100%'];
+const NIVEL_INTRO_H = ['52%','68%','83%','100%'];
+
 function renderBlock() {
   updateProgress();
   const block = BLOCKS[selectedBlocks[currentBlockStep]];
-  let html = `<div class="block-header"><h2>${block.name}</h2><p>${block.ref}</p></div>`;
+  // Intro escalerita
+  const introDesc = [
+    'La comunidad ha identificado el aspecto, pero las acciones son aisladas, sin articulación ni recursos asignados.',
+    'Hay personas o grupos trabajando activamente en el tema con acciones concretas, pero sin medición, control ni divulgación a toda la comunidad.',
+    'Las acciones están en marcha, existen mecanismos de seguimiento, registros de resultados y la comunidad conoce el estado de cumplimiento.',
+    'El proceso está consolidado. La comunidad lo evalúa periódicamente, aprende de su experiencia e introduce ajustes en un ciclo de mejora permanente.'
+  ];
+  let html = `<div class="block-header"><h2>${block.name}</h2><p>${block.ref}</p></div>
+  <div class="stair-intro">
+    <div class="stair-intro-title">¿En qué nivel estamos? — Selecciona en cada pregunta el peldaño que mejor describe la situación actual de Piangüita</div>
+    <div class="stair-row">
+      ${[0,1,2,3].map(i=>`
+      <div class="stair-step" id="intro-step-${i}" style="height:${NIVEL_INTRO_H[i]};background:${NIVEL_COLS[i]}" onclick="showIntroDesc(${i})">
+        <div class="s-num">${i+1}</div>
+        <div class="s-name">${NIVEL_NAMES[i]}</div>
+        <div class="s-sub">${NIVEL_TAGS[i]}</div>
+      </div>`).join('')}
+    </div>
+    <div class="stair-desc-panel" id="intro-desc-panel" style="border-color:${NIVEL_COLS[3]}">${introDesc[3]}</div>
+  </div>`;
+
   block.questions.forEach(q => {
     const saved = answers[q.n]; const savedEv = evidence[q.n]||'';
+    const descHtml = saved!==undefined
+      ? `<div class="q-stair-desc" style="border-color:${NIVEL_COLS[saved]}">${q.opts[saved]}</div>`
+      : `<div class="q-stair-desc" style="border-color:#e5e7eb;color:#9ca3af">Selecciona el nivel que mejor describe la situación actual</div>`;
     html += `<div class="q-item">
-      <div class="q-num">Pregunta ${q.n}</div>
+      <div class="q-num">Pregunta ${q.n} · <span style="color:#059669;font-weight:600">${QUESTION_NORMS[q.n]}</span> · ${saved!==undefined?'<span style="color:'+NIVEL_COLS[saved]+';font-weight:700">'+NIVEL_ETIQUETAS[saved]+' — '+NIVEL_NAMES[saved]+'</span>':'<span style="color:#9ca3af">Sin responder</span>'}</div>
       <div class="q-text">${q.q}</div>
       ${q.hint?`<div class="q-hint">💡 ${q.hint}</div>`:''}
-      <div class="q-evidence"><span>Evidencia sugerida:</span> ${q.ev}</div>
-      <div class="options">
-        ${q.opts.map((opt,i) => {
-          const letter=['A','B','C','D'][i];
-          return `<button class="opt-btn ${saved===i?'selected':''}" onclick="selectAnswer(${q.n},${i},this)">
-            <div class="opt-letter">${letter}</div>
-            <div class="opt-text">${opt}</div>
-          </button>`;
-        }).join('')}
+      <div class="q-stair-wrap">
+        <div class="q-stair-row">
+          ${[0,1,2,3].map(i=>`
+          <button class="q-stair${saved===i?' sel':''}" style="height:${NIVEL_HEIGHTS[i]};background:${NIVEL_COLS[i]}" onclick="selectAnswer(${q.n},${i},this)">
+            <div class="qs-n">${NIVEL_ETIQUETAS[i]}</div>
+            <div class="qs-t">${NIVEL_NAMES[i]}</div>
+          </button>`).join('')}
+        </div>
+        <div class="q-stair-desc" id="qdesc-${q.n}" style="border-color:${saved!==undefined?NIVEL_COLS[saved]:'#e5e7eb'};color:${saved!==undefined?'#374151':'#9ca3af'}">${saved!==undefined?q.opts[saved]:'Selecciona el nivel que mejor describe la situación actual'}</div>
       </div>
-      <div style="margin-top:10px">
-        <div style="font-size:11px;font-weight:600;color:#065f46;margin-bottom:4px">Estado actual y evidencia <span style="color:#9ca3af;font-weight:400">(opcional)</span></div>
+      <div style="margin-top:8px">
+        <div style="font-size:11px;font-weight:600;color:#065f46;margin-bottom:4px">Notas adicionales <span style="color:#9ca3af;font-weight:400">(opcional)</span></div>
         <textarea id="ev-${q.n}" rows="2"
           style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;color:#111827"
-          placeholder="Describe el estado actual o la evidencia que tienen... (opcional)"
+          placeholder="Describe observaciones, contexto o aclaraciones sobre este aspecto..."
           oninput="saveEvidence(${q.n},this.value)">${savedEv}</textarea>
       </div>
     </div>`;
@@ -725,10 +1086,33 @@ function renderBlock() {
   document.getElementById('q-err').style.display = 'none';
 }
 
+function showIntroDesc(i) {
+  const descs = [
+    'La comunidad ha identificado el aspecto, pero las acciones son aisladas, sin articulación ni recursos asignados.',
+    'Hay personas o grupos trabajando activamente en el tema con acciones concretas, pero sin medición, control ni divulgación a toda la comunidad.',
+    'Las acciones están en marcha, existen mecanismos de seguimiento, registros de resultados y la comunidad conoce el estado de cumplimiento.',
+    'El proceso está consolidado. La comunidad lo evalúa periódicamente, aprende de su experiencia e introduce ajustes en un ciclo de mejora permanente.'
+  ];
+  document.querySelectorAll('.stair-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('intro-step-'+i).classList.add('active');
+  const panel = document.getElementById('intro-desc-panel');
+  panel.style.borderColor = NIVEL_COLS[i];
+  panel.innerHTML = '<strong>'+NIVEL_ETIQUETAS[i]+' — '+NIVEL_NAMES[i]+' '+NIVEL_TAGS[i]+':</strong> '+descs[i];
+}
+
 function selectAnswer(qNum,optIdx,btn) {
   answers[qNum]=optIdx;
-  btn.closest('.options').querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'));
-  btn.classList.add('selected');
+  // Update stair selection
+  btn.closest('.q-stair-row').querySelectorAll('.q-stair').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  // Update description
+  const block = BLOCKS[selectedBlocks[currentBlockStep]];
+  const q = block.questions.find(q=>q.n===qNum);
+  const descEl = document.getElementById('qdesc-'+qNum);
+  if(descEl && q){ descEl.textContent=q.opts[optIdx]; descEl.style.borderColor=NIVEL_COLS[optIdx]; descEl.style.color='#374151'; }
+  // Update question header
+  const qItem = btn.closest('.q-item');
+  if(qItem){ const numDiv=qItem.querySelector('.q-num'); if(numDiv) numDiv.innerHTML=`Pregunta ${qNum} · <span style="color:#059669;font-weight:600">${QUESTION_NORMS[qNum]}</span> · <span style="color:${NIVEL_COLS[optIdx]};font-weight:700">${NIVEL_ETIQUETAS[optIdx]} — ${NIVEL_NAMES[optIdx]}</span>`; }
 }
 function saveEvidence(qNum,val) { evidence[qNum]=val; }
 
@@ -752,7 +1136,7 @@ function blockBack() { if(currentBlockStep>0){ currentBlockStep--; renderBlock()
 // ══════════════════════════════════════════════════════════════
 function calcBlockScore(bi) {
   const block=BLOCKS[bi]; let tot=0,cnt=0;
-  block.questions.forEach(q=>{ if(answers[q.n]!==undefined){ tot+=(3-answers[q.n]); cnt++; } });
+  block.questions.forEach(q=>{ if(answers[q.n]!==undefined){ tot+=answers[q.n]; cnt++; } });
   return cnt===0?0:Math.round((tot/(cnt*3))*100);
 }
 function calcSelectedScores() {
@@ -768,7 +1152,7 @@ function calcTotalScore(scores) {
 // ══════════════════════════════════════════════════════════════
 async function generateDiagnosis() {
   showPage('page-loading');
-  const msgs=['Calculando puntajes...','Evaluando criterios NTS-TS 001-2...','Analizando respuestas...','Preparando diagnóstico...'];
+  const msgs=['Calculando puntajes...','Evaluando criterios NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02...','Analizando respuestas...','Preparando diagnóstico...'];
   let mi=0; const ml=document.getElementById('load-msg');
   const iv=setInterval(()=>{ mi=(mi+1)%msgs.length; ml.textContent=msgs[mi]; },1800);
 
@@ -780,9 +1164,9 @@ async function generateDiagnosis() {
     const blocksStr=scores.map(s=>`${s.name}:${s.score}%`).join(', ');
     const parStr=[...new Set(currentParticipants.map(p=>p.grupoInteres))].join(', ');
     const evStr=selectedBlocks.map(bi=>BLOCKS[bi].questions.map(q=>evidence[q.n]?`P${q.n}:${evidence[q.n].substring(0,50)}`:null).filter(Boolean).join('; ')).filter(s=>s.length>0).join(' | ');
-    const prompt=`Eres auditor NTS-TS 001-2 Colombia. Grupo: ${currentGroupName}. Participantes: ${currentParticipants.length} (${parStr}). Destino: Playa Piangüita, Bazanbocana, Buenaventura (Pacífico, comunidad afrocolombiana, manglar, acceso fluvial).
-Bloques evaluados: ${blocksStr}. Promedio: ${total}%.
-Evidencias: ${evStr.substring(0,300)}
+    const prompt=`Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Grupo: ${currentGroupName}. Participantes: ${currentParticipants.length} (${parStr}). Destino: Playa Piangüita, Bazanbocana, Buenaventura (Pacífico, comunidad afrocolombiana, manglar, acceso fluvial).
+Componentes evaluados: ${blocksStr}. Promedio: ${total}%.
+Observaciones: ${evStr.substring(0,300)}
 Responde SOLO JSON puro sin markdown. Máximo 20 palabras por campo. Exactamente 4 acciones:
 {"nivel":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","resumen":"frase","nc":["nc1","nc2"],"diag":{${scores.map(s=>`"b${s.blockIndex}":{"f":"frase","b":"frase","r":"frase"}`).join(',')}},"acciones":[{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"BAJA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"}],"ruta":"frase"}`;
     const ctrl=new AbortController();
@@ -790,7 +1174,7 @@ Responde SOLO JSON puro sin markdown. Máximo 20 palabras por campo. Exactamente
     const resp=await fetch('https://pianguita-proxy.onrender.com/api/messages',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
-        system:'Eres auditor NTS-TS 001-2 Colombia. Responde SOLO JSON válido sin markdown.',
+        system:'Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Responde SOLO JSON válido sin markdown.',
         messages:[{role:'user',content:prompt}]}),
       signal:ctrl.signal
     });
@@ -914,7 +1298,7 @@ function showResultsPage(scores,total,r) {
   document.getElementById('results-content').innerHTML = `
     ${partHtml}
     <div class="card" style="text-align:center;background:#f0fdf4;border-color:#6ee7b7">
-      <div style="font-size:11px;color:#6b7280;margin-bottom:4px">${scores.length} bloque${scores.length>1?'s':''} evaluado${scores.length>1?'s':''}</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:4px">${scores.length} componente${scores.length>1?'s':''} evaluado${scores.length>1?'s':''}</div>
       <div class="score-big" style="color:${ncC(nivel)}">${total}%</div>
       <div style="font-size:13px;font-weight:600;color:${ncC(nivel)};margin:4px 0 10px">${nivel.replace('_',' ')}</div>
       <div style="font-size:12px;color:#4b5563;line-height:1.6;text-align:left;border-top:1px solid #6ee7b7;padding-top:10px;margin-top:6px">${resumen}</div>
@@ -941,8 +1325,8 @@ async function generateDiagnosisWithAI(scores,total) {
   try {
     const blocksStr=scores.map(s=>`${s.name}:${s.score}%`).join(', ');
     const parStr=[...new Set(currentParticipants.map(p=>p.grupoInteres))].join(', ');
-    const prompt=`Eres auditor NTS-TS 001-2 Colombia. Grupo: ${currentGroupName}. Participantes: ${currentParticipants.length} (${parStr}).
-Bloques evaluados: ${blocksStr}. Promedio: ${total}%.
+    const prompt=`Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Grupo: ${currentGroupName}. Participantes: ${currentParticipants.length} (${parStr}).
+Componentes evaluados: ${blocksStr}. Promedio: ${total}%.
 Responde SOLO JSON puro sin markdown. Máximo 20 palabras por campo. Exactamente 4 acciones:
 {"nivel":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","resumen":"frase","nc":["nc1","nc2"],"diag":{${scores.map(s=>`"b${s.blockIndex}":{"f":"frase","b":"frase","r":"frase"}`).join(',')}},"acciones":[{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"BAJA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"}],"ruta":"frase"}`;
     const resp=await fetch('https://pianguita-proxy.onrender.com/api/messages',{
@@ -1007,7 +1391,7 @@ async function showConsolidated() {
   const totalPart=groups.reduce((s,g)=>s+(g.participantes?g.participantes.length:0),0);
 
   // Tabla comparativa
-  const thead=`<th>Bloque</th>`+groups.map(g=>`<th>${g.nombre}</th>`).join('')+`<th>Promedio</th>`;
+  const thead=`<th>Componente</th>`+groups.map(g=>`<th>${g.nombre}</th>`).join('')+`<th>Promedio</th>`;
   const tbody=BLOCKS.map((b,bi)=>{
     const cualquiera=groups.some(g=>g.bloques&&g.bloques.includes(bi));
     if(!cualquiera) return '';
@@ -1073,7 +1457,7 @@ async function showConsolidated() {
     </div>
     <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">Grupos evaluados</div>
     <div class="groups-saved">${groupCards}</div>
-    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">Comparativo por bloque</div>
+    <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:8px">Comparativo por componente</div>
     <div style="overflow-x:auto;margin-bottom:1.5rem">
       <table class="comparison-table">
         <thead><tr>${thead}</tr></thead>
@@ -1108,14 +1492,14 @@ async function generateConsolidatedAI() {
       return `${b.name}:${avg}%`;
     }).filter(Boolean).join(', ');
     const det=groups.map(g=>`${g.nombre}(${g.total}%)[${g.bloques?g.bloques.map(bi=>{const sc=g.scores?(g.scores.find(s=>s.blockIndex===bi)||{score:0}).score:0;return BLOCKS[bi].name+':'+sc+'%';}).join(','):''}]`).join('; ');
-    const prompt=`Eres auditor NTS-TS 001-2 Colombia. Diagnóstico participativo Playa Piangüita, Buenaventura. ${groups.length} grupos focales, ${totPart} participantes (${todosGrupos}).
+    const prompt=`Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Diagnóstico participativo Playa Piangüita, Buenaventura. ${groups.length} grupos focales, ${totPart} participantes (${todosGrupos}).
 Bloques evaluados: ${cob}. Detalle: ${det.substring(0,400)}.
 Responde SOLO JSON puro sin markdown:
 {"nivel_general":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","diagnostico_general":"párrafo 40 palabras","consensos":["consenso1","consenso2","consenso3"],"brechas_criticas":["brecha1","brecha2","brecha3"],"acciones_prioritarias":[{"prioridad":"ALTA","accion":"acción concreta","responsable":"actor","plazo":"0-3m"},{"prioridad":"ALTA","accion":"acción","responsable":"actor","plazo":"0-3m"},{"prioridad":"MEDIA","accion":"acción","responsable":"actor","plazo":"3-6m"},{"prioridad":"BAJA","accion":"acción","responsable":"actor","plazo":"6-12m"}],"proximos_pasos":"párrafo 30 palabras","mensaje_comunidad":"frase motivadora 20 palabras"}`;
     const resp=await fetch('https://pianguita-proxy.onrender.com/api/messages',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
-        system:'Eres auditor NTS-TS 001-2 Colombia. Responde SOLO JSON válido sin markdown.',
+        system:'Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Responde SOLO JSON válido sin markdown.',
         messages:[{role:'user',content:prompt}]})
     });
     clearInterval(iv); document.getElementById('consolidated-loading').style.display='none';
@@ -1181,7 +1565,7 @@ function descargarPDF() {
   wrap.style.cssText='font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:0 auto;color:#111827;';
   const tit=document.createElement('div');
   tit.style.cssText='text-align:center;margin-bottom:20px;padding-bottom:12px;border-bottom:3px solid #065f46;';
-  tit.innerHTML='<h1 style="font-size:18px;color:#065f46;margin-bottom:4px">Diagnóstico Participativo NTS-TS 001-2</h1>'+
+  tit.innerHTML='<h1 style="font-size:18px;color:#065f46;margin-bottom:4px">Diagnóstico Participativo · NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</h1>'+
     '<h2 style="font-size:14px;color:#374151;font-weight:normal;margin-bottom:4px">Playa Piangüita · Bazanbocana · Buenaventura</h2>'+
     '<p style="font-size:12px;color:#6b7280;margin:0">Informe Consolidado · '+new Date().toLocaleDateString('es-CO')+'</p>';
   wrap.appendChild(tit);
@@ -1203,5 +1587,16 @@ function descargarPDF() {
 // ══════════════════════════════════════════════════════════════
 initSession();
 </script>
+
+<script>
+// Protección de contenido
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('copy', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey||e.metaKey) && ['c','u','s','a','p'].includes(e.key.toLowerCase())) e.preventDefault();
+  if (e.key === 'F12') e.preventDefault();
+});
+</script>
+
 </body>
 </html>
