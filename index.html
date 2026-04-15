@@ -781,36 +781,74 @@ const QUESTION_NORMS = {
 
 
 // ══════════════════════════════════════════════════════════════
-// FIREBASE
+// FIREBASE — Seguridad Opción D: Token + Auth anónima + Validación
 // ══════════════════════════════════════════════════════════════
-const FIREBASE_DB = 'https://pianguita-diagnostico-default-rtdb.firebaseio.com/diagnosticos';
+const FIREBASE_DB      = 'https://pianguita-diagnostico-default-rtdb.firebaseio.com/diagnosticos';
 const FIREBASE_TIMEOUT = 8000;
+const FB_SECRET        = 'PIANGUITA_2025_SC';                 // token de escritura
+const FIREBASE_API_KEY = 'TU_API_KEY_AQUI';                  // ← reemplazar con clave de Firebase Console
 
+// ── Auth anónima via REST API ──────────────────────────────────
+let _fbToken   = null;
+let _fbExpiry  = 0;
+
+async function fb_getToken() {
+  if (_fbToken && Date.now() < _fbExpiry) return _fbToken;
+  try {
+    const r = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`,
+      { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({returnSecureToken:true}) }
+    );
+    const d = await r.json();
+    if (d.idToken) {
+      _fbToken  = d.idToken;
+      _fbExpiry = Date.now() + (parseInt(d.expiresIn) - 120) * 1000; // renueva 2 min antes
+      return _fbToken;
+    }
+  } catch(e) {}
+  return null;
+}
+
+function fb_authParam(token) { return token ? `?auth=${token}` : ''; }
+
+// ── Guardar (incluye token secreto en el payload) ──────────────
 async function fb_guardar(grupo, datos) {
   try {
-    await fetch(`${FIREBASE_DB}/${grupo}.json`, {
-      method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(datos)
+    const token   = await fb_getToken();
+    const payload = { ...datos, _tk: FB_SECRET };
+    await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
     });
   } catch(e) {}
 }
 
+// ── Leer ────────────────────────────────────────────────────────
 async function fb_leer() {
   try {
-    const ctrl = new AbortController();
+    const token = await fb_getToken();
+    const ctrl  = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), FIREBASE_TIMEOUT);
-    const r = await fetch(`${FIREBASE_DB}.json`, { signal: ctrl.signal });
+    const r     = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, { signal: ctrl.signal });
     clearTimeout(timer);
     if (r.ok) { const d = await r.json(); return d || {}; }
   } catch(e) {}
   return null;
 }
 
+// ── Borrar un grupo ─────────────────────────────────────────────
 async function fb_borrar(grupo) {
-  try { await fetch(`${FIREBASE_DB}/${grupo}.json`, { method:'DELETE' }); } catch(e) {}
+  try {
+    const token = await fb_getToken();
+    await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, { method:'DELETE' });
+  } catch(e) {}
 }
 
+// ── Borrar todo ─────────────────────────────────────────────────
 async function fb_borrar_todo() {
-  try { await fetch(`${FIREBASE_DB}.json`, { method:'DELETE' }); } catch(e) {}
+  try {
+    const token = await fb_getToken();
+    await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, { method:'DELETE' });
+  } catch(e) {}
 }
 
 // ══════════════════════════════════════════════════════════════
