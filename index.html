@@ -233,8 +233,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
         <option value="Lancheros">⛵ Lancheros</option>
         <option value="Vecinos de Piangüita">👥 Vecinos de Piangüita</option>
         <option value="Vendedores ambulantes">🛒 Vendedores ambulantes</option>
-        <option value="Autoridad local">🏛️ Autoridad local</option>
-        <option value="Cámara de comercio">💼 Cámara de comercio</option>
+        <option value="Autoridad local y regional">🏛️ Autoridad local y regional</option>
         <option value="Institución educativa">🎓 Institución educativa</option>
       </select>
 
@@ -287,7 +286,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
 <div class="page" id="page-confirm">
 <div class="container">
   <div class="app-header">
-    <h1 id="confirm-session-name">Cada Tripulación con su Rumbo</h1>
+    <h1 id="confirm-session-name">Cada Tripulación con su Timón</h1>
     <p>Selección de los componentes que el grupo va a evaluar</p>
   </div>
 
@@ -409,7 +408,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
 
 <script>
 // ══════════════════════════════════════════════════════════════
-// DATOS: 7 COMPONENTES · 56 PREGUNTAS · 4 NIVELES
+// DATOS: 8 COMPONENTES · 56 PREGUNTAS · 4 NIVELES
 // opts[0]=N1 Planeación (peor) → opts[3]=N4 Mejoramiento (mejor)
 // ══════════════════════════════════════════════════════════════
 const BLOCKS = [
@@ -619,7 +618,59 @@ const BLOCKS = [
       "Aplicamos, evaluamos y mejoramos el plan con base en simulacros y lecciones aprendidas, fortaleciéndolo de manera continua."
     ]}
   ]},
-  { id:5, name:"Seguridad Turística", ref:"§4.7 · NTS TS 001-02", questions:[
+  { id:5, name:"Sociocultural", ref:"§4.5 · NTS TS 001-02", questions:[
+    {n:49,q:"¿Tenemos un Manual de Convivencia visible que les explique a los turistas cómo comportarse en nuestra playa?",hint:"Las reglas de la comunidad deben ser conocidas por quien nos visita: respeto por los espacios, la fauna y las personas.",obs:"Carteles o folletos con el Manual de Convivencia ubicados en lugares visibles del destino.",opts:[
+      "Hemos documentado y formulado el Manual de Convivencia para los turistas, pero aún no lo hemos publicado ni socializado en el destino.",
+      "Tenemos el Manual documentado y lo hemos publicado en algunos puntos, pero aún no controlamos su alcance ni lo hemos divulgado a todos los visitantes.",
+      "El Manual de Convivencia está publicado en lugares visibles, controlamos su actualización, llevamos registros y la mayoría de los visitantes lo conocen.",
+      "Publicamos, controlamos y mejoramos el Manual de Convivencia, actualizándolo según los conflictos detectados y los cambios en el comportamiento de los visitantes."
+    ]},
+    {n:50,q:"¿Los vendedores ambulantes y prestadores de servicios están organizados, registrados y evitamos la venta informal desordenada?",hint:"Un censo de vendedores permite organizar el espacio, garantizar higiene y mejorar la experiencia del visitante.",obs:"Lista o censo de vendedores autorizados, actas de control y documentos de capacitación.",opts:[
+      "Hemos documentado y formulado el censo y las normas para los vendedores y prestadores de servicios, pero aún no los aplicamos de manera organizada.",
+      "Tenemos el censo documentado y estamos aplicando las normas a los vendedores registrados, pero aún no controlamos la venta informal de manera sistemática.",
+      "Los vendedores están registrados, aplicamos las normas, controlamos la venta informal, llevamos registros y todos los prestadores conocen las reglas.",
+      "Controlamos, evaluamos y mejoramos el sistema de registro y normas de operación, ajustándolas para mejorar la calidad del servicio de manera continua."
+    ]},
+    {n:51,q:"¿Les preguntamos a los turistas y a la comunidad si están satisfechos y usamos esas respuestas para mejorar el destino?",hint:"Una encuesta sencilla ayuda a saber qué estamos haciendo bien y qué debemos mejorar.",obs:"Encuestas aplicadas y plan de mejora basado en los resultados obtenidos.",opts:[
+      "Hemos documentado y formulado el sistema de medición de satisfacción de turistas y comunidad, pero aún no lo hemos aplicado de manera organizada.",
+      "Tenemos el sistema documentado y estamos aplicando algunas encuestas, pero aún no analizamos los resultados ni los hemos divulgado a la comunidad.",
+      "Aplicamos el sistema de medición, analizamos los resultados, llevamos registros periódicos y toda la comunidad conoce los niveles de satisfacción del destino.",
+      "Aplicamos, analizamos y mejoramos continuamente con base en los resultados de satisfacción, comunicando los avances a la comunidad de manera permanente."
+    ]},
+    {n:53,q:"¿Promovemos y protegemos nuestra cultura afropacífica — gastronomía, música, tradiciones — como parte de la experiencia turística?",hint:"Que el turista conozca y valore lo que nos hace únicos. La cultura local es nuestro mayor diferenciador.",obs:"Programas culturales, menús locales, presentaciones artísticas y artesanías ofrecidas al turista.",opts:[
+      "Hemos documentado y formulado la estrategia de integración de la cultura afropacífica en la oferta turística, pero aún no la hemos implementado de manera organizada.",
+      "Tenemos la estrategia documentada y estamos ofreciendo algunas actividades culturales, pero aún no las programamos de manera sistemática ni medimos su impacto.",
+      "Ofrecemos actividades culturales de manera programada, medimos la respuesta de los visitantes, llevamos registros y la cultura local es parte reconocida de la oferta.",
+      "Programamos, medimos y mejoramos la oferta cultural, incorporando nuevas expresiones auténticas con base en la satisfacción de los visitantes."
+    ]},
+    {n:54,q:"¿Respetamos los espacios y costumbres propias de la comunidad y no dejamos que el turismo los invada sin nuestro permiso?",hint:"Espacios sagrados, de pesca y de reunión comunal deben estar protegidos de la intervención turística.",obs:"Reglamento o acuerdo comunitario que proteja los espacios y costumbres propias de la comunidad.",opts:[
+      "Hemos documentado y formulado el reglamento de protección de los espacios y costumbres propias de la comunidad, pero aún no lo aplicamos de manera organizada.",
+      "Tenemos el reglamento documentado y estamos aplicando restricciones básicas, pero aún no controlamos sistemáticamente el cumplimiento ni lo hemos divulgado a todos.",
+      "El reglamento está vigente, controlamos que el turismo respete los espacios comunitarios, llevamos registros y toda la comunidad y los visitantes lo conocen.",
+      "Controlamos, evaluamos y mejoramos el reglamento, actualizándolo cuando surgen nuevos conflictos entre el turismo y la comunidad."
+    ]}
+  ]},
+  { id:6, name:"Económico", ref:"§4.6 · NTS TS 001-02", questions:[
+    {n:52,q:"¿La comunidad de Piangüita participa activamente en las decisiones sobre el turismo y recibe beneficios directos?",hint:"La comunidad no solo debe trabajar en la playa sino también decidir sobre su futuro turístico.",obs:"Actas de asambleas comunitarias donde se tomen decisiones sobre turismo.",opts:[
+      "Hemos documentado y formulado los mecanismos de participación comunitaria en las decisiones turísticas, pero aún no funcionan de manera organizada.",
+      "Tenemos los mecanismos documentados y estamos realizando algunas asambleas, pero aún no llevamos registros formales ni garantizamos que todos los actores participen.",
+      "Los espacios de participación funcionan, llevamos registros de los acuerdos, controlamos que los beneficios lleguen a la comunidad y todos pueden participar.",
+      "Fortalecemos, evaluamos y mejoramos los mecanismos de participación, ampliando el acceso de más familias a los beneficios del turismo de manera continua."
+    ]},
+    {n:55,q:"¿Los trabajos que genera el turismo en la playa son ocupados principalmente por personas de nuestra comunidad?",hint:"Guías, salvavidas, vendedores, cocineros: ¿son de Piangüita? El empleo local fortalece la economía comunitaria.",obs:"Censo o registro de trabajadores del sector turístico con indicador de porcentaje de origen local.",opts:[
+      "Hemos documentado y formulado la necesidad de priorizar el empleo local en el sector turístico, pero aún no contamos con datos ni mecanismos formales para garantizarlo.",
+      "Tenemos identificada la necesidad y estamos priorizando la contratación local, pero aún no medimos el porcentaje de empleo comunitario ni lo hemos divulgado formalmente.",
+      "Llevamos registro del porcentaje de empleo local, controlamos los mecanismos de contratación y la comunidad conoce su nivel de participación en el turismo.",
+      "Medimos, evaluamos y mejoramos el empleo local, diseñando programas de formación para aumentar la empleabilidad de la comunidad de manera continua."
+    ]},
+    {n:56,q:"¿Nos estamos capacitando en turismo sostenible, atención al visitante y manejo de playa?",hint:"Cursos del SENA, talleres de universidades, formaciones de la alcaldía o del Ministerio de Comercio.",obs:"Certificados de los cursos de capacitación tomados por miembros de la comunidad.",opts:[
+      "Hemos documentado y formulado el plan de capacitación en turismo sostenible, atención al visitante y manejo de playa, pero aún no lo hemos implementado de forma organizada.",
+      "Tenemos el plan documentado y hemos realizado algunas capacitaciones, pero aún no las hacemos de manera continua ni medimos su impacto en la comunidad.",
+      "Implementamos el plan de capacitación, medimos sus resultados, llevamos registros de los certificados obtenidos y la comunidad conoce el programa de formación.",
+      "Implementamos, evaluamos y mejoramos el plan de capacitación, identificando nuevas brechas y gestionando recursos para cubrirlas de manera continua."
+    ]}
+  ]},
+  { id:7, name:"Seguridad Turística", ref:"§4.7 · NTS TS 001-02", questions:[
     {n:34,q:"¿Tenemos un plan de seguridad turística que incluya horario oficial de apertura y cierre de la playa?",hint:"§4.7.1 exige un plan de seguridad que defina horarios. Fuera de ese horario no debe permitirse el uso de la playa.",obs:"Documento del plan de seguridad turística con horarios oficiales y avisos publicados en la playa.",opts:[
       "Hemos documentado y formulado el plan de seguridad turística con horarios oficiales, pero aún no lo hemos implementado ni publicado en la playa.",
       "Tenemos el plan documentado y estamos aplicando los horarios, pero aún no controlamos su cumplimiento ni hemos divulgado el plan a toda la comunidad.",
@@ -675,7 +726,7 @@ const BLOCKS = [
       "Mantenemos, controlamos y mejoramos los accesos, gestionando nuevos puntos cuando la demanda o la ocupación de la playa lo requieren."
     ]}
   ]},
-  { id:6, name:"Infraestructura y Servicios", ref:"§4.7.4 · NTS TS 001-02", questions:[
+  { id:8, name:"Infraestructura y Servicios", ref:"§4.7.4 · NTS TS 001-02", questions:[
     {n:43,q:"¿Tenemos salvavidas en la playa con contrato formal, equipos completos y certificación vigente?",hint:"El oleaje del Pacífico es fuerte. Los salvavidas certificados con tablas, cuerdas y botiquín son obligatorios.",obs:"Contratos de los salvavidas, certificados de formación y fotos de sus equipos de rescate.",opts:[
       "Hemos documentado y formulado los requisitos de contratación y certificación de salvavidas, pero aún no contamos con personal formalmente certificado ni equipos completos.",
       "Tenemos los requisitos documentados y estamos gestionando la contratación, pero aún no todos los salvavidas cuentan con certificación vigente ni equipos completos.",
@@ -712,60 +763,10 @@ const BLOCKS = [
       "El muelle está en buen estado y las embarcaciones tienen certificación vigente de la DIMAR; controlamos el estado del muelle y llevamos registros de los certificados.",
       "Mantenemos, controlamos y mejoramos el muelle y la flota de manera preventiva, renovando certificaciones antes de vencer y planificando el mantenimiento con anticipación."
     ]}
-  ]},
-  { id:7, name:"Sociocultural y Económico", ref:"§4.5 y §4.6 · NTS TS 001-02", questions:[
-    {n:49,q:"¿Tenemos un Manual de Convivencia visible que les explique a los turistas cómo comportarse en nuestra playa?",hint:"Las reglas de la comunidad deben ser conocidas por quien nos visita: respeto por los espacios, la fauna y las personas.",obs:"Carteles o folletos con el Manual de Convivencia ubicados en lugares visibles del destino.",opts:[
-      "Hemos documentado y formulado el Manual de Convivencia para los turistas, pero aún no lo hemos publicado ni socializado en el destino.",
-      "Tenemos el Manual documentado y lo hemos publicado en algunos puntos, pero aún no controlamos su alcance ni lo hemos divulgado a todos los visitantes.",
-      "El Manual de Convivencia está publicado en lugares visibles, controlamos su actualización, llevamos registros y la mayoría de los visitantes lo conocen.",
-      "Publicamos, controlamos y mejoramos el Manual de Convivencia, actualizándolo según los conflictos detectados y los cambios en el comportamiento de los visitantes."
-    ]},
-    {n:50,q:"¿Los vendedores ambulantes y prestadores de servicios están organizados, registrados y evitamos la venta informal desordenada?",hint:"Un censo de vendedores permite organizar el espacio, garantizar higiene y mejorar la experiencia del visitante.",obs:"Lista o censo de vendedores autorizados, actas de control y documentos de capacitación.",opts:[
-      "Hemos documentado y formulado el censo y las normas para los vendedores y prestadores de servicios, pero aún no los aplicamos de manera organizada.",
-      "Tenemos el censo documentado y estamos aplicando las normas a los vendedores registrados, pero aún no controlamos la venta informal de manera sistemática.",
-      "Los vendedores están registrados, aplicamos las normas, controlamos la venta informal, llevamos registros y todos los prestadores conocen las reglas.",
-      "Controlamos, evaluamos y mejoramos el sistema de registro y normas de operación, ajustándolas para mejorar la calidad del servicio de manera continua."
-    ]},
-    {n:51,q:"¿Les preguntamos a los turistas y a la comunidad si están satisfechos y usamos esas respuestas para mejorar el destino?",hint:"Una encuesta sencilla ayuda a saber qué estamos haciendo bien y qué debemos mejorar.",obs:"Encuestas aplicadas y plan de mejora basado en los resultados obtenidos.",opts:[
-      "Hemos documentado y formulado el sistema de medición de satisfacción de turistas y comunidad, pero aún no lo hemos aplicado de manera organizada.",
-      "Tenemos el sistema documentado y estamos aplicando algunas encuestas, pero aún no analizamos los resultados ni los hemos divulgado a la comunidad.",
-      "Aplicamos el sistema de medición, analizamos los resultados, llevamos registros periódicos y toda la comunidad conoce los niveles de satisfacción del destino.",
-      "Aplicamos, analizamos y mejoramos continuamente con base en los resultados de satisfacción, comunicando los avances a la comunidad de manera permanente."
-    ]},
-    {n:52,q:"¿La comunidad de Piangüita participa activamente en las decisiones sobre el turismo y recibe beneficios directos?",hint:"La comunidad no solo debe trabajar en la playa sino también decidir sobre su futuro turístico.",obs:"Actas de asambleas comunitarias donde se tomen decisiones sobre turismo.",opts:[
-      "Hemos documentado y formulado los mecanismos de participación comunitaria en las decisiones turísticas, pero aún no funcionan de manera organizada.",
-      "Tenemos los mecanismos documentados y estamos realizando algunas asambleas, pero aún no llevamos registros formales ni garantizamos que todos los actores participen.",
-      "Los espacios de participación funcionan, llevamos registros de los acuerdos, controlamos que los beneficios lleguen a la comunidad y todos pueden participar.",
-      "Fortalecemos, evaluamos y mejoramos los mecanismos de participación, ampliando el acceso de más familias a los beneficios del turismo de manera continua."
-    ]},
-    {n:53,q:"¿Promovemos y protegemos nuestra cultura afropacífica — gastronomía, música, tradiciones — como parte de la experiencia turística?",hint:"Que el turista conozca y valore lo que nos hace únicos. La cultura local es nuestro mayor diferenciador.",obs:"Programas culturales, menús locales, presentaciones artísticas y artesanías ofrecidas al turista.",opts:[
-      "Hemos documentado y formulado la estrategia de integración de la cultura afropacífica en la oferta turística, pero aún no la hemos implementado de manera organizada.",
-      "Tenemos la estrategia documentada y estamos ofreciendo algunas actividades culturales, pero aún no las programamos de manera sistemática ni medimos su impacto.",
-      "Ofrecemos actividades culturales de manera programada, medimos la respuesta de los visitantes, llevamos registros y la cultura local es parte reconocida de la oferta.",
-      "Programamos, medimos y mejoramos la oferta cultural, incorporando nuevas expresiones auténticas con base en la satisfacción de los visitantes."
-    ]},
-    {n:54,q:"¿Respetamos los espacios y costumbres propias de la comunidad y no dejamos que el turismo los invada sin nuestro permiso?",hint:"Espacios sagrados, de pesca y de reunión comunal deben estar protegidos de la intervención turística.",obs:"Reglamento o acuerdo comunitario que proteja los espacios y costumbres propias de la comunidad.",opts:[
-      "Hemos documentado y formulado el reglamento de protección de los espacios y costumbres propias de la comunidad, pero aún no lo aplicamos de manera organizada.",
-      "Tenemos el reglamento documentado y estamos aplicando restricciones básicas, pero aún no controlamos sistemáticamente el cumplimiento ni lo hemos divulgado a todos.",
-      "El reglamento está vigente, controlamos que el turismo respete los espacios comunitarios, llevamos registros y toda la comunidad y los visitantes lo conocen.",
-      "Controlamos, evaluamos y mejoramos el reglamento, actualizándolo cuando surgen nuevos conflictos entre el turismo y la comunidad."
-    ]},
-    {n:55,q:"¿Los trabajos que genera el turismo en la playa son ocupados principalmente por personas de nuestra comunidad?",hint:"Guías, salvavidas, vendedores, cocineros: ¿son de Piangüita? El empleo local fortalece la economía comunitaria.",obs:"Censo o registro de trabajadores del sector turístico con indicador de porcentaje de origen local.",opts:[
-      "Hemos documentado y formulado la necesidad de priorizar el empleo local en el sector turístico, pero aún no contamos con datos ni mecanismos formales para garantizarlo.",
-      "Tenemos identificada la necesidad y estamos priorizando la contratación local, pero aún no medimos el porcentaje de empleo comunitario ni lo hemos divulgado formalmente.",
-      "Llevamos registro del porcentaje de empleo local, controlamos los mecanismos de contratación y la comunidad conoce su nivel de participación en el turismo.",
-      "Medimos, evaluamos y mejoramos el empleo local, diseñando programas de formación para aumentar la empleabilidad de la comunidad de manera continua."
-    ]},
-    {n:56,q:"¿Nos estamos capacitando en turismo sostenible, atención al visitante y manejo de playa?",hint:"Cursos del SENA, talleres de universidades, formaciones de la alcaldía o del Ministerio de Comercio.",obs:"Certificados de los cursos de capacitación tomados por miembros de la comunidad.",opts:[
-      "Hemos documentado y formulado el plan de capacitación en turismo sostenible, atención al visitante y manejo de playa, pero aún no lo hemos implementado de forma organizada.",
-      "Tenemos el plan documentado y hemos realizado algunas capacitaciones, pero aún no las hacemos de manera continua ni medimos su impacto en la comunidad.",
-      "Implementamos el plan de capacitación, medimos sus resultados, llevamos registros de los certificados obtenidos y la comunidad conoce el programa de formación.",
-      "Implementamos, evaluamos y mejoramos el plan de capacitación, identificando nuevas brechas y gestionando recursos para cubrirlas de manera continua."
-    ]}
   ]}
 ];
 
-const BLOCK_ICONS = ['🏛️','🗺️','💧','🌿','🛡️','🏖️','👥'];
+const BLOCK_ICONS = ['🏛️','🗺️','💧','🌿','🎭','💰','🛡️','🏖️'];
 
 // Numerales NTS TS 001-02 por pregunta
 const QUESTION_NORMS = {
@@ -1113,7 +1114,7 @@ function renderBlock() {
         <div class="q-stair-desc" id="qdesc-${q.n}" style="border-color:${saved!==undefined?NIVEL_COLS[saved]:'#e5e7eb'};color:${saved!==undefined?'#374151':'#9ca3af'}">${saved!==undefined?q.opts[saved]:'Selecciona el nivel que mejor describe la situación actual'}</div>
       </div>
       <div style="margin-top:8px">
-        <div style="font-size:11px;font-weight:600;color:#065f46;margin-bottom:4px">Notas adicionales <span style="color:#9ca3af;font-weight:400">(opcional)</span></div>
+        <div style="font-size:11px;font-weight:600;color:#065f46;margin-bottom:4px">Evidencias <span style="color:#9ca3af;font-weight:400">(opcional)</span></div>
         <textarea id="ev-${q.n}" rows="2"
           style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;color:#111827"
           placeholder="Describe observaciones, contexto o aclaraciones sobre este aspecto..."
@@ -1203,7 +1204,7 @@ async function generateDiagnosis() {
     const blocksStr=scores.map(s=>`${s.name}:${s.score}%`).join(', ');
     const parStr=[...new Set(currentParticipants.map(p=>p.grupoInteres))].join(', ');
     const evStr=selectedBlocks.map(bi=>BLOCKS[bi].questions.map(q=>evidence[q.n]?`P${q.n}:${evidence[q.n].substring(0,50)}`:null).filter(Boolean).join('; ')).filter(s=>s.length>0).join(' | ');
-    const prompt=`Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Grupo: ${currentGroupName}. Participantes: ${currentParticipants.length} (${parStr}). Destino: Playa Piangüita, Bazanbocana, Buenaventura (Pacífico, comunidad afrocolombiana, manglar, acceso fluvial).
+    const prompt=`Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Grupo: ${currentGroupName}. Participantes: ${currentParticipants.length} (${parStr}). Destino: Playa Piangüita Punta Bazán, Buenaventura (Pacífico, comunidad afrocolombiana, manglar, acceso fluvial).
 Componentes evaluados: ${blocksStr}. Promedio: ${total}%.
 Observaciones: ${evStr.substring(0,300)}
 Responde SOLO JSON puro sin markdown. Máximo 20 palabras por campo. Exactamente 4 acciones:
@@ -1259,6 +1260,55 @@ function tog(id){
   const b=document.getElementById(id); const a=document.getElementById('a-'+id);
   if(b.style.display==='block'){b.style.display='none';a.textContent='▾';}
   else{b.style.display='block';a.textContent='▴';}
+}
+
+function buildCaracterizacion(participants) {
+  if (!participants || participants.length === 0) return '';
+
+  // Conteos
+  const total = participants.length;
+  const porGrupo = {};
+  const porGenero = {Mujer:0, Hombre:0, 'Prefiero no decir':0};
+  const porEdad = {};
+
+  participants.forEach(p => {
+    porGrupo[p.grupoInteres] = (porGrupo[p.grupoInteres]||0) + 1;
+    if (porGenero[p.genero] !== undefined) porGenero[p.genero]++;
+    porEdad[p.edad] = (porEdad[p.edad]||0) + 1;
+  });
+
+  const grupoRows = Object.entries(porGrupo).map(([g,n])=>
+    `<tr><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb">${g}</td><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:600">${n}</td></tr>`
+  ).join('');
+
+  const edadRows = Object.entries(porEdad).map(([e,n])=>
+    `<tr><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb">${e} años</td><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:600">${n}</td></tr>`
+  ).join('');
+
+  return `<div style="background:white;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:1rem;overflow:hidden">
+    <div style="background:#065f46;color:white;padding:10px 14px;font-size:13px;font-weight:600">Caracterización de la Población · ${total} participante${total!==1?'s':''}</div>
+    <div style="padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:6px">Por Grupo de Interés</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <tr style="background:#f0fdf4"><th style="padding:5px 10px;text-align:left;color:#065f46">Grupo</th><th style="padding:5px 10px;color:#065f46">N°</th></tr>
+          ${grupoRows}
+        </table>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:6px">Por Género</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px">
+          <tr style="background:#f0fdf4"><th style="padding:5px 10px;text-align:left;color:#065f46">Género</th><th style="padding:5px 10px;color:#065f46">N°</th></tr>
+          ${Object.entries(porGenero).map(([g,n])=>`<tr><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb">${g}</td><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:600">${n}</td></tr>`).join('')}
+        </table>
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:6px">Por Rango de Edad</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <tr style="background:#f0fdf4"><th style="padding:5px 10px;text-align:left;color:#065f46">Rango</th><th style="padding:5px 10px;color:#065f46">N°</th></tr>
+          ${edadRows}
+        </table>
+      </div>
+    </div>
+  </div>`;
 }
 
 function showResultsPage(scores,total,r) {
@@ -1335,6 +1385,21 @@ function showResultsPage(scores,total,r) {
   </div>`;
 
   document.getElementById('results-content').innerHTML = `
+    <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:1rem;overflow:hidden">
+  <div style="background:#065f46;color:white;padding:10px 14px;font-size:13px;font-weight:600">Ficha Técnica del Instrumento</div>
+  <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <tr><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb;width:40%">Nombre</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Instrumento de Diagnóstico Participativo NTS-TS 001-2 — Playa Piangüita Punta Bazán</td></tr>
+    <tr style="background:#f9fafb"><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Norma aplicada</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">NTS-TS 001-2: Destinos Turísticos de Playa. Requisitos de Sostenibilidad (ICONTEC, 2007)</td></tr>
+    <tr><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Destino evaluado</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Playa Piangüita Punta Bazán, Buenaventura, Valle del Cauca</td></tr>
+    <tr style="background:#f9fafb"><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Tipo de instrumento</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Diagnóstico participativo multi-actor con evaluación cuantitativa y cualitativa</td></tr>
+    <tr><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Grupos de interés</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Hoteleros · Restaurantes · Carperos · Guías locales · Lancheros · Vecinos de Piangüita · Vendedores ambulantes · Autoridad local y regional · Institución educativa</td></tr>
+    <tr style="background:#f9fafb"><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Total de preguntas</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">56 preguntas distribuidas en 8 componentes</td></tr>
+    <tr><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Escala de respuesta</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Nivel 1: En Planeación · Nivel 2: En Ejecución · Nivel 3: En Medición · Nivel 4: En Mejoramiento</td></tr>
+    <tr style="background:#f9fafb"><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Campo de evidencia</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Cada pregunta incluye un campo de evidencias donde la comunidad documenta el estado actual</td></tr>
+    <tr><td style="padding:7px 12px;color:#065f46;font-weight:600">Cálculo del puntaje</td><td style="padding:7px 12px">Promedio de niveles por componente (12.5% c/u). Puntaje total = promedio simple de los 8 componentes</td></tr>
+  </table>
+</div>
+    ${buildCaracterizacion(currentParticipants)}
     ${partHtml}
     <div class="card" style="text-align:center;background:#f0fdf4;border-color:#6ee7b7">
       <div style="font-size:11px;color:#6b7280;margin-bottom:4px">${scores.length} componente${scores.length>1?'s':''} evaluado${scores.length>1?'s':''}</div>
@@ -1605,7 +1670,7 @@ function descargarPDF() {
   const tit=document.createElement('div');
   tit.style.cssText='text-align:center;margin-bottom:20px;padding-bottom:12px;border-bottom:3px solid #065f46;';
   tit.innerHTML='<h1 style="font-size:18px;color:#065f46;margin-bottom:4px">Diagnóstico Participativo · NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</h1>'+
-    '<h2 style="font-size:14px;color:#374151;font-weight:normal;margin-bottom:4px">Playa Piangüita · Bazanbocana · Buenaventura</h2>'+
+    '<h2 style="font-size:14px;color:#374151;font-weight:normal;margin-bottom:4px">Playa Piangüita · Punta Bazán · Buenaventura</h2>'+
     '<p style="font-size:12px;color:#6b7280;margin:0">Informe Consolidado · '+new Date().toLocaleDateString('es-CO')+'</p>';
   wrap.appendChild(tit);
   const c1=document.getElementById('consolidated-content');
