@@ -1298,7 +1298,7 @@ function saveGroupResult(scores,total,aiResult) {
   const key='pianguita_diagnostico';
   const all=JSON.parse(localStorage.getItem(key)||'{}');
   const datos={
-    group:currentGroup, nombre:currentGroupName,
+    grupo:currentGroup, nombre:currentGroupName,
     fecha:getTodayStr(), fechaISO:getTodayISO(), numero:currentSessionNumber,
     participantes:[...currentParticipants], bloques:[...selectedBlocks],
     scores, total, answers:{...answers}, evidence:{...evidence}, aiResult
@@ -1572,7 +1572,7 @@ async function showConsolidated() {
   // Tarjetas por grupo
   const groupCards=groups.map(g=>{
     const col=g.total>=70?'#059669':g.total>=40?'#d97706':'#dc2626';
-    const gid='gev-'+g.group; const np=g.participantes?g.participantes.length:0;
+    const gid='gev-'+(g.grupo||g.group); const np=g.participantes?g.participantes.length:0;
     const partList=g.participantes?g.participantes.map(p=>
       `<div style="display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid #f3f4f6;font-size:12px">
         <div style="min-width:24px;height:24px;border-radius:50%;background:#d1fae5;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${p.nombre.charAt(0)}</div>
@@ -1596,7 +1596,7 @@ async function showConsolidated() {
         <div style="display:flex;align-items:center;gap:8px">
           <div style="font-size:22px;font-weight:700;color:${col}">${g.total}%</div>
           <button onclick="toggleEv('${gid}')" style="background:#e0f2fe;border:1px solid #7dd3fc;color:#0369a1;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500">Ver detalles</button>
-          <button onclick="deleteGroup('${g.group}')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑</button>
+          <button onclick="deleteGroup('${g.grupo||g.group}')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑</button>
         </div>
       </div>
       <div id="${gid}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb">
