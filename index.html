@@ -388,6 +388,9 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
   <div id="results-retry-btn" style="display:none;text-align:center;margin-bottom:1rem">
     <button class="btn btn-primary" onclick="retryAI()" style="width:100%">Reintentar análisis IA (requiere internet) →</button>
   </div>
+  <div style="text-align:center;margin:1rem 0">
+    <button onclick="descargarPDFIndividual()" style="background:#065f46;color:white;border:none;padding:14px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;width:100%;font-family:inherit">📄 Descargar Informe PDF del grupo</button>
+  </div>
   <div class="nav" style="margin-top:0.5rem">
     <button class="btn btn-outline" onclick="goHome()">← Inicio</button>
     <button class="btn btn-facilitator" onclick="showPinOverlay()">🔒 Ver consolidado</button>
@@ -1716,7 +1719,36 @@ function clearAll() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// PDF
+// PDF — Informe individual del grupo
+// ══════════════════════════════════════════════════════════════
+function descargarPDFIndividual() {
+  const btn = document.querySelector('[onclick="descargarPDFIndividual()"]');
+  if(btn){ btn.textContent='Generando PDF...'; btn.disabled=true; }
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:0 auto;color:#111827;';
+  // Encabezado
+  const tit = document.createElement('div');
+  tit.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:12px;border-bottom:3px solid #065f46;';
+  tit.innerHTML = '<h1 style="font-size:18px;color:#065f46;margin-bottom:4px">Diagnóstico Participativo · NTS-TS 001-02</h1>'+
+    '<h2 style="font-size:14px;color:#374151;font-weight:normal;margin-bottom:4px">Playa Piangüita Punta Bazán · Buenaventura</h2>'+
+    '<p style="font-size:12px;color:#6b7280;margin:0">'+currentGroupName+' · '+new Date().toLocaleDateString('es-CO')+'</p>';
+  wrap.appendChild(tit);
+  // Contenido de resultados
+  const rc = document.getElementById('results-content');
+  if(rc){ const cl = rc.cloneNode(true); cl.querySelectorAll('button').forEach(b=>b.remove()); wrap.appendChild(cl); }
+  html2pdf().set({
+    margin:[15,15,15,15],
+    filename:'Informe_'+currentGroupName.replace(/[^a-zA-Z0-9]/g,'_')+'_Pianguita.pdf',
+    image:{type:'jpeg',quality:0.95},
+    html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(wrap).save()
+    .then(()=>{ if(btn){ btn.textContent='📄 Descargar Informe PDF del grupo'; btn.disabled=false; }})
+    .catch(()=>{ if(btn){ btn.textContent='📄 Descargar Informe PDF del grupo'; btn.disabled=false; }});
+}
+
+// ══════════════════════════════════════════════════════════════
+// PDF — Informe consolidado
 // ══════════════════════════════════════════════════════════════
 function descargarPDF() {
   const btns=document.querySelectorAll('[onclick="descargarPDF()"]');
