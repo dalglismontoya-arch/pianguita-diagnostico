@@ -273,6 +273,30 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="block-select-grid" id="block-select-grid"></div>
   </div>
 
+  <!-- CONSENTIMIENTO 1: Consideraciones éticas -->
+  <div class="card" style="border-color:#6ee7b7;background:#f0fdf4">
+    <div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:8px">📋 Consideraciones éticas</div>
+    <div style="font-size:12px;color:#374151;line-height:1.6;margin-bottom:12px">La investigación se desarrollará bajo principios éticos que garanticen la participación voluntaria de los actores, el respeto por las dinámicas comunitarias y el uso responsable de la información. Previo a la realización de los talleres participativos, se aplicará un consentimiento informado, mediante el cual se comunicará a los participantes el propósito académico del estudio, el uso de la información recolectada y el tratamiento confidencial de sus aportes, en concordancia con la normativa vigente sobre protección de datos personales.</div>
+    <div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:8px">¿Acepta participar voluntariamente bajo estas consideraciones?</div>
+    <div style="display:flex;gap:10px">
+      <button id="consent1-si" onclick="setConsent(1,'si')" class="btn" style="flex:1;background:#e5e7eb;color:#374151;border:2px solid #d1d5db">✅ Sí, acepto</button>
+      <button id="consent1-no" onclick="setConsent(1,'no')" class="btn" style="flex:1;background:#e5e7eb;color:#374151;border:2px solid #d1d5db">❌ No acepto</button>
+    </div>
+    <div id="consent1-msg" style="font-size:11px;margin-top:8px;display:none"></div>
+  </div>
+
+  <!-- CONSENTIMIENTO 2: Tratamiento de datos personales -->
+  <div class="card" style="border-color:#6ee7b7;background:#f0fdf4">
+    <div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:8px">🔒 Tratamiento de datos personales</div>
+    <div style="font-size:12px;color:#374151;line-height:1.6;margin-bottom:12px">De conformidad con la Ley 1581 de 2012 y el Decreto 1377 de 2013, los datos personales recopilados en este instrumento (nombre, documento de identidad, género y rango de edad) serán utilizados exclusivamente con fines académicos e investigativos. La información será tratada de forma confidencial, no será cedida a terceros y podrá ser consultada, corregida o suprimida por el titular en cualquier momento. Al responder "Sí", el participante autoriza expresamente el uso de sus datos bajo estas condiciones.</div>
+    <div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:8px">¿Autoriza el uso de sus datos personales bajo estas condiciones?</div>
+    <div style="display:flex;gap:10px">
+      <button id="consent2-si" onclick="setConsent(2,'si')" class="btn" style="flex:1;background:#e5e7eb;color:#374151;border:2px solid #d1d5db">✅ Sí, autorizo</button>
+      <button id="consent2-no" onclick="setConsent(2,'no')" class="btn" style="flex:1;background:#e5e7eb;color:#374151;border:2px solid #d1d5db">❌ No autorizo</button>
+    </div>
+    <div id="consent2-msg" style="font-size:11px;margin-top:8px;display:none"></div>
+  </div>
+
   <div class="nav">
     <button class="btn btn-facilitator" onclick="showPinOverlay()">🔒 Vista Facilitador</button>
     <button class="btn btn-primary" id="btn-start" onclick="goToConfirm()" style="opacity:0.4;pointer-events:none">Continuar →</button>
@@ -887,6 +911,15 @@ function getTodayISO() { return new Date().toISOString().split('T')[0]; }
 
 async function initSession() {
   selectedBlocks = []; currentParticipants = []; answers = {}; evidence = {};
+  consent1 = null; consent2 = null;
+  ['1','2'].forEach(n => {
+    const si = document.getElementById(`consent${n}-si`);
+    const no = document.getElementById(`consent${n}-no`);
+    const msg = document.getElementById(`consent${n}-msg`);
+    if(si){si.style.background='#e5e7eb';si.style.color='#374151';si.style.borderColor='#d1d5db';}
+    if(no){no.style.background='#e5e7eb';no.style.color='#374151';no.style.borderColor='#d1d5db';}
+    if(msg){msg.style.display='none';}
+  });
   renderBlockSelectors(); renderParticipants(); checkStartButton();
 
   const fb = await fb_leer();
@@ -996,10 +1029,33 @@ function renderParticipants() {
   ).join('');
 }
 
+// Estado de consentimientos
+let consent1 = null; // 'si' | 'no' | null
+let consent2 = null;
+
+function setConsent(num, val) {
+  if (num===1) consent1=val; else consent2=val;
+  const si = document.getElementById(`consent${num}-si`);
+  const no = document.getElementById(`consent${num}-no`);
+  const msg = document.getElementById(`consent${num}-msg`);
+  // Resaltar botón seleccionado
+  si.style.background = val==='si'?'#059669':'#e5e7eb';
+  si.style.color = val==='si'?'white':'#374151';
+  si.style.borderColor = val==='si'?'#059669':'#d1d5db';
+  no.style.background = val==='no'?'#dc2626':'#e5e7eb';
+  no.style.color = val==='no'?'white':'#374151';
+  no.style.borderColor = val==='no'?'#dc2626':'#d1d5db';
+  // Mensaje si selecciona No
+  msg.style.display = val==='no'?'block':'none';
+  msg.style.color = '#dc2626';
+  msg.textContent = val==='no'?'Para participar en el diagnóstico es necesario aceptar este punto.':'';
+  checkStartButton();
+}
+
 function checkStartButton() {
   const btn = document.getElementById('btn-start');
   if (!btn) return;
-  const ok = currentParticipants.length>=1 && selectedBlocks.length>=1;
+  const ok = currentParticipants.length>=1 && selectedBlocks.length>=1 && consent1==='si' && consent2==='si';
   btn.style.opacity = ok?'1':'0.4';
   btn.style.pointerEvents = ok?'auto':'none';
 }
