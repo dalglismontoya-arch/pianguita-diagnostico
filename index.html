@@ -1777,9 +1777,47 @@ function descargarPDF() {
 }
 
 // ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+// RECUPERACIÓN DE DATOS (URL: ?ver=datos)
+// ══════════════════════════════════════════════════════════════
+if(new URLSearchParams(window.location.search).get('ver')==='datos'){
+  document.body.style.cssText='font-family:Arial,sans-serif;padding:16px;background:#f0fdf4;';
+  const raw=localStorage.getItem('pianguita_diagnostico');
+  if(!raw||raw==='null'){
+    document.body.innerHTML='<h2 style="color:#dc2626">No hay datos guardados en este celular.</h2>';
+  } else {
+    try{
+      const all=JSON.parse(raw);
+      const keys=Object.keys(all);
+      let html='<h2 style="color:#065f46;margin-bottom:16px">Datos guardados en este celular ('+keys.length+' grupo/s)</h2>';
+      keys.forEach(k=>{
+        const g=all[k];
+        html+=`<div style="background:white;border:2px solid #059669;border-radius:10px;padding:14px;margin-bottom:16px">
+          <div style="font-size:16px;font-weight:700;color:#065f46;margin-bottom:6px">${g.nombre||k}</div>
+          <div style="font-size:13px;color:#374151;margin-bottom:4px">Fecha: ${g.fecha||''} · Puntaje total: <strong>${g.total||'?'}%</strong></div>
+          <div style="font-size:13px;color:#374151;margin-bottom:8px">Participantes: ${g.participantes?g.participantes.length:0}</div>
+          ${g.scores?'<div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:4px">Puntajes por componente:</div>'+
+            g.scores.map(s=>`<div style="font-size:12px;padding:3px 0;border-bottom:1px solid #e5e7eb">${s.name}: <strong>${s.score}%</strong></div>`).join(''):''}
+          <div style="margin-top:10px;font-size:11px;font-weight:600;color:#065f46">Respuestas pregunta por pregunta:</div>
+          ${g.answers?Object.entries(g.answers).map(([n,v])=>{
+            const niveles=['En Planeación','En Ejecución','En Medición','En Mejoramiento'];
+            const ev=g.evidence&&g.evidence[n]?'<div style="color:#6b7280;font-size:10px;font-style:italic">Evidencia: '+g.evidence[n]+'</div>':'';
+            return `<div style="font-size:11px;padding:3px 0;border-bottom:1px solid #f3f4f6">P${n}: <strong>${niveles[v]||v}</strong>${ev}</div>`;
+          }).join(''):''}
+        </div>`;
+      });
+      html+='<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:12px;font-size:12px;color:#78350f"><strong>📸 Toma capturas de pantalla de toda esta página antes de cerrar el navegador.</strong></div>';
+      document.body.innerHTML=html;
+    }catch(e){
+      document.body.innerHTML='<h2 style="color:#dc2626">Error leyendo datos: '+e.message+'</h2><pre>'+raw+'</pre>';
+    }
+  }
+} else {
+
 // INICIO
 // ══════════════════════════════════════════════════════════════
 initSession();
+}
 </script>
 
 <script>
