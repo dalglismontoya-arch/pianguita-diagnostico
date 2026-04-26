@@ -1484,24 +1484,30 @@ function buildHojaDeRuta(scores) {
   });
   opps.sort((a,b)=>a.nivel-b.nivel||a.q.n-b.q.n);
   const top=opps.slice(0,3);
-  if(!top.length) return '<div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:10px;padding:14px;margin-bottom:1rem;font-size:12px;color:#065f46;text-align:center">🎉 ¡Buen desempeño! No se detectaron preguntas en Nivel 1 — revisa los componentes con menor puntaje para seguir mejorando.</div>';
+  if(!top.length) return `<div style="border:1px solid #e5e7eb;border-left:3px solid #059669;border-radius:8px;padding:12px 14px;margin-bottom:1rem;font-size:12px;color:#065f46">
+    ✓ ¡Buen desempeño! No se detectaron preguntas en Nivel 1. Revisa los componentes con menor puntaje para seguir mejorando.
+  </div>`;
   const NOMS=['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
   const COLS=['#dc2626','#d97706','#2563eb','#059669'];
-  return `<div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:10px;padding:14px;margin-bottom:1rem">
-    <div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:3px">🚀 Hoja de Ruta — Primeros pasos</div>
-    <div style="font-size:11px;color:#6b7280;margin-bottom:12px">Las 3 acciones más concretas para avanzar al siguiente nivel:</div>
-    ${top.map((o,i)=>`
-      <div style="background:white;border:1px solid #d1fae5;border-radius:8px;padding:10px 12px;margin-bottom:8px">
+  return `<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:1rem">
+    <div style="padding:11px 14px;border-bottom:1px solid #e5e7eb">
+      <div style="font-size:12px;font-weight:600;color:#111827">Primeros pasos recomendados</div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:2px">Las 3 acciones más concretas para avanzar al siguiente nivel</div>
+    </div>
+    <div style="padding:10px 14px">
+      ${top.map((o,i)=>`
+      <div style="padding:10px 0;border-bottom:1px solid #f3f4f6">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">
-          <span style="background:#065f46;color:white;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${i+1}</span>
-          <span style="font-size:11px;font-weight:700;color:#065f46">${BLOCK_ICONS[o.bi]||''} ${o.blockName}</span>
-          <span style="font-size:10px;color:white;background:${COLS[o.nivel]};padding:2px 8px;border-radius:8px;margin-left:auto">Nivel ${o.nivel+1} → ${o.nivel+2}</span>
+          <span style="min-width:20px;height:20px;border-radius:50%;border:1.5px solid #065f46;color:#065f46;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
+          <span style="font-size:11px;font-weight:600;color:#374151">${BLOCK_ICONS[o.bi]||''} ${o.blockName}</span>
+          <span style="font-size:10px;padding:1px 7px;border-radius:3px;border:1px solid ${COLS[o.nivel]};color:${COLS[o.nivel]};font-weight:600;margin-left:auto">N${o.nivel+1}→N${o.nivel+2}</span>
         </div>
-        <div style="font-size:11px;color:#374151;margin-bottom:5px;font-weight:500">P${o.q.n}. ${o.q.q}</div>
-        <div style="font-size:11px;color:#059669;padding:5px 8px;background:#f0fdf4;border-radius:4px;border-left:3px solid #059669">
+        <div style="font-size:11px;color:#374151;margin-bottom:5px;padding-left:28px">P${o.q.n}. ${o.q.q}</div>
+        <div style="font-size:11px;color:#065f46;padding:5px 8px 5px 8px;border-left:2px solid #065f46;margin-left:28px;background:#f8fdf9;border-radius:0 4px 4px 0;line-height:1.4">
           <strong>Para avanzar a ${NOMS[o.nivel+1]}:</strong> ${o.q.opts[o.nivel+1]}
         </div>
       </div>`).join('')}
+    </div>
   </div>`;
 }
 
@@ -1509,17 +1515,19 @@ function buildHojaDeRuta(scores) {
 // PRÓXIMA EVALUACIÓN
 // ══════════════════════════════════════════════════════════════
 function buildProximaEval() {
-  return `<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:14px;margin-bottom:1rem">
-    <div style="font-size:13px;font-weight:700;color:#78350f;margin-bottom:8px">📅 Recordatorio — Próxima Evaluación</div>
-    <div style="font-size:11px;color:#92400e;margin-bottom:10px">La NTS TS 001-02 implica mejora continua. ¿En cuánto tiempo quieren volver a medir?</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+  return `<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:1rem">
+    <div style="padding:11px 14px;border-bottom:1px solid #e5e7eb">
+      <div style="font-size:12px;font-weight:600;color:#111827">📅 Próxima evaluación</div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:2px">La mejora continua requiere volver a medir. ¿En cuánto tiempo?</div>
+    </div>
+    <div style="padding:12px 14px;display:flex;gap:8px;flex-wrap:wrap">
       ${[3,6,12].map(m=>{
         const fecha=new Date(); fecha.setMonth(fecha.getMonth()+m);
         const fs=fecha.toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
-        return `<button onclick="setProximaEval(${m},'${fs}',this)" style="background:#fef3c7;border:1px solid #fcd34d;color:#78350f;border-radius:8px;padding:8px 12px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:600;flex:1;min-width:80px">${m} meses<br><span style="font-size:10px;font-weight:400">${fs}</span></button>`;
+        return `<button onclick="setProximaEval(${m},'${fs}',this)" style="background:white;border:1.5px solid #e5e7eb;color:#374151;border-radius:8px;padding:8px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:600;flex:1;min-width:80px;text-align:center;transition:all .15s">${m} meses<br><span style="font-size:10px;font-weight:400;color:#9ca3af">${fs}</span></button>`;
       }).join('')}
     </div>
-    <div id="proxima-eval-msg" style="margin-top:8px;font-size:11px;color:#059669;font-weight:600;display:none"></div>
+    <div id="proxima-eval-msg" style="margin:0 14px 12px;font-size:11px;color:#065f46;font-weight:600;display:none"></div>
   </div>`;
 }
 
@@ -1775,32 +1783,32 @@ function buildCaracterizacion(participants) {
   });
 
   const grupoRows = Object.entries(porGrupo).map(([g,n])=>
-    `<tr><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb">${g}</td><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:600">${n}</td></tr>`
+    `<tr><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#374151">${g}</td><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;text-align:center;font-weight:700;font-size:11px;color:#065f46">${n}</td></tr>`
   ).join('');
 
   const edadRows = Object.entries(porEdad).map(([e,n])=>
-    `<tr><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb">${e} años</td><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:600">${n}</td></tr>`
+    `<tr><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#374151">${e} años</td><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;text-align:center;font-weight:700;font-size:11px;color:#065f46">${n}</td></tr>`
   ).join('');
 
-  return `<div style="background:white;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:1rem;overflow:hidden">
-    <div style="background:#065f46;color:white;padding:10px 14px;font-size:13px;font-weight:600">Caracterización de la Población · ${total} participante${total!==1?'s':''}</div>
+  return `<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:1rem">
+    <div style="padding:11px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;font-weight:600;color:#111827">Caracterización · ${total} participante${total!==1?'s':''}</div>
     <div style="padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div>
-        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:6px">Por Grupo de Interés</div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px">
-          <tr style="background:#f0fdf4"><th style="padding:5px 10px;text-align:left;color:#065f46">Grupo</th><th style="padding:5px 10px;color:#065f46">N°</th></tr>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:6px">Por Grupo de Interés</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr style="border-bottom:1px solid #e5e7eb"><th style="padding:4px 8px;text-align:left;font-size:10px;color:#9ca3af;font-weight:500">Grupo</th><th style="padding:4px 8px;font-size:10px;color:#9ca3af;font-weight:500">N°</th></tr>
           ${grupoRows}
         </table>
       </div>
       <div>
-        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:6px">Por Género</div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px">
-          <tr style="background:#f0fdf4"><th style="padding:5px 10px;text-align:left;color:#065f46">Género</th><th style="padding:5px 10px;color:#065f46">N°</th></tr>
-          ${Object.entries(porGenero).map(([g,n])=>`<tr><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb">${g}</td><td style="padding:5px 10px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:600">${n}</td></tr>`).join('')}
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:6px">Por Género</div>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:10px">
+          <tr style="border-bottom:1px solid #e5e7eb"><th style="padding:4px 8px;text-align:left;font-size:10px;color:#9ca3af;font-weight:500">Género</th><th style="padding:4px 8px;font-size:10px;color:#9ca3af;font-weight:500">N°</th></tr>
+          ${Object.entries(porGenero).map(([g,n])=>`<tr><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#374151">${g}</td><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;text-align:center;font-weight:700;font-size:11px;color:#065f46">${n}</td></tr>`).join('')}
         </table>
-        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:6px">Por Rango de Edad</div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px">
-          <tr style="background:#f0fdf4"><th style="padding:5px 10px;text-align:left;color:#065f46">Rango</th><th style="padding:5px 10px;color:#065f46">N°</th></tr>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:6px">Por Rango de Edad</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr style="border-bottom:1px solid #e5e7eb"><th style="padding:4px 8px;text-align:left;font-size:10px;color:#9ca3af;font-weight:500">Rango</th><th style="padding:4px 8px;font-size:10px;color:#9ca3af;font-weight:500">N°</th></tr>
           ${edadRows}
         </table>
       </div>
@@ -1810,109 +1818,202 @@ function buildCaracterizacion(participants) {
 
 function showResultsPage(scores,total,r) {
   document.getElementById('results-group-label').textContent = currentGroupName;
-  const nivel = r?r.nivel:(total>=70?'AVANZADO':total>=50?'EN_DESARROLLO':total>=30?'INICIAL':'CRITICO');
-  const resumen = r?r.resumen:`${currentGroupName} evaluó ${scores.length} bloque${scores.length>1?'s':''} con un puntaje de ${total}%. El análisis IA estará disponible con conexión a internet.`;
-  const scoreCards = scores.map(s=>`<div class="score-card"><div class="sl">${s.name}</div><div class="sv ${scC(s.score)}">${s.score}%</div></div>`).join('');
-  const ncHtml = r&&r.nc&&r.nc.length?`<div class="nc-box"><div class="nc-title">Puntos críticos:</div>${r.nc.map((n,i)=>`<div class="nc-item"><div class="nc-dot">${i+1}</div><span>${n}</span></div>`).join('')}</div>`:'';
 
-  let diagContent='';
-  if(r&&r.diag){
-    diagContent=scores.map((s,i)=>{
-      const key='b'+s.blockIndex;
-      const d=r.diag[key]||r.diag[Object.keys(r.diag)[i]];
-      if(!d) return '';
-      const id='db-'+i;
-      const bg=s.score>=70?'#d1fae5':s.score>=40?'#fef3c7':'#fee2e2';
-      const col=s.score>=70?'#065f46':s.score>=40?'#78350f':'#7f1d1d';
-      const lbl=s.score>=70?'Bueno':s.score>=40?'En proceso':'Crítico';
-      return `<div class="diag-block"><div class="diag-hdr" onclick="tog('${id}')">
-        <span class="diag-hdr-txt">${BLOCK_ICONS[s.blockIndex]} ${s.name} · ${s.score}%</span>
-        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${bg};color:${col};font-weight:500">${lbl}</span><span id="a-${id}">▾</span></div>
-      </div>
-      <div class="diag-body" id="${id}" style="display:none">
-        <div class="diag-blk"><div class="diag-lbl">Lo que hacemos bien:</div>${d.f||'—'}</div>
-        <div class="diag-blk"><div class="diag-lbl">Lo que nos falta:</div>${d.b||'—'}</div>
-        <div class="rec-box"><strong style="color:#059669;display:block;margin-bottom:3px">Qué recomienda la norma:</strong>${d.r||'—'}</div>
-      </div></div>`;
-    }).join('');
-  } else {
-    const noAI=scores.map((s,si)=>{
-      const block=BLOCKS[selectedBlocks[si]]; const id='dbn-'+si;
-      const bg=s.score>=70?'#d1fae5':s.score>=40?'#fef3c7':'#fee2e2';
-      const col=s.score>=70?'#065f46':s.score>=40?'#78350f':'#7f1d1d';
-      const lbl=s.score>=70?'Bueno':s.score>=40?'En proceso':'Crítico';
-      const qRows=block.questions.map(q=>{
-        const ans=answers[q.n]; const letter=['A','B','C','D'][ans];
-        const qcol=ans===0?'#059669':ans===1?'#d97706':ans===2?'#dc2626':'#991b1b';
-        const ev=evidence[q.n]||'';
-        return `<div style="padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:11px">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
-            <span style="color:#374151;flex:1;padding-right:8px;font-weight:500">P${q.n}. ${q.q.substring(0,70)}${q.q.length>70?'...':''}</span>
-            <span style="font-weight:700;color:${qcol};min-width:20px;text-align:center">${letter}</span>
-          </div>
-          ${ev?`<div style="color:#6b7280;font-style:italic;padding-left:4px;border-left:2px solid #e5e7eb">${ev}</div>`:''}
-        </div>`;
-      }).join('');
-      return `<div class="diag-block"><div class="diag-hdr" onclick="tog('${id}')">
-        <span class="diag-hdr-txt">${BLOCK_ICONS[s.blockIndex]} ${s.name} · ${s.score}%</span>
-        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${bg};color:${col};font-weight:500">${lbl}</span><span id="a-${id}">▾</span></div>
-      </div><div class="diag-body" id="${id}" style="display:none">${qRows}</div></div>`;
-    }).join('');
-    diagContent=`<div class="card" style="background:#fef3c7;border-color:#fcd34d;margin-bottom:1rem">
-      <div style="font-size:12px;font-weight:600;color:#78350f;margin-bottom:4px">Sin conexión a internet</div>
-      <div style="font-size:12px;color:#92400e;line-height:1.5">Tus respuestas están guardadas. Usa el botón de abajo para reintentar el análisis IA cuando haya señal.</div>
-    </div>${noAI}`;
-  }
+  // 4-level scale (matches PDF design)
+  const lvlCol = total>=75?'#059669':total>=50?'#2563eb':total>=25?'#d97706':'#dc2626';
+  const lvlLbl = total>=75?'En Mejoramiento':total>=50?'En Medición y Seguimiento':total>=25?'En Ejecución':'En Planeación';
+  const resumen = r?r.resumen:`${currentGroupName} evaluó ${scores.length} componente${scores.length>1?'s':''} con un puntaje de ${total}%. El análisis IA estará disponible cuando haya señal.`;
 
-  const acciones=r&&r.acciones?r.acciones.map((a,i)=>
-    `<div class="action-item"><div class="a-num">${i+1}</div><div>
-      <div class="a-txt">${a.acc||''}</div>
-      <div class="a-meta"><span class="ptag ${ptC(a.p||'')}">${a.p||''}</span><span>${a.cat||''}</span><span>·</span><span>${a.plazo||''}</span>${a.resp?`<span>· ${a.resp}</span>`:''}</div>
-    </div></div>`
-  ).join(''):'';
-
-  const rutaHtml=r&&r.ruta?`<div class="ruta-box"><div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:6px">Ruta hacia la certificación</div><div style="font-size:12px;color:#374151;line-height:1.6">${r.ruta}</div></div>`:'';
-
-  const partHtml=`<div class="card" style="background:#f8fafc;border-color:#e2e8f0;margin-bottom:1rem">
-    <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">Participantes de esta sesión (${currentParticipants.length})</div>
-    ${currentParticipants.map(p=>`<div style="display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #e5e7eb;font-size:12px">
-      <div style="min-width:26px;height:26px;border-radius:50%;background:#d1fae5;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${p.nombre.charAt(0)}</div>
-      <div><div style="font-weight:500">${p.nombre}</div><div style="color:#6b7280;font-size:11px">${p.grupoInteres}</div></div>
-    </div>`).join('')}
+  // ── 1. Resultado global ─────────────────────────────────────
+  const resultBox = `
+  <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px 16px;margin-bottom:1rem;text-align:center">
+    <div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">${scores.length} componente${scores.length>1?'s':''} evaluado${scores.length>1?'s':''} · ${currentGroupName}</div>
+    <div style="font-size:54px;font-weight:700;color:#065f46;line-height:1">${total}%</div>
+    <div style="display:inline-flex;align-items:center;margin:10px 0;padding:4px 14px;border:1.5px solid ${lvlCol};color:${lvlCol};border-radius:6px;font-size:12px;font-weight:600">${lvlLbl}</div>
+    <div style="font-size:12px;color:#4b5563;line-height:1.65;text-align:left;margin-top:10px;padding-top:12px;border-top:1px solid #f3f4f6">${resumen}</div>
   </div>`;
 
-  document.getElementById('results-content').innerHTML = `
-    <div style="background:white;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:1rem;overflow:hidden">
-  <div style="background:#065f46;color:white;padding:10px 14px;font-size:13px;font-weight:600">Ficha Técnica del Instrumento</div>
-  <table style="width:100%;border-collapse:collapse;font-size:12px">
-    <tr><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb;width:40%">Nombre</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Instrumento de Diagnóstico Participativo NTS-TS 001-2 — Playa Piangüita Punta Bazán</td></tr>
-    <tr style="background:#f9fafb"><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Norma aplicada</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">NTS-TS 001-2: Destinos Turísticos de Playa. Requisitos de Sostenibilidad (ICONTEC, 2007)</td></tr>
-    <tr><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Destino evaluado</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Playa Piangüita Punta Bazán, Buenaventura, Valle del Cauca</td></tr>
-    <tr style="background:#f9fafb"><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Tipo de instrumento</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Diagnóstico participativo multi-actor con evaluación cuantitativa y cualitativa</td></tr>
-    <tr><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Grupos de interés</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Hoteleros · Restaurantes · Carperos · Guías locales · Lancheros · Vecinos de Piangüita · Vendedores ambulantes · Autoridad local y regional · Institución educativa</td></tr>
-    <tr style="background:#f9fafb"><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Total de preguntas</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">56 preguntas distribuidas en 8 componentes</td></tr>
-    <tr><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Escala de respuesta</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Nivel 1: En Planeación · Nivel 2: En Ejecución · Nivel 3: En Medición · Nivel 4: En Mejoramiento</td></tr>
-    <tr style="background:#f9fafb"><td style="padding:7px 12px;color:#065f46;font-weight:600;border-bottom:1px solid #e5e7eb">Campo de evidencia</td><td style="padding:7px 12px;border-bottom:1px solid #e5e7eb">Cada pregunta incluye un campo de evidencias donde la comunidad documenta el estado actual</td></tr>
-    <tr><td style="padding:7px 12px;color:#065f46;font-weight:600">Cálculo del puntaje</td><td style="padding:7px 12px">Promedio de niveles por componente (12.5% c/u). Puntaje total = promedio simple de los 8 componentes</td></tr>
-  </table>
-</div>
-    ${buildCaracterizacion(currentParticipants)}
-    ${partHtml}
-    <div class="card" style="text-align:center;background:#f0fdf4;border-color:#6ee7b7">
-      <div style="font-size:11px;color:#6b7280;margin-bottom:4px">${scores.length} componente${scores.length>1?'s':''} evaluado${scores.length>1?'s':''}</div>
-      <div class="score-big" style="color:${ncC(nivel)}">${total}%</div>
-      <div style="font-size:13px;font-weight:600;color:${ncC(nivel)};margin:4px 0 10px">${nivel.replace('_',' ')}</div>
-      <div style="font-size:12px;color:#4b5563;line-height:1.6;text-align:left;border-top:1px solid #6ee7b7;padding-top:10px;margin-top:6px">${resumen}</div>
+  // ── 2. Puntajes por componente ──────────────────────────────
+  const barsHtml = `
+  <div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:1rem">
+    <div style="padding:11px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;font-weight:600;color:#111827">Puntajes por componente</div>
+    <div style="padding:12px 14px">
+      ${scores.map(s=>{
+        const sc=s.score;
+        const col=sc>=75?'#059669':sc>=50?'#2563eb':sc>=25?'#d97706':'#dc2626';
+        const lbl=sc>=75?'En Mejoramiento':sc>=50?'En Medición':sc>=25?'En Ejecución':'En Planeación';
+        return `<div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+            <span style="font-size:11px;color:#374151;font-weight:500">${BLOCK_ICONS[s.blockIndex]} ${s.name}</span>
+            <span style="font-size:11px;font-weight:700;color:${col}">${sc}%</span>
+          </div>
+          <div style="height:4px;background:#f3f4f6;border-radius:2px">
+            <div style="height:4px;width:${sc}%;background:${col};border-radius:2px"></div>
+          </div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:2px">${lbl}</div>
+        </div>`;
+      }).join('')}
     </div>
-    <div class="score-grid">${scoreCards}</div>
-    ${buildRadarChart(scores,'Perfil de Sostenibilidad — '+currentGroupName)}
-    ${ncHtml}${diagContent}
-    ${acciones?`<div class="card" style="margin-top:1rem"><div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:12px">Plan de acción</div>${acciones}</div>`:''}
-    ${rutaHtml}
-    ${buildHojaDeRuta(scores)}
-    ${buildProximaEval()}
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem">
-      <button onclick="descargarCertificados()" style="background:#065f46;color:white;border:none;padding:12px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">📜 Certificados de participación</button>
+  </div>`;
+
+  // ── 3. Radar ────────────────────────────────────────────────
+  const radarHtml = buildRadarChart(scores,'Perfil de Sostenibilidad — '+currentGroupName);
+
+  // ── 4. Puntos críticos ──────────────────────────────────────
+  let ncHtml = '';
+  if(r&&r.nc&&r.nc.length){
+    ncHtml = `
+    <div style="border:1px solid #e5e7eb;border-left:3px solid #dc2626;border-radius:8px;padding:12px 14px;margin-bottom:1rem">
+      <div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:8px">Puntos críticos identificados</div>
+      ${r.nc.map((n,i)=>`
+      <div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;color:#374151;line-height:1.5">
+        <span style="min-width:18px;height:18px;border-radius:50%;border:1.5px solid #dc2626;color:#dc2626;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">${i+1}</span>
+        <span>${n}</span>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  // ── 5. Diagnóstico por componente ───────────────────────────
+  let diagContent = '';
+  if(r&&r.diag){
+    diagContent = `
+    <div style="margin-bottom:1rem">
+      <div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:8px">Diagnóstico por componente</div>
+      ${scores.map((s,i)=>{
+        const key='b'+s.blockIndex;
+        const d=r.diag[key]||r.diag[Object.keys(r.diag)[i]];
+        if(!d) return '';
+        const id='db-'+i; const sc=s.score;
+        const col=sc>=75?'#059669':sc>=50?'#2563eb':sc>=25?'#d97706':'#dc2626';
+        const lbl=sc>=75?'En Mejoramiento':sc>=50?'En Medición':sc>=25?'En Ejecución':'En Planeación';
+        return `<div style="border:1px solid #e5e7eb;border-radius:8px;margin-bottom:6px;overflow:hidden">
+          <div onclick="tog('${id}')" style="padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fafafa;user-select:none">
+            <span style="font-size:12px;font-weight:500;color:#111827">${BLOCK_ICONS[s.blockIndex]} ${s.name}</span>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:10px;padding:2px 9px;border-radius:4px;border:1.5px solid ${col};color:${col};font-weight:600">${sc}%</span>
+              <span id="a-${id}" style="color:#9ca3af;font-size:12px">▾</span>
+            </div>
+          </div>
+          <div id="${id}" style="display:none;padding:12px 14px;border-top:1px solid #f3f4f6">
+            <div style="margin-bottom:8px">
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;margin-bottom:3px">Lo que hacemos bien</div>
+              <div style="font-size:12px;color:#374151;line-height:1.55">${d.f||'—'}</div>
+            </div>
+            <div style="margin-bottom:8px">
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;margin-bottom:3px">Lo que nos falta</div>
+              <div style="font-size:12px;color:#374151;line-height:1.55">${d.b||'—'}</div>
+            </div>
+            <div style="padding:8px 10px;border-left:3px solid #065f46;background:#f8fdf9;border-radius:0 4px 4px 0;font-size:12px;color:#374151;line-height:1.55">
+              <span style="font-weight:600;color:#065f46">Recomienda la norma: </span>${d.r||'—'}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  } else {
+    const noAI=scores.map((s,si)=>{
+      const block=BLOCKS[selectedBlocks[si]]; const id='dbn-'+si; const sc=s.score;
+      const col=sc>=75?'#059669':sc>=50?'#2563eb':sc>=25?'#d97706':'#dc2626';
+      const lbl=sc>=75?'En Mejoramiento':sc>=50?'En Medición':sc>=25?'En Ejecución':'En Planeación';
+      const qRows=block.questions.map(q=>{
+        const ans=answers[q.n]; const letter=['A','B','C','D'][ans];
+        const ev=evidence[q.n]||'';
+        return `<div style="padding:7px 0;border-bottom:1px solid #f3f4f6;font-size:11px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:2px">
+            <span style="color:#374151;flex:1;font-weight:500">P${q.n}. ${q.q.substring(0,70)}${q.q.length>70?'...':''}</span>
+            <span style="font-weight:700;color:#065f46;min-width:16px;text-align:center">${letter}</span>
+          </div>
+          ${ev?`<div style="color:#6b7280;font-style:italic;font-size:11px;padding-left:4px;border-left:2px solid #e5e7eb;margin-top:2px">${ev}</div>`:''}
+        </div>`;
+      }).join('');
+      return `<div style="border:1px solid #e5e7eb;border-radius:8px;margin-bottom:6px;overflow:hidden">
+        <div onclick="tog('${id}')" style="padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fafafa;user-select:none">
+          <span style="font-size:12px;font-weight:500;color:#111827">${BLOCK_ICONS[s.blockIndex]} ${s.name}</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:10px;padding:2px 9px;border-radius:4px;border:1.5px solid ${col};color:${col};font-weight:600">${sc}%</span>
+            <span id="a-${id}" style="color:#9ca3af;font-size:12px">▾</span>
+          </div>
+        </div>
+        <div id="${id}" style="display:none;padding:0 14px 10px;border-top:1px solid #f3f4f6">${qRows}</div>
+      </div>`;
+    }).join('');
+    diagContent=`
+    <div style="border:1px solid #e5e7eb;border-left:3px solid #d97706;border-radius:8px;padding:11px 14px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:2px">Sin análisis IA disponible</div>
+      <div style="font-size:11px;color:#9ca3af;line-height:1.5">Respuestas guardadas. Usa el botón de abajo para reintentar cuando haya señal.</div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:8px">Respuestas por componente</div>
+      ${noAI}
+    </div>`;
+  }
+
+  // ── 6. Plan de acción ───────────────────────────────────────
+  let accionesHtml='';
+  if(r&&r.acciones&&r.acciones.length){
+    const prioCol={ALTA:'#dc2626',MEDIA:'#d97706',BAJA:'#059669'};
+    accionesHtml=`
+    <div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:1rem">
+      <div style="padding:11px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;font-weight:600;color:#111827">Plan de acción</div>
+      <div style="padding:10px 14px">
+        ${r.acciones.map((a,i)=>`
+        <div style="display:flex;gap:9px;padding:8px 0;border-bottom:1px solid #f3f4f6">
+          <div style="min-width:22px;height:22px;border-radius:50%;border:1.5px solid #065f46;color:#065f46;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">${i+1}</div>
+          <div style="flex:1">
+            <div style="font-size:12px;color:#111827;line-height:1.5;margin-bottom:3px">${a.acc||''}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;font-size:10px;color:#6b7280;align-items:center">
+              <span style="padding:1px 7px;border-radius:3px;border:1px solid ${prioCol[a.p]||'#e5e7eb'};color:${prioCol[a.p]||'#6b7280'};font-weight:600">${a.p||''}</span>
+              <span>${a.cat||''}</span>
+              <span>· ${a.plazo||''}</span>
+              ${a.resp?`<span>· ${a.resp}</span>`:''}
+            </div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // ── 7. Ruta hacia la certificación ─────────────────────────
+  const rutaHtml=r&&r.ruta?`
+  <div style="border:1px solid #e5e7eb;border-left:3px solid #065f46;border-radius:8px;padding:12px 14px;margin-bottom:1rem">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:4px">Ruta hacia la certificación</div>
+    <div style="font-size:12px;color:#374151;line-height:1.65">${r.ruta}</div>
+  </div>`:'';
+
+  // ── 8. Participantes ────────────────────────────────────────
+  const partHtml=`
+  <div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:1rem">
+    <div style="padding:11px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;font-weight:600;color:#111827">Participantes (${currentParticipants.length})</div>
+    <div style="padding:4px 14px">
+      ${currentParticipants.map(p=>`
+      <div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid #f3f4f6;font-size:12px">
+        <div style="min-width:28px;height:28px;border-radius:50%;border:1.5px solid #065f46;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${p.nombre.charAt(0)}</div>
+        <div><div style="font-weight:500;color:#111827">${p.nombre}</div><div style="color:#9ca3af;font-size:11px">${p.grupoInteres}</div></div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+
+  // ── 9. Ficha técnica ────────────────────────────────────────
+  const fichaHtml=`
+  <div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:1rem">
+    <div style="padding:11px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;font-weight:600;color:#111827">Ficha técnica del instrumento</div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <tr><td style="padding:7px 12px;color:#9ca3af;font-weight:500;border-bottom:1px solid #f3f4f6;width:38%;vertical-align:top">Norma aplicada</td><td style="padding:7px 12px;border-bottom:1px solid #f3f4f6;color:#374151">NTS-TS 001-2: Destinos Turísticos de Playa. Requisitos de Sostenibilidad (ICONTEC, 2007)</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 12px;color:#9ca3af;font-weight:500;border-bottom:1px solid #f3f4f6;vertical-align:top">Destino evaluado</td><td style="padding:7px 12px;border-bottom:1px solid #f3f4f6;color:#374151">Playa Piangüita Punta Bazán, Buenaventura, Valle del Cauca</td></tr>
+      <tr><td style="padding:7px 12px;color:#9ca3af;font-weight:500;border-bottom:1px solid #f3f4f6;vertical-align:top">Total preguntas</td><td style="padding:7px 12px;border-bottom:1px solid #f3f4f6;color:#374151">56 preguntas en 8 componentes</td></tr>
+      <tr style="background:#fafafa"><td style="padding:7px 12px;color:#9ca3af;font-weight:500;border-bottom:1px solid #f3f4f6;vertical-align:top">Escala de respuesta</td><td style="padding:7px 12px;border-bottom:1px solid #f3f4f6;color:#374151">N1 En Planeación · N2 En Ejecución · N3 En Medición · N4 En Mejoramiento</td></tr>
+      <tr><td style="padding:7px 12px;color:#9ca3af;font-weight:500;vertical-align:top">Cálculo</td><td style="padding:7px 12px;color:#374151">Promedio de niveles por componente (12.5% c/u)</td></tr>
+    </table>
+  </div>`;
+
+  // ── Ensamblar ───────────────────────────────────────────────
+  document.getElementById('results-content').innerHTML =
+    resultBox + barsHtml + radarHtml + ncHtml + diagContent +
+    accionesHtml + rutaHtml + buildHojaDeRuta(scores) +
+    buildCaracterizacion(currentParticipants) + partHtml + fichaHtml +
+    buildProximaEval() +
+    `<div style="margin-bottom:1rem">
+      <button onclick="descargarCertificados()" style="background:white;color:#065f46;border:1.5px solid #065f46;padding:12px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;width:100%">📜 Certificados de participación</button>
     </div>`;
 
   lastScores=scores; lastTotal=total;
