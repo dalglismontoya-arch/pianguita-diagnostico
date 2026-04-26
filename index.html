@@ -2225,48 +2225,15 @@ function clearAll() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// PDF — Informe individual del grupo
+// PDF — Informe individual del grupo (desde "Nuestro Balance")
+// Usa el mismo diseño limpio que descargarPDFGrupo
 // ══════════════════════════════════════════════════════════════
-function descargarPDFIndividual() {
+async function descargarPDFIndividual() {
   const btn = document.querySelector('[onclick="descargarPDFIndividual()"]');
-  if(btn){ btn.textContent='Generando PDF...'; btn.disabled=true; }
-
-  // Expandir todos los bloques colapsados antes de clonar
-  document.querySelectorAll('.diag-body').forEach(el=>{ el._wasHidden=el.style.display==='none'; el.style.display='block'; });
-
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:0 auto;color:#111827;';
-
-  // Encabezado
-  const tit = document.createElement('div');
-  tit.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:12px;border-bottom:3px solid #065f46;';
-  tit.innerHTML = '<h1 style="font-size:18px;color:#065f46;margin-bottom:4px">Diagnóstico Participativo · NTS-TS 001-02</h1>'+
-    '<h2 style="font-size:14px;color:#374151;font-weight:normal;margin-bottom:4px">Playa Piangüita Punta Bazán · Buenaventura</h2>'+
-    '<p style="font-size:12px;color:#6b7280;margin:0">'+currentGroupName+' · '+new Date().toLocaleDateString('es-CO')+'</p>';
-  wrap.appendChild(tit);
-
-  // Clonar contenido con todos los bloques visibles
-  const rc = document.getElementById('results-content');
-  if(rc){
-    const cl = rc.cloneNode(true);
-    // Asegurar que todo esté visible en el clon
-    cl.querySelectorAll('.diag-body').forEach(el=>{ el.style.display='block'; });
-    cl.querySelectorAll('button').forEach(b=>b.remove());
-    wrap.appendChild(cl);
-  }
-
-  // Restaurar estado colapsado original en la pantalla
-  document.querySelectorAll('.diag-body').forEach(el=>{ if(el._wasHidden) el.style.display='none'; });
-
-  html2pdf().set({
-    margin:[15,15,15,15],
-    filename:'Informe_'+currentGroupName.replace(/[^a-zA-Z0-9]/g,'_')+'_Pianguita.pdf',
-    image:{type:'jpeg',quality:0.95},
-    html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-  }).from(wrap).save()
-    .then(()=>{ if(btn){ btn.textContent='📄 Descargar Informe PDF del grupo'; btn.disabled=false; }})
-    .catch(()=>{ if(btn){ btn.textContent='📄 Descargar Informe PDF del grupo'; btn.disabled=false; }});
+  if(btn){ btn.textContent='⏳ Generando...'; btn.disabled=true; }
+  // Reutiliza exactamente el mismo generador limpio
+  await descargarPDFGrupo(currentGroup, btn);
+  if(btn){ btn.textContent='📄 Descargar Informe PDF del grupo'; btn.disabled=false; }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2523,12 +2490,12 @@ async function descargarPDFEjecutivoGrupo(grupoKey) {
 // ══════════════════════════════════════════════════════════════
 // PDF COMPLETO — diseño limpio con fotos
 // ══════════════════════════════════════════════════════════════
-async function descargarPDFGrupo(grupoKey) {
-  const btn = document.getElementById('pdf-btn-'+grupoKey);
-  if(btn){ btn.textContent='⏳...'; btn.disabled=true; }
+async function descargarPDFGrupo(grupoKey, _externalBtn) {
+  const btn = _externalBtn || document.getElementById('pdf-btn-'+grupoKey);
+  if(btn && !_externalBtn){ btn.textContent='⏳...'; btn.disabled=true; }
 
   const g = await _leerGrupo(grupoKey);
-  if(!g){ alert('No se encontraron datos para este grupo.'); if(btn){btn.textContent='📄 Informe Completo';btn.disabled=false;} return; }
+  if(!g){ alert('No se encontraron datos para este grupo.'); if(btn&&!_externalBtn){btn.textContent='📄 Informe Completo';btn.disabled=false;} return; }
 
   const NOMS  = ['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
   const NCOLS = ['#dc2626','#d97706','#2563eb','#059669'];
@@ -2684,8 +2651,8 @@ async function descargarPDFGrupo(grupoKey) {
     html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
     jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
   }).from(wrap).save()
-    .then(()=>{ if(btn){btn.textContent='📄 Informe Completo';btn.disabled=false;} })
-    .catch(()=>{ if(btn){btn.textContent='📄 Informe Completo';btn.disabled=false;} });
+    .then(()=>{ if(btn&&!_externalBtn){btn.textContent='📄 Informe Completo';btn.disabled=false;} })
+    .catch(()=>{ if(btn&&!_externalBtn){btn.textContent='📄 Informe Completo';btn.disabled=false;} });
 }
 
 // ══════════════════════════════════════════════════════════════
