@@ -163,6 +163,12 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
 </head>
 <body>
 
+<!-- BANNER SINCRONIZACIÓN OFFLINE -->
+<div id="sync-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#d97706;color:white;padding:8px 16px;font-size:12px;font-weight:600;text-align:center;box-shadow:0 -2px 8px rgba(0,0,0,0.2)">
+  <span id="sync-banner-text">📡 Datos guardados localmente — sin conexión</span>
+  <button id="sync-btn" onclick="syncPendingManual()" style="margin-left:12px;background:white;color:#d97706;border:none;border-radius:5px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;display:none">↑ Sincronizar ahora</button>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════════
      PAGE 1: BIENVENIDA / REGISTRO
 ════════════════════════════════════════════════════════════ -->
@@ -842,15 +848,81 @@ async function fb_getToken() {
 function fb_authParam(token) { return token ? `?auth=${token}` : ''; }
 
 // ── Guardar (incluye token secreto en el payload) ──────────────
+const PENDING_KEY = 'pianguita_pending_sync';
+
 async function fb_guardar(grupo, datos) {
   try {
     const token   = await fb_getToken();
     const payload = { ...datos, _tk: FB_SECRET };
-    await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
+    const r = await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
       method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
     });
+    if(r.ok) {
+      _removePending(grupo);
+      _updateSyncBanner();
+      return true;
+    }
   } catch(e) {}
+  // Sin internet → marcar pendiente
+  _addPending(grupo);
+  _updateSyncBanner();
+  return false;
 }
+
+function _addPending(grupo) {
+  const p = JSON.parse(localStorage.getItem(PENDING_KEY)||'[]');
+  if(!p.includes(grupo)) { p.push(grupo); localStorage.setItem(PENDING_KEY, JSON.stringify(p)); }
+}
+function _removePending(grupo) {
+  const p = JSON.parse(localStorage.getItem(PENDING_KEY)||'[]');
+  const f = p.filter(g=>g!==grupo);
+  localStorage.setItem(PENDING_KEY, JSON.stringify(f));
+}
+function _getPending() { return JSON.parse(localStorage.getItem(PENDING_KEY)||'[]'); }
+
+function _updateSyncBanner() {
+  const banner = document.getElementById('sync-banner');
+  const txt    = document.getElementById('sync-banner-text');
+  const btn    = document.getElementById('sync-btn');
+  if(!banner) return;
+  const pending = _getPending();
+  const online  = navigator.onLine;
+  if(pending.length > 0) {
+    banner.style.display = 'block';
+    if(online) {
+      banner.style.background = '#2563eb';
+      txt.textContent = `📡 ${pending.length} grupo${pending.length>1?'s':''} pendiente${pending.length>1?'s':''} de subir a la nube`;
+      btn.style.display = 'inline-block';
+    } else {
+      banner.style.background = '#d97706';
+      txt.textContent = `📵 Sin conexión — ${pending.length} grupo${pending.length>1?'s':''} guardado${pending.length>1?'s':''} en este dispositivo`;
+      btn.style.display = 'none';
+    }
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+async function syncPendingManual() {
+  const btn = document.getElementById('sync-btn');
+  if(btn){ btn.textContent='⏳ Subiendo...'; btn.disabled=true; }
+  await _syncPending();
+  if(btn){ btn.textContent='↑ Sincronizar ahora'; btn.disabled=false; }
+}
+
+async function _syncPending() {
+  const pending = _getPending();
+  if(pending.length === 0) return;
+  const all = JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+  for(const grupo of [...pending]) {
+    if(all[grupo]) await fb_guardar(grupo, all[grupo]);
+  }
+  _updateSyncBanner();
+}
+
+// Auto-sync cuando vuelve la señal
+window.addEventListener('online',  () => { _updateSyncBanner(); _syncPending(); });
+window.addEventListener('offline', () => { _updateSyncBanner(); });
 
 // ── Leer ────────────────────────────────────────────────────────
 async function fb_leer() {
@@ -1589,7 +1661,13 @@ function saveGroupResult(scores,total,aiResult) {
   };
   all[currentGroup]=datos;
   localStorage.setItem(key,JSON.stringify(all));
-  fb_guardar(currentGroup,datos);
+  // Si no hay internet, marcar pendiente de inmediato y mostrar banner
+  if(!navigator.onLine) {
+    _addPending(currentGroup);
+    _updateSyncBanner();
+  } else {
+    fb_guardar(currentGroup,datos);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2821,11 +2899,16 @@ if(new URLSearchParams(window.location.search).get('ver')==='datos'){
 // INICIO
 // ══════════════════════════════════════════════════════════════
 initSession();
+_updateSyncBanner(); // mostrar banner si hay datos pendientes al iniciar
 
 // Service Worker — modo offline
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/pianguita-diagnostico/sw.js')
-    .catch(()=>{}); // silencioso si falla (localhost sin HTTPS)
+    .then(()=>{
+      // Intentar sincronizar al registrar el SW (puede haber datos pendientes de sesiones anteriores)
+      if(navigator.onLine) _syncPending();
+    })
+    .catch(()=>{});
 }
 }
 </script>
