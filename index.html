@@ -1886,7 +1886,6 @@ async function showConsolidated() {
         <div style="display:flex;align-items:center;gap:8px">
           <div style="font-size:22px;font-weight:700;color:${col}">${g.total}%</div>
           <button onclick="toggleEv('${gid}')" style="background:#e0f2fe;border:1px solid #7dd3fc;color:#0369a1;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500">Ver detalles</button>
-          <button onclick="descargarPDFGrupo('${g.grupo||g.group}')" id="pdf-btn-${g.grupo||g.group}" style="background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500">📄 PDF</button>
           <button onclick="deleteGroup('${g.grupo||g.group}')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑</button>
         </div>
       </div>
@@ -1922,6 +1921,16 @@ async function showConsolidated() {
             ${pregs}
           </div>`;
         }).join('') : '<div style="font-size:11px;color:#9ca3af">Sin respuestas registradas.</div>'}
+        <div style="display:flex;gap:8px;margin-top:14px;padding-top:10px;border-top:1px solid #e5e7eb;flex-wrap:wrap">
+          <button onclick="descargarPDFEjecutivoGrupo('${g.grupo||g.group}')" id="pdf-ej-${g.grupo||g.group}"
+            style="flex:1;background:#065f46;color:white;border:none;border-radius:7px;padding:9px 8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+            📋 Informe Ejecutivo
+          </button>
+          <button onclick="descargarPDFGrupo('${g.grupo||g.group}')" id="pdf-btn-${g.grupo||g.group}"
+            style="flex:1;background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;border-radius:7px;padding:9px 8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+            📄 Informe Completo
+          </button>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -2140,13 +2149,10 @@ function _nivelColor(v){ return v>=75?'#059669':v>=50?'#2563eb':v>=25?'#d97706':
 function _nivelLabel(v){ return v>=75?'En Mejoramiento':v>=50?'En Medición y Seguimiento':v>=25?'En Ejecución':'En Planeación'; }
 
 // ══════════════════════════════════════════════════════════════
-// PDF INDIVIDUAL DESDE CONSOLIDADO (grupo guardado)
 // ══════════════════════════════════════════════════════════════
-async function descargarPDFGrupo(grupoKey) {
-  const btn = document.getElementById('pdf-btn-'+grupoKey);
-  if(btn){ btn.textContent='⏳...'; btn.disabled=true; }
-
-  // Leer datos
+// HELPER — leer datos del grupo (Firebase o localStorage)
+// ══════════════════════════════════════════════════════════════
+async function _leerGrupo(grupoKey) {
   let all = {};
   try {
     const fb = await fb_leer();
@@ -2155,9 +2161,146 @@ async function descargarPDFGrupo(grupoKey) {
   } catch(e) {
     all = JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
   }
+  return all[grupoKey] || null;
+}
 
-  const g = all[grupoKey];
-  if(!g){ alert('No se encontraron datos para este grupo.'); if(btn){btn.textContent='📄 PDF';btn.disabled=false;} return; }
+// ══════════════════════════════════════════════════════════════
+// PDF EJECUTIVO (resumen 1-2 páginas)
+// ══════════════════════════════════════════════════════════════
+async function descargarPDFEjecutivoGrupo(grupoKey) {
+  const btn = document.getElementById('pdf-ej-'+grupoKey);
+  if(btn){ btn.textContent='⏳...'; btn.disabled=true; }
+
+  const g = await _leerGrupo(grupoKey);
+  if(!g){ alert('No se encontraron datos.'); if(btn){btn.textContent='📋 Informe Ejecutivo';btn.disabled=false;} return; }
+
+  const np = g.participantes ? g.participantes.length : 0;
+  const gcol = _nivelColor(g.total||0);
+  const gnivel = _nivelLabel(g.total||0);
+
+  // Brechas principales (preguntas en nivel 0 o 1)
+  const NOMS = ['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
+  const NCOLS = ['#dc2626','#d97706','#2563eb','#059669'];
+  let brechas = [];
+  if(g.bloques && g.answers){
+    g.bloques.forEach(bi=>{
+      BLOCKS[bi].questions.forEach(q=>{
+        const ans = g.answers[q.n]!==undefined ? parseInt(g.answers[q.n]) : null;
+        if(ans!==null && ans<=1) brechas.push({n:q.n, q:q.q, ans, blockName:BLOCKS[bi].name, bi, nextOpt:q.opts[ans+1]||''});
+      });
+    });
+    brechas.sort((a,b)=>a.ans-b.ans||a.n-b.n);
+  }
+  const topBrechas = brechas.slice(0,5);
+
+  const radarScores = g.scores ? g.scores.map(s=>({...s})) : [];
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'font-family:Arial,sans-serif;padding:20px;max-width:720px;margin:0 auto;color:#111827;font-size:12px;';
+
+  wrap.innerHTML = `
+    <!-- ENCABEZADO -->
+    <div style="text-align:center;padding:20px;border-bottom:3px solid #065f46;margin-bottom:18px">
+      <div style="font-size:9px;color:#6b7280;letter-spacing:1.5px;margin-bottom:4px">INFORME EJECUTIVO · DIAGNÓSTICO PARTICIPATIVO</div>
+      <h1 style="font-size:17px;color:#065f46;margin:0 0 4px">NTS TS 001-02 · Playa Piangüita Punta Bazán</h1>
+      <h2 style="font-size:13px;color:#374151;font-weight:normal;margin:0 0 8px">Buenaventura · Valle del Cauca · Colombia</h2>
+      <div style="font-size:13px;font-weight:700;color:#065f46">${g.nombre}</div>
+      <div style="font-size:11px;color:#6b7280;margin-top:2px">${g.fecha} · ${np} participante${np!==1?'s':''}</div>
+    </div>
+
+    <!-- RESULTADO GLOBAL -->
+    <div style="text-align:center;background:#f0fdf4;border:1px solid #6ee7b7;border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Puntaje global de sostenibilidad</div>
+      <div style="font-size:48px;font-weight:800;color:${gcol};line-height:1">${g.total||0}%</div>
+      <div style="font-size:14px;font-weight:700;color:${gcol};margin:4px 0 8px">${gnivel}</div>
+      <div style="font-size:10px;color:#6b7280">🔴 En Planeación (0–24%) · 🟠 En Ejecución (25–49%) · 🔵 En Medición (50–74%) · 🟢 En Mejoramiento (75–100%)</div>
+    </div>
+
+    <!-- FICHA TÉCNICA -->
+    <div style="border:1px solid #e5e7eb;border-radius:8px;margin-bottom:16px;overflow:hidden">
+      <div style="background:#065f46;color:white;padding:8px 12px;font-size:11px;font-weight:700">FICHA TÉCNICA</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <tr><td style="padding:5px 10px;color:#6b7280;width:36%;border-bottom:1px solid #e5e7eb">Fecha de evaluación</td><td style="padding:5px 10px;font-weight:600;border-bottom:1px solid #e5e7eb">${g.fecha||'—'}</td></tr>
+        <tr style="background:#f9fafb"><td style="padding:5px 10px;color:#6b7280;border-bottom:1px solid #e5e7eb">N° de participantes</td><td style="padding:5px 10px;font-weight:600;border-bottom:1px solid #e5e7eb">${np}</td></tr>
+        <tr><td style="padding:5px 10px;color:#6b7280;border-bottom:1px solid #e5e7eb">Componentes evaluados</td><td style="padding:5px 10px;font-weight:600;border-bottom:1px solid #e5e7eb">${g.bloques?g.bloques.map(bi=>BLOCKS[bi].name).join(', '):'—'}</td></tr>
+        <tr style="background:#f9fafb"><td style="padding:5px 10px;color:#6b7280">Grupos de interés</td><td style="padding:5px 10px;font-weight:600">${g.participantes?[...new Set(g.participantes.map(p=>p.grupoInteres))].join(', '):'—'}</td></tr>
+      </table>
+    </div>
+
+    <!-- PUNTAJES POR COMPONENTE -->
+    ${radarScores.length?`<div style="border:1px solid #e5e7eb;border-radius:8px;margin-bottom:16px;overflow:hidden">
+      <div style="background:#065f46;color:white;padding:8px 12px;font-size:11px;font-weight:700">PUNTAJES POR COMPONENTE</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr style="background:#f0fdf4">
+          <th style="padding:5px 10px;text-align:left;color:#065f46;border-bottom:1px solid #e5e7eb">Componente</th>
+          <th style="padding:5px 10px;text-align:center;color:#065f46;border-bottom:1px solid #e5e7eb">Puntaje</th>
+          <th style="padding:5px 10px;text-align:center;color:#065f46;border-bottom:1px solid #e5e7eb">Nivel</th>
+          <th style="padding:5px 10px;text-align:center;color:#065f46;border-bottom:1px solid #e5e7eb">Barra</th>
+        </tr></thead>
+        <tbody>${radarScores.map((s,si)=>{
+          const c=_nivelColor(s.score), l=_nivelLabel(s.score);
+          return `<tr style="${si%2===0?'':'background:#f9fafb'}">
+            <td style="padding:5px 10px;border-bottom:1px solid #e5e7eb">${BLOCK_ICONS[s.blockIndex]||''} ${s.name}</td>
+            <td style="padding:5px 10px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:700;color:${c}">${s.score}%</td>
+            <td style="padding:5px 10px;border-bottom:1px solid #e5e7eb;text-align:center;font-size:9px;color:${c};font-weight:600">${l}</td>
+            <td style="padding:5px 10px;border-bottom:1px solid #e5e7eb">
+              <div style="background:#e5e7eb;border-radius:4px;height:8px;width:100%">
+                <div style="background:${c};border-radius:4px;height:8px;width:${s.score}%"></div>
+              </div>
+            </td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`:''}
+
+    <!-- BRECHAS PRINCIPALES -->
+    ${topBrechas.length?`<div style="border:1px solid #fee2e2;border-radius:8px;margin-bottom:16px;overflow:hidden">
+      <div style="background:#dc2626;color:white;padding:8px 12px;font-size:11px;font-weight:700">⚠️ PRINCIPALES BRECHAS IDENTIFICADAS (Nivel 1 y 2)</div>
+      <div style="padding:10px 12px">
+        ${topBrechas.map((b,i)=>`
+          <div style="padding:7px 0;border-bottom:1px solid #e5e7eb;${i===topBrechas.length-1?'border-bottom:none':''}">
+            <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px">
+              <span style="background:${NCOLS[b.ans]};color:white;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap;flex-shrink:0">${NOMS[b.ans]}</span>
+              <span style="font-size:10px;color:#6b7280;flex-shrink:0">${BLOCK_ICONS[b.bi]} ${b.blockName} · P${b.n}</span>
+            </div>
+            <div style="font-size:11px;color:#111827;font-weight:500;margin-bottom:3px">${b.q}</div>
+            ${b.nextOpt?`<div style="font-size:10px;color:#059669;font-style:italic">→ Para avanzar: ${b.nextOpt}</div>`:''}
+          </div>`).join('')}
+      </div>
+    </div>`:'<div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#065f46;text-align:center">✅ No se encontraron brechas en Nivel 1 — buen desempeño en los componentes evaluados</div>'}
+
+    <!-- PIE -->
+    <div style="margin-top:16px;padding-top:10px;border-top:2px solid #e5e7eb;font-size:9px;color:#9ca3af;text-align:center">
+      Diagnóstico Participativo · Playa Piangüita Punta Bazán · NTS TS 001-02 · ${new Date().getFullYear()}
+    </div>`;
+
+  // Insertar radar entre puntajes y brechas (appendChild antes del pie)
+  const radarEl = document.createElement('div');
+  radarEl.innerHTML = buildRadarChart(radarScores, 'Perfil de Sostenibilidad · '+g.nombre);
+  // Insertar como primer hijo después del segundo div (resultado global)
+  const children = wrap.children;
+  if(children.length >= 4) wrap.insertBefore(radarEl, children[4]);
+  else wrap.appendChild(radarEl);
+
+  html2pdf().set({
+    margin:[10,10,10,10],
+    filename:'Ejecutivo_'+g.nombre.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf',
+    image:{type:'jpeg',quality:0.97},
+    html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(wrap).save()
+    .then(()=>{ if(btn){btn.textContent='📋 Informe Ejecutivo';btn.disabled=false;} })
+    .catch(()=>{ if(btn){btn.textContent='📋 Informe Ejecutivo';btn.disabled=false;} });
+}
+
+// PDF INDIVIDUAL DESDE CONSOLIDADO (grupo guardado)
+// ══════════════════════════════════════════════════════════════
+async function descargarPDFGrupo(grupoKey) {
+  const btn = document.getElementById('pdf-btn-'+grupoKey);
+  if(btn){ btn.textContent='⏳...'; btn.disabled=true; }
+
+  const g = await _leerGrupo(grupoKey);
+  if(!g){ alert('No se encontraron datos para este grupo.'); if(btn){btn.textContent='📄 Informe Completo';btn.disabled=false;} return; }
 
   const NIVELES = ['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
   const NIVEL_COLOR = ['#dc2626','#d97706','#2563eb','#059669'];
@@ -2242,9 +2385,14 @@ async function descargarPDFGrupo(grupoKey) {
     </div>`;
   }
 
+  // Radar chart
+  if(g.scores && g.scores.length >= 2){
+    wrap.innerHTML += buildRadarChart(g.scores, 'Perfil de Sostenibilidad · '+g.nombre);
+  }
+
   // Respuestas pregunta por pregunta
   if(g.answers && Object.keys(g.answers).length > 0){
-    let respHtml = `<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;background:white">
+    let respHtml = `<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;background:white;margin-top:2px">
       <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:10px;border-bottom:1px solid #e5e7eb;padding-bottom:4px">RESPUESTAS PREGUNTA POR PREGUNTA</div>`;
 
     if(g.bloques){
