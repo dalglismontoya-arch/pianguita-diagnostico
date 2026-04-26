@@ -2070,10 +2070,15 @@ function checkPin() {
   }
 }
 
-async function showConsolidated() {
-  const fb=await fb_leer();
-  if(fb&&Object.keys(fb).length>0) localStorage.setItem('pianguita_diagnostico',JSON.stringify(fb));
-  const all=fb||JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+async function showConsolidated(skipFirebase=false) {
+  let all;
+  if(skipFirebase){
+    all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+  } else {
+    const fb=await fb_leer();
+    if(fb&&Object.keys(fb).length>0) localStorage.setItem('pianguita_diagnostico',JSON.stringify(fb));
+    all=fb||JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+  }
   const groups=Object.values(all).sort((a,b)=>{ if(a.fechaISO!==b.fechaISO) return a.fechaISO>b.fechaISO?1:-1; return (a.numero||0)-(b.numero||0); });
 
   document.getElementById('consolidated-ai-result').innerHTML='';
@@ -2319,8 +2324,8 @@ async function deleteGroup(group) {
   const all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
   delete all[group];
   localStorage.setItem('pianguita_diagnostico',JSON.stringify(all));
-  await fb_borrar(group);
-  showConsolidated();
+  fb_borrar(group); // Firebase en paralelo, no bloqueamos la UI
+  showConsolidated(true); // refresca desde localStorage ya actualizado
 }
 function clearAll() {
   if(!confirm('¿Seguro que quieres borrar TODOS los diagnósticos guardados? Esta acción no se puede deshacer.')) return;
