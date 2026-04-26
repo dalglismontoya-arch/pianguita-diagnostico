@@ -2311,7 +2311,89 @@ async function _leerGrupo(grupoKey) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// PDF EJECUTIVO (resumen 1-2 páginas)
+// HELPER: sección IA reutilizable en ejecutivo y completo
+// ══════════════════════════════════════════════════════════════
+function _buildAISection(ai, sectionNum) {
+  const hdr = `<div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">${sectionNum} &nbsp;·&nbsp; ANÁLISIS IA · NTS TS 001-02</div>`;
+  if(!ai) return `<div style="margin-bottom:28px">${hdr}
+    <div style="border-left:3px solid #e5e7eb;padding-left:14px;font-size:11px;color:#9ca3af;font-style:italic">
+      Análisis IA no disponible — el grupo no tuvo conexión a internet durante el diagnóstico.
+    </div></div>`;
+  let h = `<div style="margin-bottom:28px">${hdr}<div style="border-left:3px solid #065f46;padding-left:14px">`;
+  if(ai.resumen) h+=`<div style="font-size:11px;color:#374151;line-height:1.7;margin-bottom:16px">${ai.resumen}</div>`;
+  if(ai.nc&&ai.nc.length){
+    h+=`<div style="margin-bottom:16px"><div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:6px">PUNTOS CRÍTICOS</div>`;
+    ai.nc.forEach((n,i)=>{ h+=`<div style="padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:11px;color:#374151"><span style="font-weight:700;color:#dc2626">${i+1}. </span>${n}</div>`; });
+    h+=`</div>`;
+  }
+  if(ai.diag){
+    h+=`<div style="margin-bottom:16px"><div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:6px">DIAGNÓSTICO POR COMPONENTE</div>`;
+    Object.entries(ai.diag).forEach(([key,d])=>{
+      const bi=parseInt(key.replace('b',''));
+      const bn=BLOCKS[bi]?BLOCKS[bi].name:key; const ic=BLOCK_ICONS[bi]||'';
+      h+=`<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #f3f4f6">
+        <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:4px">${ic} ${bn}</div>
+        ${d.f?`<div style="font-size:10px;color:#374151;margin-bottom:2px"><span style="color:#059669;font-weight:600">✓ </span>${d.f}</div>`:''}
+        ${d.b?`<div style="font-size:10px;color:#374151;margin-bottom:2px"><span style="color:#dc2626;font-weight:600">✗ </span>${d.b}</div>`:''}
+        ${d.r?`<div style="font-size:10px;color:#374151"><span style="color:#2563eb;font-weight:600">→ </span>${d.r}</div>`:''}
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+  if(ai.acciones&&ai.acciones.length){
+    h+=`<div style="margin-bottom:16px"><div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:6px">PLAN DE ACCIÓN</div>
+      <table style="width:100%;border-collapse:collapse;font-size:10px">
+        <thead><tr style="border-bottom:1.5px solid #065f46">
+          <th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:600;width:50%">Acción</th>
+          <th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:600">Prioridad</th>
+          <th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:600">Plazo</th>
+          <th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:600">Responsable</th>
+        </tr></thead><tbody>`;
+    ai.acciones.forEach((a,i)=>{ h+=`<tr style="border-bottom:1px solid #f3f4f6">
+      <td style="padding:5px 6px;color:#111827">${a.acc||'—'}</td>
+      <td style="padding:5px 6px;font-weight:600;color:${a.p==='ALTA'?'#dc2626':a.p==='MEDIA'?'#d97706':'#374151'}">${a.p||'—'}</td>
+      <td style="padding:5px 6px;color:#374151">${a.plazo||'—'}</td>
+      <td style="padding:5px 6px;color:#374151">${a.resp||'A definir'}</td>
+    </tr>`; });
+    h+=`</tbody></table></div>`;
+  }
+  if(ai.ruta) h+=`<div><div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:6px">RUTA HACIA LA CERTIFICACIÓN</div>
+    <div style="font-size:11px;color:#374151;line-height:1.7;padding-left:10px;border-left:2px solid #e5e7eb">${ai.ruta}</div></div>`;
+  h+=`</div></div>`;
+  return h;
+}
+
+// ══════════════════════════════════════════════════════════════
+// HELPER: encabezado común a ambos informes
+// ══════════════════════════════════════════════════════════════
+function _buildPDFHeader(g, np, gcol, gnivel, tipo) {
+  return `<div style="border-bottom:2px solid #065f46;padding-bottom:16px;margin-bottom:28px">
+    <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:6px">DIAGNÓSTICO PARTICIPATIVO · NTS TS 001-02</div>
+    <div style="font-size:19px;font-weight:700;color:#065f46;margin-bottom:2px">Playa Piangüita Punta Bazán</div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:14px">Buenaventura · Valle del Cauca · Colombia</div>
+    <table style="width:100%;border-collapse:collapse">
+      <tr>
+        <td style="vertical-align:top">
+          <div style="font-size:13px;font-weight:700;color:#111827">${g.nombre}</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:2px">${g.fecha||'—'} &nbsp;·&nbsp; ${np} participante${np!==1?'s':''}</div>
+        </td>
+        <td style="text-align:right;vertical-align:top">
+          <div style="font-size:8px;letter-spacing:1.5px;color:#9ca3af;margin-bottom:2px">${tipo}</div>
+          <div style="font-size:10px;color:#6b7280">${new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'})}</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div style="text-align:center;border:1.5px solid #e5e7eb;border-radius:10px;padding:20px;margin-bottom:28px">
+    <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">RESULTADO GLOBAL DE SOSTENIBILIDAD</div>
+    <div style="font-size:52px;font-weight:800;color:${gcol};line-height:1;margin-bottom:6px">${g.total||0}%</div>
+    <div style="font-size:12px;font-weight:700;color:${gcol};margin-bottom:12px">${gnivel}</div>
+    <div style="font-size:8px;color:#d1d5db;letter-spacing:0.5px">0–24% EN PLANEACIÓN &nbsp;·&nbsp; 25–49% EN EJECUCIÓN &nbsp;·&nbsp; 50–74% EN MEDICIÓN Y SEGUIMIENTO &nbsp;·&nbsp; 75–100% EN MEJORAMIENTO</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PDF EJECUTIVO — diseño limpio
 // ══════════════════════════════════════════════════════════════
 async function descargarPDFEjecutivoGrupo(grupoKey) {
   const btn = document.getElementById('pdf-ej-'+grupoKey);
@@ -2323,10 +2405,9 @@ async function descargarPDFEjecutivoGrupo(grupoKey) {
   const np = g.participantes ? g.participantes.length : 0;
   const gcol = _nivelColor(g.total||0);
   const gnivel = _nivelLabel(g.total||0);
-
-  // Brechas principales (preguntas en nivel 0 o 1)
   const NOMS = ['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
-  const NCOLS = ['#dc2626','#d97706','#2563eb','#059669'];
+  const radarScores = g.scores ? g.scores.map(s=>({...s})) : [];
+
   let brechas = [];
   if(g.bloques && g.answers){
     g.bloques.forEach(bi=>{
@@ -2339,141 +2420,89 @@ async function descargarPDFEjecutivoGrupo(grupoKey) {
   }
   const topBrechas = brechas.slice(0,5);
 
-  const radarScores = g.scores ? g.scores.map(s=>({...s})) : [];
-
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'font-family:Arial,sans-serif;padding:20px;max-width:720px;margin:0 auto;color:#111827;font-size:12px;';
+  wrap.style.cssText = 'font-family:Arial,sans-serif;padding:28px 32px;max-width:700px;margin:0 auto;color:#111827;background:white;';
 
-  wrap.innerHTML = `
-    <!-- ENCABEZADO -->
-    <div style="text-align:center;padding:20px;border-bottom:3px solid #065f46;margin-bottom:18px">
-      <div style="font-size:9px;color:#6b7280;letter-spacing:1.5px;margin-bottom:4px">INFORME EJECUTIVO · DIAGNÓSTICO PARTICIPATIVO</div>
-      <h1 style="font-size:17px;color:#065f46;margin:0 0 4px">NTS TS 001-02 · Playa Piangüita Punta Bazán</h1>
-      <h2 style="font-size:13px;color:#374151;font-weight:normal;margin:0 0 8px">Buenaventura · Valle del Cauca · Colombia</h2>
-      <div style="font-size:13px;font-weight:700;color:#065f46">${g.nombre}</div>
-      <div style="font-size:11px;color:#6b7280;margin-top:2px">${g.fecha} · ${np} participante${np!==1?'s':''}</div>
-    </div>
+  // Encabezado + resultado global
+  wrap.innerHTML = _buildPDFHeader(g, np, gcol, gnivel, 'INFORME EJECUTIVO');
 
-    <!-- RESULTADO GLOBAL -->
-    <div style="text-align:center;background:#f0fdf4;border:1px solid #6ee7b7;border-radius:10px;padding:16px;margin-bottom:16px">
-      <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Puntaje global de sostenibilidad</div>
-      <div style="font-size:48px;font-weight:800;color:${gcol};line-height:1">${g.total||0}%</div>
-      <div style="font-size:14px;font-weight:700;color:${gcol};margin:4px 0 8px">${gnivel}</div>
-      <div style="font-size:10px;color:#6b7280">🔴 En Planeación (0–24%) · 🟠 En Ejecución (25–49%) · 🔵 En Medición (50–74%) · 🟢 En Mejoramiento (75–100%)</div>
-    </div>
-
-    <!-- FICHA TÉCNICA -->
-    <div style="border:1px solid #e5e7eb;border-radius:8px;margin-bottom:16px;overflow:hidden">
-      <div style="background:#065f46;color:white;padding:8px 12px;font-size:11px;font-weight:700">FICHA TÉCNICA</div>
+  // Sección 1: Ficha
+  wrap.innerHTML += `<div style="margin-bottom:28px">
+    <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">1 &nbsp;·&nbsp; FICHA DEL GRUPO</div>
+    <div style="border-left:3px solid #065f46;padding-left:14px">
       <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <tr><td style="padding:5px 10px;color:#6b7280;width:36%;border-bottom:1px solid #e5e7eb">Fecha de evaluación</td><td style="padding:5px 10px;font-weight:600;border-bottom:1px solid #e5e7eb">${g.fecha||'—'}</td></tr>
-        <tr style="background:#f9fafb"><td style="padding:5px 10px;color:#6b7280;border-bottom:1px solid #e5e7eb">N° de participantes</td><td style="padding:5px 10px;font-weight:600;border-bottom:1px solid #e5e7eb">${np}</td></tr>
-        <tr><td style="padding:5px 10px;color:#6b7280;border-bottom:1px solid #e5e7eb">Componentes evaluados</td><td style="padding:5px 10px;font-weight:600;border-bottom:1px solid #e5e7eb">${g.bloques?g.bloques.map(bi=>BLOCKS[bi].name).join(', '):'—'}</td></tr>
-        <tr style="background:#f9fafb"><td style="padding:5px 10px;color:#6b7280">Grupos de interés</td><td style="padding:5px 10px;font-weight:600">${g.participantes?[...new Set(g.participantes.map(p=>p.grupoInteres))].join(', '):'—'}</td></tr>
+        <tr><td style="padding:5px 0;color:#6b7280;width:38%;border-bottom:1px solid #f3f4f6">Fecha de evaluación</td><td style="padding:5px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${g.fecha||'—'}</td></tr>
+        <tr><td style="padding:5px 0;color:#6b7280;border-bottom:1px solid #f3f4f6">N° de participantes</td><td style="padding:5px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${np}</td></tr>
+        <tr><td style="padding:5px 0;color:#6b7280;border-bottom:1px solid #f3f4f6">Componentes evaluados</td><td style="padding:5px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${g.bloques?g.bloques.map(bi=>BLOCKS[bi].name).join(', '):'—'}</td></tr>
+        <tr><td style="padding:5px 0;color:#6b7280">Grupos de interés</td><td style="padding:5px 0;color:#111827;font-weight:500">${g.participantes?[...new Set(g.participantes.map(p=>p.grupoInteres))].join(', '):'—'}</td></tr>
       </table>
     </div>
+  </div>`;
 
-    <!-- PUNTAJES POR COMPONENTE -->
-    ${radarScores.length?`<div style="border:1px solid #e5e7eb;border-radius:8px;margin-bottom:16px;overflow:hidden">
-      <div style="background:#065f46;color:white;padding:8px 12px;font-size:11px;font-weight:700">PUNTAJES POR COMPONENTE</div>
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <thead><tr style="background:#f0fdf4">
-          <th style="padding:5px 10px;text-align:left;color:#065f46;border-bottom:1px solid #e5e7eb">Componente</th>
-          <th style="padding:5px 10px;text-align:center;color:#065f46;border-bottom:1px solid #e5e7eb">Puntaje</th>
-          <th style="padding:5px 10px;text-align:center;color:#065f46;border-bottom:1px solid #e5e7eb">Nivel</th>
-          <th style="padding:5px 10px;text-align:center;color:#065f46;border-bottom:1px solid #e5e7eb">Barra</th>
-        </tr></thead>
-        <tbody>${radarScores.map((s,si)=>{
-          const c=_nivelColor(s.score), l=_nivelLabel(s.score);
-          return `<tr style="${si%2===0?'':'background:#f9fafb'}">
-            <td style="padding:5px 10px;border-bottom:1px solid #e5e7eb">${BLOCK_ICONS[s.blockIndex]||''} ${s.name}</td>
-            <td style="padding:5px 10px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:700;color:${c}">${s.score}%</td>
-            <td style="padding:5px 10px;border-bottom:1px solid #e5e7eb;text-align:center;font-size:9px;color:${c};font-weight:600">${l}</td>
-            <td style="padding:5px 10px;border-bottom:1px solid #e5e7eb">
-              <div style="background:#e5e7eb;border-radius:4px;height:8px;width:100%">
-                <div style="background:${c};border-radius:4px;height:8px;width:${s.score}%"></div>
-              </div>
-            </td>
-          </tr>`;
-        }).join('')}</tbody>
-      </table>
-    </div>`:''}
+  // Sección 2: Puntajes por componente
+  if(radarScores.length){
+    let scHtml = `<div style="margin-bottom:28px">
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">2 &nbsp;·&nbsp; PUNTAJES POR COMPONENTE</div>
+      <div style="border-left:3px solid #065f46;padding-left:14px">`;
+    radarScores.forEach(s=>{
+      const c=_nivelColor(s.score), l=_nivelLabel(s.score);
+      scHtml+=`<div style="margin-bottom:12px">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:4px"><tr>
+          <td style="font-size:11px;color:#111827;font-weight:500">${BLOCK_ICONS[s.blockIndex]||''} ${s.name}</td>
+          <td style="text-align:right;font-size:12px;font-weight:700;color:${c}">${s.score}%</td>
+        </tr></table>
+        <div style="background:#f3f4f6;border-radius:3px;height:5px;width:100%">
+          <div style="background:${c};border-radius:3px;height:5px;width:${s.score}%"></div>
+        </div>
+        <div style="font-size:9px;color:#9ca3af;margin-top:3px">${l}</div>
+      </div>`;
+    });
+    scHtml+=`</div></div>`;
+    wrap.innerHTML += scHtml;
+  }
 
-    <!-- BRECHAS PRINCIPALES -->
-    ${topBrechas.length?`<div style="border:1px solid #fee2e2;border-radius:8px;margin-bottom:16px;overflow:hidden">
-      <div style="background:#dc2626;color:white;padding:8px 12px;font-size:11px;font-weight:700">⚠️ PRINCIPALES BRECHAS IDENTIFICADAS (Nivel 1 y 2)</div>
-      <div style="padding:10px 12px">
-        ${topBrechas.map((b,i)=>`
-          <div style="padding:7px 0;border-bottom:1px solid #e5e7eb;${i===topBrechas.length-1?'border-bottom:none':''}">
-            <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px">
-              <span style="background:${NCOLS[b.ans]};color:white;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap;flex-shrink:0">${NOMS[b.ans]}</span>
-              <span style="font-size:10px;color:#6b7280;flex-shrink:0">${BLOCK_ICONS[b.bi]} ${b.blockName} · P${b.n}</span>
-            </div>
-            <div style="font-size:11px;color:#111827;font-weight:500;margin-bottom:3px">${b.q}</div>
-            ${b.nextOpt?`<div style="font-size:10px;color:#059669;font-style:italic">→ Para avanzar: ${b.nextOpt}</div>`:''}
-          </div>`).join('')}
-      </div>
-    </div>`:'<div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#065f46;text-align:center">✅ No se encontraron brechas en Nivel 1 — buen desempeño en los componentes evaluados</div>'}
+  // Sección 3: Radar (DOM)
+  const radarDiv = document.createElement('div');
+  radarDiv.style.marginBottom = '28px';
+  radarDiv.innerHTML = `<div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">3 &nbsp;·&nbsp; PERFIL DE SOSTENIBILIDAD</div>`
+    + buildRadarChart(radarScores, '');
+  wrap.appendChild(radarDiv);
 
-    <!-- ANÁLISIS IA -->
-    ${g.aiResult ? `
-    <div style="page-break-before:always;border:1px solid #d1fae5;border-radius:8px;margin-bottom:16px;overflow:hidden">
-      <div style="background:#065f46;color:white;padding:8px 12px;font-size:11px;font-weight:700">🤖 ANÁLISIS IA · NTS TS 001-02</div>
-      <div style="padding:10px 12px">
-        ${g.aiResult.resumen ? `<div style="font-size:11px;color:#374151;line-height:1.6;margin-bottom:10px;padding:8px;background:#f0fdf4;border-radius:6px">${g.aiResult.resumen}</div>` : ''}
-        ${g.aiResult.nc && g.aiResult.nc.length ? `
-        <div style="margin-bottom:10px">
-          <div style="font-size:10px;font-weight:700;color:#991b1b;margin-bottom:5px">⚠ Puntos críticos:</div>
-          ${g.aiResult.nc.map((n,i)=>`<div style="display:flex;gap:6px;padding:4px 0;border-bottom:1px solid #fee2e2;font-size:10px;color:#1f2937"><span style="min-width:16px;height:16px;border-radius:50%;background:#fee2e2;color:#991b1b;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span><span>${n}</span></div>`).join('')}
-        </div>` : ''}
-        ${g.aiResult.diag ? `
-        <div style="margin-bottom:10px">
-          <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:6px">Diagnóstico por componente:</div>
-          ${Object.entries(g.aiResult.diag).map(([key,d])=>{
-            const bi = parseInt(key.replace('b',''));
-            const bname = BLOCKS[bi] ? BLOCKS[bi].name : key;
-            const bicon = BLOCK_ICONS[bi] || '';
-            return `<div style="border:1px solid #e5e7eb;border-radius:6px;margin-bottom:6px;overflow:hidden">
-              <div style="background:#f0fdf4;padding:5px 8px;font-size:10px;font-weight:700;color:#065f46">${bicon} ${bname}</div>
-              <div style="padding:6px 8px">
-                ${d.f?`<div style="font-size:10px;margin-bottom:3px"><span style="color:#059669;font-weight:600">✓ Fortaleza: </span>${d.f}</div>`:''}
-                ${d.b?`<div style="font-size:10px;margin-bottom:3px"><span style="color:#dc2626;font-weight:600">✗ Brecha: </span>${d.b}</div>`:''}
-                ${d.r?`<div style="font-size:10px"><span style="color:#2563eb;font-weight:600">→ Recomendación: </span>${d.r}</div>`:''}
-              </div>
-            </div>`;
-          }).join('')}
-        </div>` : ''}
-        ${g.aiResult.acciones && g.aiResult.acciones.length ? `
-        <div style="margin-bottom:10px">
-          <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:6px">Plan de acción recomendado:</div>
-          ${g.aiResult.acciones.map((a,i)=>`
-            <div style="display:flex;gap:6px;padding:5px 0;border-bottom:1px solid #e5e7eb;font-size:10px">
-              <span style="min-width:18px;height:18px;border-radius:50%;background:#065f46;color:white;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
-              <div>
-                <div style="color:#111827;font-weight:500;margin-bottom:2px">${a.acc||''}</div>
-                <div style="color:#6b7280;font-size:9px">${a.p?'Prioridad: '+a.p+' · ':''}${a.cat||''}${a.plazo?' · '+a.plazo:''}${a.resp?' · Responsable: '+a.resp:''}</div>
-              </div>
-            </div>`).join('')}
-        </div>` : ''}
-        ${g.aiResult.ruta ? `<div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;padding:8px;font-size:10px;color:#78350f"><strong>Ruta hacia la certificación:</strong> ${g.aiResult.ruta}</div>` : ''}
-      </div>
-    </div>` : '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:10px;color:#78350f">⚠ Análisis IA no disponible — el grupo no contó con conexión a internet durante el diagnóstico o el análisis está pendiente.</div>'}
+  // Sección 4: Brechas
+  const brDiv = document.createElement('div');
+  brDiv.style.marginBottom = '28px';
+  if(topBrechas.length){
+    let brHtml = `<div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">4 &nbsp;·&nbsp; BRECHAS PRIORITARIAS</div>
+      <div style="border-left:3px solid #dc2626;padding-left:14px">`;
+    topBrechas.forEach((b,i)=>{
+      brHtml+=`<div style="margin-bottom:12px;padding-bottom:12px;${i<topBrechas.length-1?'border-bottom:1px solid #f3f4f6':''}">
+        <div style="font-size:9px;color:#9ca3af;margin-bottom:3px">${BLOCK_ICONS[b.bi]} ${b.blockName} · Pregunta ${b.n} · ${NOMS[b.ans]}</div>
+        <div style="font-size:11px;color:#111827;font-weight:500;margin-bottom:4px;line-height:1.5">${b.q}</div>
+        ${b.nextOpt?`<div style="font-size:10px;color:#059669;line-height:1.5">→ Para avanzar: ${b.nextOpt}</div>`:''}
+      </div>`;
+    });
+    brHtml+=`</div>`;
+    brDiv.innerHTML = brHtml;
+  } else {
+    brDiv.innerHTML = `<div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">4 &nbsp;·&nbsp; BRECHAS PRIORITARIAS</div>
+      <div style="border-left:3px solid #059669;padding-left:14px;font-size:11px;color:#059669">Sin brechas críticas en los componentes evaluados.</div>`;
+  }
+  wrap.appendChild(brDiv);
 
-    <!-- PIE -->
-    <div style="margin-top:16px;padding-top:10px;border-top:2px solid #e5e7eb;font-size:9px;color:#9ca3af;text-align:center">
-      Diagnóstico Participativo · Playa Piangüita Punta Bazán · NTS TS 001-02 · ${new Date().getFullYear()}
-    </div>`;
+  // Sección 5: IA (nueva página)
+  const aiDiv = document.createElement('div');
+  aiDiv.style.pageBreakBefore = 'always';
+  aiDiv.innerHTML = _buildAISection(g.aiResult, '5');
+  wrap.appendChild(aiDiv);
 
-  // Insertar radar entre puntajes y brechas (appendChild antes del pie)
-  const radarEl = document.createElement('div');
-  radarEl.innerHTML = buildRadarChart(radarScores, 'Perfil de Sostenibilidad · '+g.nombre);
-  // Insertar como primer hijo después del segundo div (resultado global)
-  const children = wrap.children;
-  if(children.length >= 4) wrap.insertBefore(radarEl, children[4]);
-  else wrap.appendChild(radarEl);
+  // Pie
+  const pie = document.createElement('div');
+  pie.style.cssText = 'margin-top:32px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:8px;color:#9ca3af;text-align:center;';
+  pie.textContent = `Diagnóstico Participativo · Playa Piangüita Punta Bazán · NTS TS 001-02 · ${new Date().getFullYear()}`;
+  wrap.appendChild(pie);
 
   html2pdf().set({
-    margin:[10,10,10,10],
+    margin:[14,14,14,14],
     filename:'Ejecutivo_'+g.nombre.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf',
     image:{type:'jpeg',quality:0.97},
     html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
@@ -2483,7 +2512,8 @@ async function descargarPDFEjecutivoGrupo(grupoKey) {
     .catch(()=>{ if(btn){btn.textContent='📋 Informe Ejecutivo';btn.disabled=false;} });
 }
 
-// PDF INDIVIDUAL DESDE CONSOLIDADO (grupo guardado)
+// ══════════════════════════════════════════════════════════════
+// PDF COMPLETO — diseño limpio con fotos
 // ══════════════════════════════════════════════════════════════
 async function descargarPDFGrupo(grupoKey) {
   const btn = document.getElementById('pdf-btn-'+grupoKey);
@@ -2492,189 +2522,162 @@ async function descargarPDFGrupo(grupoKey) {
   const g = await _leerGrupo(grupoKey);
   if(!g){ alert('No se encontraron datos para este grupo.'); if(btn){btn.textContent='📄 Informe Completo';btn.disabled=false;} return; }
 
-  const NIVELES = ['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
-  const NIVEL_COLOR = ['#dc2626','#d97706','#2563eb','#059669'];
-  const qMap = {};
-  BLOCKS.forEach(b=>{ b.questions.forEach(q=>{ qMap[q.n]={q:q.q,opts:q.opts,blockName:b.name}; }); });
-
-  const np = g.participantes ? g.participantes.length : 0;
-  const gcol = _nivelColor(g.total||0);
+  const NOMS  = ['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
+  const NCOLS = ['#dc2626','#d97706','#2563eb','#059669'];
+  const np    = g.participantes ? g.participantes.length : 0;
+  const gcol  = _nivelColor(g.total||0);
+  const gnivel= _nivelLabel(g.total||0);
 
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'font-family:Arial,sans-serif;padding:20px;max-width:720px;margin:0 auto;color:#111827;font-size:12px;';
+  wrap.style.cssText = 'font-family:Arial,sans-serif;padding:28px 32px;max-width:700px;margin:0 auto;color:#111827;background:white;';
 
-  // Encabezado
-  wrap.innerHTML = `
-    <div style="text-align:center;padding:24px 20px 16px;border-bottom:3px solid #065f46;margin-bottom:20px">
-      <div style="font-size:10px;color:#6b7280;letter-spacing:1px;margin-bottom:4px">NORMA TÉCNICA SECTORIAL COLOMBIANA</div>
-      <h1 style="font-size:18px;color:#065f46;margin:0 0 4px 0">NTS TS 001-02 · Diagnóstico Participativo</h1>
-      <h2 style="font-size:14px;color:#374151;font-weight:normal;margin:0 0 4px 0">Playa Piangüita · Punta Bazán · Buenaventura</h2>
-      <div style="font-size:14px;font-weight:700;color:#065f46;margin:8px 0 2px">${g.nombre}</div>
-      <div style="font-size:11px;color:#6b7280">Informe generado el ${new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
-    </div>`;
+  // Encabezado + resultado global
+  wrap.innerHTML = _buildPDFHeader(g, np, gcol, gnivel, 'INFORME COMPLETO');
 
-  // Ficha técnica
-  wrap.innerHTML += `<div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:14px;background:white">
-    <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:8px;border-bottom:1px solid #e5e7eb;padding-bottom:4px">FICHA TÉCNICA</div>
-    <table style="width:100%;border-collapse:collapse;font-size:11px">
-      <tr><td style="padding:3px 8px;color:#6b7280;width:38%">Nombre del grupo:</td><td style="padding:3px 8px;font-weight:600">${g.nombre||'—'}</td></tr>
-      <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Fecha de evaluación:</td><td style="padding:3px 8px;font-weight:600">${g.fecha||'—'}</td></tr>
-      <tr><td style="padding:3px 8px;color:#6b7280">N° de sesión:</td><td style="padding:3px 8px;font-weight:600">${g.numero||'—'}</td></tr>
-      <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">N° de participantes:</td><td style="padding:3px 8px;font-weight:600">${np}</td></tr>
-      <tr><td style="padding:3px 8px;color:#6b7280">Componentes evaluados:</td><td style="padding:3px 8px;font-weight:600">${g.bloques?g.bloques.map(bi=>BLOCKS[bi].name).join(', '):'—'}</td></tr>
-      <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Puntaje global:</td><td style="padding:3px 8px;font-weight:700;color:${gcol}">${g.total||0}% · ${_nivelLabel(g.total||0)}</td></tr>
-    </table>
+  // Sección 1: Ficha técnica
+  wrap.innerHTML += `<div style="margin-bottom:28px">
+    <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">1 &nbsp;·&nbsp; FICHA TÉCNICA</div>
+    <div style="border-left:3px solid #065f46;padding-left:14px">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <tr><td style="padding:5px 0;color:#6b7280;width:38%;border-bottom:1px solid #f3f4f6">Nombre del grupo</td><td style="padding:5px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${g.nombre||'—'}</td></tr>
+        <tr><td style="padding:5px 0;color:#6b7280;border-bottom:1px solid #f3f4f6">Fecha de evaluación</td><td style="padding:5px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${g.fecha||'—'}</td></tr>
+        <tr><td style="padding:5px 0;color:#6b7280;border-bottom:1px solid #f3f4f6">Sesión N°</td><td style="padding:5px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${g.numero||'—'}</td></tr>
+        <tr><td style="padding:5px 0;color:#6b7280;border-bottom:1px solid #f3f4f6">N° de participantes</td><td style="padding:5px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${np}</td></tr>
+        <tr><td style="padding:5px 0;color:#6b7280;border-bottom:1px solid #f3f4f6">Componentes evaluados</td><td style="padding:5px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${g.bloques?g.bloques.map(bi=>BLOCKS[bi].name).join(', '):'—'}</td></tr>
+        <tr><td style="padding:5px 0;color:#6b7280">Resultado global</td><td style="padding:5px 0;font-weight:700;color:${gcol}">${g.total||0}% · ${gnivel}</td></tr>
+      </table>
+    </div>
   </div>`;
 
-  // Participantes
+  // Sección 2: Participantes
   if(g.participantes && g.participantes.length > 0){
-    wrap.innerHTML += `<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:14px;background:white">
-      <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:8px;border-bottom:1px solid #e5e7eb;padding-bottom:4px">LISTADO DE PARTICIPANTES</div>
-      <table style="width:100%;border-collapse:collapse;font-size:10px">
-        <thead><tr style="background:#f0fdf4">
-          <th style="padding:4px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Nombre</th>
-          <th style="padding:4px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Grupo de interés</th>
-          <th style="padding:4px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Género</th>
-          <th style="padding:4px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Edad</th>
-          <th style="padding:4px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Documento</th>
-        </tr></thead>
-        <tbody>${g.participantes.map((p,pi)=>`
-          <tr style="${pi%2===0?'background:white':'background:#f9fafb'}">
-            <td style="padding:4px 8px;border:1px solid #e5e7eb">${p.nombre||'—'}</td>
-            <td style="padding:4px 8px;border:1px solid #e5e7eb">${p.grupoInteres||'—'}</td>
-            <td style="padding:4px 8px;border:1px solid #e5e7eb">${p.genero||'—'}</td>
-            <td style="padding:4px 8px;border:1px solid #e5e7eb">${p.edad||'—'}</td>
-            <td style="padding:4px 8px;border:1px solid #e5e7eb">${p.tipoDoc||''} ${p.numDoc||''}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
+    wrap.innerHTML += `<div style="margin-bottom:28px">
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">2 &nbsp;·&nbsp; PARTICIPANTES</div>
+      <div style="border-left:3px solid #065f46;padding-left:14px">
+        <table style="width:100%;border-collapse:collapse;font-size:10px">
+          <thead><tr style="border-bottom:1.5px solid #065f46">
+            <th style="padding:5px 8px;text-align:left;color:#065f46;font-weight:600">Nombre</th>
+            <th style="padding:5px 8px;text-align:left;color:#065f46;font-weight:600">Grupo de Interés</th>
+            <th style="padding:5px 8px;text-align:left;color:#065f46;font-weight:600">Género</th>
+            <th style="padding:5px 8px;text-align:left;color:#065f46;font-weight:600">Edad</th>
+            <th style="padding:5px 8px;text-align:left;color:#065f46;font-weight:600">Documento</th>
+          </tr></thead>
+          <tbody>${g.participantes.map((p,pi)=>`
+            <tr style="border-bottom:1px solid #f3f4f6">
+              <td style="padding:5px 8px;font-weight:500">${p.nombre||'—'}</td>
+              <td style="padding:5px 8px;color:#374151">${p.grupoInteres||'—'}</td>
+              <td style="padding:5px 8px;color:#374151">${p.genero||'—'}</td>
+              <td style="padding:5px 8px;color:#374151">${p.edad||'—'}</td>
+              <td style="padding:5px 8px;color:#374151">${p.tipoDoc||''} ${p.numDoc||''}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
     </div>`;
-    wrap.innerHTML += buildCaracterizacion(g.participantes);
   }
 
-  // Puntajes por componente
+  // Sección 3: Puntajes (DOM)
   if(g.scores && g.scores.length > 0){
-    wrap.innerHTML += `<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:14px;background:white">
-      <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:8px;border-bottom:1px solid #e5e7eb;padding-bottom:4px">PUNTAJES POR COMPONENTE</div>
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <thead><tr style="background:#f0fdf4">
-          <th style="padding:5px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Componente</th>
-          <th style="padding:5px 8px;text-align:center;color:#065f46;border:1px solid #e5e7eb">Puntaje</th>
-          <th style="padding:5px 8px;text-align:center;color:#065f46;border:1px solid #e5e7eb">Nivel</th>
-        </tr></thead>
-        <tbody>${g.scores.map((s,si)=>{
-          const c=_nivelColor(s.score); const l=_nivelLabel(s.score);
-          return `<tr style="${si%2===0?'background:white':'background:#f9fafb'}">
-            <td style="padding:5px 8px;border:1px solid #e5e7eb">${BLOCK_ICONS[s.blockIndex]||''} ${s.name}</td>
-            <td style="padding:5px 8px;border:1px solid #e5e7eb;text-align:center;font-weight:700;color:${c}">${s.score}%</td>
-            <td style="padding:5px 8px;border:1px solid #e5e7eb;text-align:center;font-size:10px;color:${c};font-weight:600">${l}</td>
-          </tr>`;
-        }).join('')}
-        </tbody>
-      </table>
-    </div>`;
+    const scDiv = document.createElement('div');
+    scDiv.style.marginBottom = '28px';
+    let scHtml = `<div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">3 &nbsp;·&nbsp; PUNTAJES POR COMPONENTE</div>
+      <div style="border-left:3px solid #065f46;padding-left:14px">`;
+    g.scores.forEach(s=>{
+      const c=_nivelColor(s.score), l=_nivelLabel(s.score);
+      scHtml+=`<div style="margin-bottom:12px">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:4px"><tr>
+          <td style="font-size:11px;color:#111827;font-weight:500">${BLOCK_ICONS[s.blockIndex]||''} ${s.name}</td>
+          <td style="text-align:right;font-size:12px;font-weight:700;color:${c}">${s.score}%</td>
+        </tr></table>
+        <div style="background:#f3f4f6;border-radius:3px;height:5px;width:100%">
+          <div style="background:${c};border-radius:3px;height:5px;width:${s.score}%"></div>
+        </div>
+        <div style="font-size:9px;color:#9ca3af;margin-top:3px">${l}</div>
+      </div>`;
+    });
+    scHtml+=`</div>`;
+    scDiv.innerHTML = scHtml;
+    wrap.appendChild(scDiv);
+    // Radar
+    if(g.scores.length >= 2){
+      const rDiv = document.createElement('div');
+      rDiv.style.marginBottom = '28px';
+      rDiv.innerHTML = `<div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">3.1 &nbsp;·&nbsp; PERFIL DE SOSTENIBILIDAD</div>`
+        + buildRadarChart(g.scores, '');
+      wrap.appendChild(rDiv);
+    }
   }
 
-  // Radar chart
-  if(g.scores && g.scores.length >= 2){
-    wrap.innerHTML += buildRadarChart(g.scores, 'Perfil de Sostenibilidad · '+g.nombre);
-  }
+  // Sección 4: IA
+  const aiDiv = document.createElement('div');
+  aiDiv.innerHTML = _buildAISection(g.aiResult, '4');
+  wrap.appendChild(aiDiv);
 
-  // Respuestas pregunta por pregunta
-  if(g.answers && Object.keys(g.answers).length > 0){
-    let respHtml = `<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;background:white;margin-top:2px">
-      <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:10px;border-bottom:1px solid #e5e7eb;padding-bottom:4px">RESPUESTAS PREGUNTA POR PREGUNTA</div>`;
-
-    if(g.bloques){
-      g.bloques.forEach(bi=>{
-        const block = BLOCKS[bi];
-        respHtml += `<div style="margin-bottom:14px">
-          <div style="font-size:11px;font-weight:700;background:#f0fdf4;color:#065f46;padding:6px 8px;border-radius:4px;margin-bottom:8px">${BLOCK_ICONS[bi]||''} ${block.name}</div>`;
-        block.questions.forEach(qdef=>{
-          const ans = g.answers[qdef.n];
-          if(ans===undefined||ans===null) return;
-          const ni = parseInt(ans);
-          const nc = NIVEL_COLOR[ni]||'#374151';
-          const nl = NIVELES[ni]||('Nivel '+(ni+1));
-          const rt = qdef.opts[ni]||'—';
-          const ev = g.evidence&&g.evidence[qdef.n]?g.evidence[qdef.n]:null;
-          const foto = g.evidence_photos&&g.evidence_photos[qdef.n]?g.evidence_photos[qdef.n]:null;
-          respHtml += `<div style="border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;margin-bottom:8px;background:#fafafa">
-            <div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:3px">Pregunta ${qdef.n}</div>
-            <div style="font-size:11px;font-weight:600;color:#111827;margin-bottom:6px;line-height:1.4">${qdef.q}</div>
-            <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:4px">
-              <span style="font-size:10px;font-weight:700;color:white;background:${nc};padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0">${nl}</span>
-              <div style="font-size:10px;color:#374151;line-height:1.5;font-style:italic">${rt}</div>
-            </div>
-            ${ev?`<div style="padding:5px 8px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:2px;font-size:10px;color:#78350f;margin-bottom:${foto?'5px':'0'}"><strong>Evidencia:</strong> ${ev}</div>`:''}
-            ${foto?`<div style="margin-top:4px"><img src="${foto}" style="max-width:180px;max-height:120px;border-radius:4px;border:1px solid #e5e7eb"/></div>`:''}
-            ${!ev&&!foto?'<div style="font-size:9px;color:#9ca3af;font-style:italic">Sin evidencia registrada</div>':''}
-          </div>`;
-        });
-        respHtml += `</div>`;
+  // Sección 5: Respuestas por componente (nueva página)
+  if(g.answers && Object.keys(g.answers).length > 0 && g.bloques){
+    const respDiv = document.createElement('div');
+    respDiv.style.pageBreakBefore = 'always';
+    let rHtml = `<div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:20px">5 &nbsp;·&nbsp; RESPUESTAS POR COMPONENTE</div>`;
+    g.bloques.forEach((bi, bIdx)=>{
+      const block = BLOCKS[bi];
+      rHtml += `<div style="margin-bottom:32px">
+        <div style="border-bottom:2px solid #065f46;padding-bottom:8px;margin-bottom:18px">
+          <div style="font-size:9px;letter-spacing:1px;color:#9ca3af;margin-bottom:2px">COMPONENTE ${bIdx+1}</div>
+          <div style="font-size:15px;font-weight:700;color:#065f46">${BLOCK_ICONS[bi]||''} ${block.name}</div>
+        </div>`;
+      block.questions.forEach((qdef, qIdx)=>{
+        const ans = g.answers[qdef.n];
+        if(ans===undefined||ans===null) return;
+        const ni   = parseInt(ans);
+        const nc   = NCOLS[ni]||'#374151';
+        const nl   = NOMS[ni]||('Nivel '+(ni+1));
+        const rt   = qdef.opts[ni]||'—';
+        const ev   = g.evidence&&g.evidence[qdef.n]?g.evidence[qdef.n]:null;
+        const foto = g.evidence_photos&&g.evidence_photos[qdef.n]?g.evidence_photos[qdef.n]:null;
+        const isLast = qIdx === block.questions.length - 1;
+        rHtml += `<div style="margin-bottom:20px;padding-bottom:20px;${isLast?'':'border-bottom:1px solid #f3f4f6'}">
+          <div style="font-size:9px;color:#9ca3af;margin-bottom:4px">Pregunta ${qdef.n}</div>
+          <div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:10px;line-height:1.55">${qdef.q}</div>
+          <div style="margin-bottom:8px">
+            <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:4px">NIVEL ALCANZADO</div>
+            <div style="display:inline-block;padding:3px 12px;border:1.5px solid ${nc};border-radius:20px;font-size:10px;font-weight:700;color:${nc}">${nl}</div>
+          </div>
+          <div style="margin-bottom:${ev||foto?'10px':'0'}">
+            <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:4px">RESPUESTA</div>
+            <div style="font-size:11px;color:#374151;line-height:1.65;font-style:italic;padding-left:10px;border-left:2px solid #e5e7eb">${rt}</div>
+          </div>
+          ${ev?`<div style="margin-bottom:${foto?'10px':'0'}">
+            <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:4px">EVIDENCIA REGISTRADA</div>
+            <div style="font-size:11px;color:#374151;line-height:1.6;padding:8px 12px;background:#fafafa;border-radius:6px;border-left:3px solid #d97706">${ev}</div>
+          </div>`:''}
+          ${foto?`<div>
+            <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:6px">EVIDENCIA FOTOGRÁFICA</div>
+            <img src="${foto}" style="max-width:100%;max-height:220px;border-radius:8px;border:1px solid #e5e7eb;display:block">
+            <div style="font-size:8px;color:#9ca3af;margin-top:4px">Registro fotográfico del estado actual</div>
+          </div>`:''}
+        </div>`;
       });
-    }
-    respHtml += `</div>`;
-    wrap.innerHTML += respHtml;
-  }
-
-  // Análisis IA del grupo
-  if(g.aiResult){
-    const ai = g.aiResult;
-    let aiHtml = `<div style="page-break-before:always;border:1px solid #d1fae5;border-radius:8px;margin-bottom:16px;overflow:hidden">
-      <div style="background:#065f46;color:white;padding:8px 12px;font-size:11px;font-weight:700">🤖 ANÁLISIS IA · NTS TS 001-02</div>
-      <div style="padding:10px 12px">`;
-    if(ai.resumen) aiHtml += `<div style="font-size:11px;color:#374151;line-height:1.6;margin-bottom:10px;padding:8px;background:#f0fdf4;border-radius:6px">${ai.resumen}</div>`;
-    if(ai.nc && ai.nc.length){
-      aiHtml += `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:#991b1b;margin-bottom:5px">⚠ Puntos críticos:</div>`;
-      ai.nc.forEach((n,i)=>{ aiHtml += `<div style="display:flex;gap:6px;padding:4px 0;border-bottom:1px solid #fee2e2;font-size:10px;color:#1f2937"><span style="min-width:16px;height:16px;border-radius:50%;background:#fee2e2;color:#991b1b;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span><span>${n}</span></div>`; });
-      aiHtml += `</div>`;
-    }
-    if(ai.diag){
-      aiHtml += `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:6px">Diagnóstico por componente:</div>`;
-      Object.entries(ai.diag).forEach(([key,d])=>{
-        const bi=parseInt(key.replace('b',''));
-        const bname=BLOCKS[bi]?BLOCKS[bi].name:key;
-        const bicon=BLOCK_ICONS[bi]||'';
-        aiHtml += `<div style="border:1px solid #e5e7eb;border-radius:6px;margin-bottom:6px;overflow:hidden">
-          <div style="background:#f0fdf4;padding:5px 8px;font-size:10px;font-weight:700;color:#065f46">${bicon} ${bname}</div>
-          <div style="padding:6px 8px">
-            ${d.f?`<div style="font-size:10px;margin-bottom:3px"><span style="color:#059669;font-weight:600">✓ Fortaleza: </span>${d.f}</div>`:''}
-            ${d.b?`<div style="font-size:10px;margin-bottom:3px"><span style="color:#dc2626;font-weight:600">✗ Brecha: </span>${d.b}</div>`:''}
-            ${d.r?`<div style="font-size:10px"><span style="color:#2563eb;font-weight:600">→ Recomendación: </span>${d.r}</div>`:''}
-          </div></div>`;
-      });
-      aiHtml += `</div>`;
-    }
-    if(ai.acciones && ai.acciones.length){
-      aiHtml += `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:6px">Plan de acción recomendado:</div>`;
-      ai.acciones.forEach((a,i)=>{ aiHtml += `<div style="display:flex;gap:6px;padding:5px 0;border-bottom:1px solid #e5e7eb;font-size:10px">
-        <span style="min-width:18px;height:18px;border-radius:50%;background:#065f46;color:white;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
-        <div><div style="color:#111827;font-weight:500;margin-bottom:2px">${a.acc||''}</div>
-        <div style="color:#6b7280;font-size:9px">${a.p?'Prioridad: '+a.p+' · ':''}${a.cat||''}${a.plazo?' · '+a.plazo:''}${a.resp?' · Responsable: '+a.resp:''}</div></div></div>`; });
-      aiHtml += `</div>`;
-    }
-    if(ai.ruta) aiHtml += `<div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;padding:8px;font-size:10px;color:#78350f"><strong>Ruta hacia la certificación:</strong> ${ai.ruta}</div>`;
-    aiHtml += `</div></div>`;
-    wrap.innerHTML += aiHtml;
-  } else {
-    wrap.innerHTML += `<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:10px;color:#78350f">⚠ Análisis IA no disponible para este grupo.</div>`;
+      rHtml += `</div>`;
+    });
+    respDiv.innerHTML = rHtml;
+    wrap.appendChild(respDiv);
   }
 
   // Pie
-  wrap.innerHTML += `<div style="margin-top:20px;padding-top:10px;border-top:2px solid #e5e7eb;font-size:10px;color:#9ca3af;text-align:center">
-    Diagnóstico Participativo · Playa Piangüita Punta Bazán · NTS TS 001-02 · ${new Date().getFullYear()}
-  </div>`;
+  const pie2 = document.createElement('div');
+  pie2.style.cssText = 'margin-top:32px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:8px;color:#9ca3af;text-align:center;';
+  pie2.textContent = `Diagnóstico Participativo · Playa Piangüita Punta Bazán · NTS TS 001-02 · ${new Date().getFullYear()}`;
+  wrap.appendChild(pie2);
 
   html2pdf().set({
-    margin:[12,12,12,12],
-    filename:'Informe_'+g.nombre.replace(/[^a-zA-Z0-9]/g,'_')+'_Pianguita.pdf',
+    margin:[14,14,14,14],
+    filename:'Completo_'+g.nombre.replace(/[^a-zA-Z0-9]/g,'_')+'_Pianguita.pdf',
     image:{type:'jpeg',quality:0.97},
     html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
     jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
   }).from(wrap).save()
-    .then(()=>{ if(btn){btn.textContent='📄 PDF';btn.disabled=false;} })
-    .catch(()=>{ if(btn){btn.textContent='📄 PDF';btn.disabled=false;} });
+    .then(()=>{ if(btn){btn.textContent='📄 Informe Completo';btn.disabled=false;} })
+    .catch(()=>{ if(btn){btn.textContent='📄 Informe Completo';btn.disabled=false;} });
 }
 
 // ══════════════════════════════════════════════════════════════
