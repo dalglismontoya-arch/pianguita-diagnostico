@@ -416,7 +416,8 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
   <div id="consolidated-ai-result"></div>
   <div class="nav" style="margin-top:1rem">
     <button class="btn btn-outline" onclick="goHome()">← Inicio</button>
-    <button class="btn btn-primary" onclick="exportarInformeCompleto()" id="btn-export-completo" style="font-size:13px">📊 Exportar Informe Completo</button>
+    <button class="btn btn-primary" onclick="exportarInformeCompleto()" id="btn-export-completo" style="font-size:13px">📊 Exportar PDF Completo</button>
+    <button class="btn btn-outline" onclick="exportarCSV()" style="font-size:12px">📥 Exportar CSV</button>
     <button class="btn btn-danger" onclick="clearAll()" style="font-size:12px">🗑 Borrar todos los datos</button>
   </div>
 </div>
@@ -894,6 +895,7 @@ let answers  = {};
 let evidence = {};
 let lastScores = null;
 let lastTotal  = null;
+let evidence_photos = {}; // base64 fotos por n° de pregunta
 
 // ══════════════════════════════════════════════════════════════
 // NAVEGACIÓN
@@ -914,7 +916,7 @@ function getTodayStr() {
 function getTodayISO() { return new Date().toISOString().split('T')[0]; }
 
 async function initSession() {
-  selectedBlocks = []; currentParticipants = []; answers = {}; evidence = {};
+  selectedBlocks = []; currentParticipants = []; answers = {}; evidence = {}; evidence_photos = {};
   consent1 = null; consent2 = null;
   ['1','2'].forEach(n => {
     const si = document.getElementById(`consent${n}-si`);
@@ -1181,11 +1183,18 @@ function renderBlock() {
         <div class="q-stair-desc" id="qdesc-${q.n}" style="border-color:${saved!==undefined?NIVEL_COLS[saved]:'#e5e7eb'};color:${saved!==undefined?'#374151':'#9ca3af'}">${saved!==undefined?q.opts[saved]:'Selecciona el nivel que mejor describe la situación actual'}</div>
       </div>
       <div style="margin-top:8px">
-        <div style="font-size:11px;font-weight:600;color:#065f46;margin-bottom:4px">Evidencias <span style="color:#9ca3af;font-weight:400">(opcional)</span></div>
+        <div style="font-size:11px;font-weight:600;color:#065f46;margin-bottom:4px">Evidencias <span style="color:#9ca3af;font-weight:400">(opcional — texto y/o foto)</span></div>
         <textarea id="ev-${q.n}" rows="2"
           style="width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;line-height:1.5;color:#111827"
           placeholder="Describe observaciones, contexto o aclaraciones sobre este aspecto..."
           oninput="saveEvidence(${q.n},this.value)">${savedEv}</textarea>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+          <button onclick="triggerPhoto(${q.n})" style="background:#e0f2fe;border:1px solid #7dd3fc;color:#0369a1;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:600;display:flex;align-items:center;gap:4px">📷 Foto</button>
+          <input type="file" id="photo-input-${q.n}" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(${q.n},this)">
+          <div id="photo-thumb-${q.n}" style="display:flex;align-items:center;gap:6px">
+            ${evidence_photos[q.n]?`<img src="${evidence_photos[q.n]}" style="height:50px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer" onclick="removePhoto(${q.n})" title="Toca para eliminar la foto"><span style="font-size:10px;color:#6b7280">Toca la foto para eliminar</span>`:'<span style="font-size:10px;color:#9ca3af">Sin foto adjunta</span>'}
+          </div>
+        </div>
       </div>
     </div>`;
   });
@@ -1222,6 +1231,241 @@ function selectAnswer(qNum,optIdx,btn) {
   if(qItem){ const numDiv=qItem.querySelector('.q-num'); if(numDiv) numDiv.innerHTML=`Pregunta ${qNum} · <span style="color:#059669;font-weight:600">${QUESTION_NORMS[qNum]}</span> · <span style="color:${NIVEL_COLS[optIdx]};font-weight:700">${NIVEL_ETIQUETAS[optIdx]} — ${NIVEL_NAMES[optIdx]}</span>`; }
 }
 function saveEvidence(qNum,val) { evidence[qNum]=val; }
+
+// ══════════════════════════════════════════════════════════════
+// FOTOS DE EVIDENCIA
+// ══════════════════════════════════════════════════════════════
+function triggerPhoto(qNum) { document.getElementById('photo-input-'+qNum).click(); }
+
+function addPhoto(qNum, input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxW = 600;
+      const scale = Math.min(1, maxW / img.width);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      const b64 = canvas.toDataURL('image/jpeg', 0.7);
+      evidence_photos[qNum] = b64;
+      const thumb = document.getElementById('photo-thumb-'+qNum);
+      if (thumb) thumb.innerHTML = `<img src="${b64}" style="height:50px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer" onclick="removePhoto(${qNum})" title="Toca para eliminar"><span style="font-size:10px;color:#6b7280">Toca la foto para eliminar</span>`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removePhoto(qNum) {
+  delete evidence_photos[qNum];
+  const thumb = document.getElementById('photo-thumb-'+qNum);
+  if (thumb) thumb.innerHTML = '<span style="font-size:10px;color:#9ca3af">Sin foto adjunta</span>';
+}
+
+// ══════════════════════════════════════════════════════════════
+// GRÁFICO RADAR SVG
+// ══════════════════════════════════════════════════════════════
+function buildRadarChart(scores, title) {
+  if (!scores || scores.length < 2) return '';
+  const size=300, cx=150, cy=140, r=95;
+  const n=scores.length, step=(2*Math.PI)/n;
+
+  const grids=[0.25,0.5,0.75,1].map(f=>{
+    const pts=scores.map((_,i)=>{
+      const a=i*step-Math.PI/2;
+      return `${cx+r*f*Math.cos(a)},${cy+r*f*Math.sin(a)}`;
+    }).join(' ');
+    return `<polygon points="${pts}" fill="none" stroke="${f===1?'#d1d5db':'#e5e7eb'}" stroke-width="${f===1?1.5:0.8}" stroke-dasharray="${f<1?'4,3':''}"/>`;
+  }).join('');
+
+  const axes=scores.map((_,i)=>{
+    const a=i*step-Math.PI/2;
+    return `<line x1="${cx}" y1="${cy}" x2="${cx+r*Math.cos(a)}" y2="${cy+r*Math.sin(a)}" stroke="#e5e7eb" stroke-width="1"/>`;
+  }).join('');
+
+  const pts=scores.map((s,i)=>{
+    const a=i*step-Math.PI/2, f=Math.max(0.04,s.score/100);
+    return `${cx+r*f*Math.cos(a)},${cy+r*f*Math.sin(a)}`;
+  }).join(' ');
+
+  const dots=scores.map((s,i)=>{
+    const a=i*step-Math.PI/2, f=Math.max(0.04,s.score/100);
+    return `<circle cx="${cx+r*f*Math.cos(a)}" cy="${cy+r*f*Math.sin(a)}" r="5" fill="${_nivelColor(s.score)}" stroke="white" stroke-width="2"/>`;
+  }).join('');
+
+  const labels=scores.map((s,i)=>{
+    const a=i*step-Math.PI/2, lr=r+30;
+    const lx=cx+lr*Math.cos(a), ly=cy+lr*Math.sin(a);
+    const anchor=Math.cos(a)>0.2?'start':Math.cos(a)<-0.2?'end':'middle';
+    const words=s.name.split(' ');
+    const line1=words.slice(0,2).join(' '), line2=words.slice(2).join(' ');
+    return `<text x="${lx}" y="${ly-(line2?6:0)}" text-anchor="${anchor}" font-size="8.5" fill="#374151" font-family="Arial,sans-serif">${BLOCK_ICONS[s.blockIndex]||''} ${line1}</text>
+${line2?`<text x="${lx}" y="${ly+6}" text-anchor="${anchor}" font-size="8.5" fill="#374151" font-family="Arial,sans-serif">${line2}</text>`:''}
+<text x="${lx}" y="${ly+(line2?17:11)}" text-anchor="${anchor}" font-size="9.5" font-weight="700" fill="${_nivelColor(s.score)}" font-family="Arial,sans-serif">${s.score}%</text>`;
+  }).join('');
+
+  const lvls=[{f:0.25,t:'25%'},{f:0.5,t:'50%'},{f:0.75,t:'75%'}].map(l=>
+    `<text x="${cx+3}" y="${cy-r*l.f-2}" font-size="6" fill="#bbb" font-family="Arial">${l.t}</text>`
+  ).join('');
+
+  return `<div style="background:white;border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin-bottom:1rem;text-align:center">
+    <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:6px">${title||'Perfil de Sostenibilidad · NTS TS 001-02'}</div>
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="max-width:100%;overflow:visible">
+      ${grids}${axes}
+      <polygon points="${pts}" fill="rgba(5,150,105,0.12)" stroke="#059669" stroke-width="2.5"/>
+      ${dots}${labels}${lvls}
+    </svg>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// HOJA DE RUTA — primeros pasos priorizados
+// ══════════════════════════════════════════════════════════════
+function buildHojaDeRuta(scores) {
+  const opps=[];
+  selectedBlocks.forEach(bi=>{
+    BLOCKS[bi].questions.forEach(q=>{
+      const ans=answers[q.n];
+      if(ans!==undefined && ans<=1) opps.push({q,bi,blockName:BLOCKS[bi].name,nivel:ans});
+    });
+  });
+  opps.sort((a,b)=>a.nivel-b.nivel||a.q.n-b.q.n);
+  const top=opps.slice(0,3);
+  if(!top.length) return '<div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:10px;padding:14px;margin-bottom:1rem;font-size:12px;color:#065f46;text-align:center">🎉 ¡Buen desempeño! No se detectaron preguntas en Nivel 1 — revisa los componentes con menor puntaje para seguir mejorando.</div>';
+  const NOMS=['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
+  const COLS=['#dc2626','#d97706','#2563eb','#059669'];
+  return `<div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:10px;padding:14px;margin-bottom:1rem">
+    <div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:3px">🚀 Hoja de Ruta — Primeros pasos</div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:12px">Las 3 acciones más concretas para avanzar al siguiente nivel:</div>
+    ${top.map((o,i)=>`
+      <div style="background:white;border:1px solid #d1fae5;border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap">
+          <span style="background:#065f46;color:white;border-radius:50%;width:22px;height:22px;min-width:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${i+1}</span>
+          <span style="font-size:11px;font-weight:700;color:#065f46">${BLOCK_ICONS[o.bi]||''} ${o.blockName}</span>
+          <span style="font-size:10px;color:white;background:${COLS[o.nivel]};padding:2px 8px;border-radius:8px;margin-left:auto">Nivel ${o.nivel+1} → ${o.nivel+2}</span>
+        </div>
+        <div style="font-size:11px;color:#374151;margin-bottom:5px;font-weight:500">P${o.q.n}. ${o.q.q}</div>
+        <div style="font-size:11px;color:#059669;padding:5px 8px;background:#f0fdf4;border-radius:4px;border-left:3px solid #059669">
+          <strong>Para avanzar a ${NOMS[o.nivel+1]}:</strong> ${o.q.opts[o.nivel+1]}
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PRÓXIMA EVALUACIÓN
+// ══════════════════════════════════════════════════════════════
+function buildProximaEval() {
+  return `<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:14px;margin-bottom:1rem">
+    <div style="font-size:13px;font-weight:700;color:#78350f;margin-bottom:8px">📅 Recordatorio — Próxima Evaluación</div>
+    <div style="font-size:11px;color:#92400e;margin-bottom:10px">La NTS TS 001-02 implica mejora continua. ¿En cuánto tiempo quieren volver a medir?</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${[3,6,12].map(m=>{
+        const fecha=new Date(); fecha.setMonth(fecha.getMonth()+m);
+        const fs=fecha.toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'});
+        return `<button onclick="setProximaEval(${m},'${fs}',this)" style="background:#fef3c7;border:1px solid #fcd34d;color:#78350f;border-radius:8px;padding:8px 12px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:600;flex:1;min-width:80px">${m} meses<br><span style="font-size:10px;font-weight:400">${fs}</span></button>`;
+      }).join('')}
+    </div>
+    <div id="proxima-eval-msg" style="margin-top:8px;font-size:11px;color:#059669;font-weight:600;display:none"></div>
+  </div>`;
+}
+
+let _proximaEvalMeses = null;
+function setProximaEval(meses, fechaStr, btn) {
+  _proximaEvalMeses = meses;
+  btn.closest('.nav, div').querySelectorAll('button').forEach(b=>{ b.style.background='#fef3c7'; b.style.borderColor='#fcd34d'; });
+  btn.style.background='#065f46'; btn.style.color='white'; btn.style.borderColor='#065f46';
+  const msg=document.getElementById('proxima-eval-msg');
+  if(msg){ msg.textContent=`✅ Próxima evaluación programada: ${fechaStr}`; msg.style.display='block'; }
+  if(lastScores && lastTotal !== null) {
+    const all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+    if(all[currentGroup]){ all[currentGroup].proximaEval={meses,fecha:fechaStr}; localStorage.setItem('pianguita_diagnostico',JSON.stringify(all)); fb_guardar(currentGroup,all[currentGroup]); }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// CERTIFICADOS DE PARTICIPACIÓN
+// ══════════════════════════════════════════════════════════════
+function descargarCertificados() {
+  if(!currentParticipants.length){ alert('No hay participantes registrados.'); return; }
+  const btn=document.querySelector('[onclick="descargarCertificados()"]');
+  if(btn){ btn.textContent='⏳ Generando...'; btn.disabled=true; }
+  const fecha=getTodayStr();
+  const bloques=selectedBlocks.map(bi=>BLOCKS[bi].name).join(', ');
+  const wrap=document.createElement('div');
+  wrap.style.cssText='font-family:Arial,sans-serif;color:#111827;';
+
+  currentParticipants.forEach((p,pi)=>{
+    const div=document.createElement('div');
+    div.style.cssText=`page-break-before:${pi===0?'auto':'always'};padding:40px;text-align:center;min-height:500px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:4px solid #065f46;margin:${pi===0?'0':'20px 0 0'};border-radius:8px;`;
+    div.innerHTML=`
+      <div style="font-size:11px;letter-spacing:2px;color:#6b7280;margin-bottom:12px">CONSTANCIA DE PARTICIPACIÓN</div>
+      <div style="font-size:13px;color:#065f46;font-weight:600;margin-bottom:20px">Diagnóstico Participativo · NTS TS 001-02<br>Playa Piangüita · Punta Bazán · Buenaventura</div>
+      <div style="font-size:13px;color:#374151;margin-bottom:16px">Se certifica que</div>
+      <div style="font-size:26px;font-weight:800;color:#065f46;margin-bottom:8px;border-bottom:2px solid #6ee7b7;padding-bottom:12px;width:100%">${p.nombre}</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:20px">${p.grupoInteres} · ${p.tipoDoc||'CC'} ${p.numDoc||''}</div>
+      <div style="font-size:13px;color:#374151;line-height:1.8;margin-bottom:24px">
+        participó en el proceso de diagnóstico participativo<br>
+        de sostenibilidad turística en la fecha <strong>${fecha}</strong><br>
+        evaluando el componente: <strong>${bloques}</strong>
+      </div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:auto">Herramienta de Diagnóstico Participativo · NTS TS 001-02 · ${new Date().getFullYear()}</div>`;
+    wrap.appendChild(div);
+  });
+
+  html2pdf().set({
+    margin:10, filename:'Certificados_'+currentGroupName.replace(/[^a-zA-Z0-9]/g,'_')+'.pdf',
+    image:{type:'jpeg',quality:0.95},
+    html2canvas:{scale:2,useCORS:true,logging:false},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(wrap).save()
+    .then(()=>{ if(btn){ btn.textContent='📜 Certificados de participación'; btn.disabled=false; }})
+    .catch(()=>{ if(btn){ btn.textContent='📜 Certificados de participación'; btn.disabled=false; }});
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXPORTAR CSV
+// ══════════════════════════════════════════════════════════════
+async function exportarCSV() {
+  let all={};
+  try { const fb=await fb_leer(); if(fb&&Object.keys(fb).length>0) all=fb; else all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}'); }
+  catch(e){ all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}'); }
+
+  const NOMS=['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
+  const esc=s=>`"${(s||'').toString().replace(/"/g,'""')}"`;
+  const rows=[['Grupo','Fecha','Componente','Ref NTS','N° Pregunta','Texto Pregunta','Nivel N°','Nivel Nombre','Texto Respuesta Seleccionada','Evidencia Texto','Puntaje Componente %','Total Grupo %'].join(',')];
+
+  Object.values(all).forEach(g=>{
+    if(!g.bloques) return;
+    g.bloques.forEach(bi=>{
+      const block=BLOCKS[bi];
+      const sc=g.scores?(g.scores.find(s=>s.blockIndex===bi)||{score:0}).score:0;
+      block.questions.forEach(q=>{
+        const ans=g.answers&&g.answers[q.n]!==undefined?parseInt(g.answers[q.n]):null;
+        if(ans===null) return;
+        rows.push([
+          esc(g.nombre), esc(g.fecha), esc(block.name), esc(QUESTION_NORMS[q.n]||''),
+          q.n, esc(q.q), ans+1, esc(NOMS[ans]),
+          esc(q.opts[ans]), esc(g.evidence&&g.evidence[q.n]?g.evidence[q.n]:''),
+          sc, g.total||0
+        ].join(','));
+      });
+    });
+  });
+
+  const csv='﻿'+rows.join('\r\n'); // BOM para Excel
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='Diagnostico_Pianguita_'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 function blockNext() {
   const block = BLOCKS[selectedBlocks[currentBlockStep]];
@@ -1309,7 +1553,8 @@ function saveGroupResult(scores,total,aiResult) {
     grupo:currentGroup, nombre:currentGroupName,
     fecha:getTodayStr(), fechaISO:getTodayISO(), numero:currentSessionNumber,
     participantes:[...currentParticipants], bloques:[...selectedBlocks],
-    scores, total, answers:{...answers}, evidence:{...evidence}, aiResult
+    scores, total, answers:{...answers}, evidence:{...evidence},
+    evidence_photos:{...evidence_photos}, aiResult
   };
   all[currentGroup]=datos;
   localStorage.setItem(key,JSON.stringify(all));
@@ -1475,9 +1720,15 @@ function showResultsPage(scores,total,r) {
       <div style="font-size:12px;color:#4b5563;line-height:1.6;text-align:left;border-top:1px solid #6ee7b7;padding-top:10px;margin-top:6px">${resumen}</div>
     </div>
     <div class="score-grid">${scoreCards}</div>
+    ${buildRadarChart(scores,'Perfil de Sostenibilidad — '+currentGroupName)}
     ${ncHtml}${diagContent}
     ${acciones?`<div class="card" style="margin-top:1rem"><div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:12px">Plan de acción</div>${acciones}</div>`:''}
-    ${rutaHtml}`;
+    ${rutaHtml}
+    ${buildHojaDeRuta(scores)}
+    ${buildProximaEval()}
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem">
+      <button onclick="descargarCertificados()" style="background:#065f46;color:white;border:none;padding:12px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">📜 Certificados de participación</button>
+    </div>`;
 
   lastScores=scores; lastTotal=total;
   const rb=document.getElementById('results-retry-btn');
@@ -1663,6 +1914,7 @@ async function showConsolidated() {
         <tbody>${tbody}<tr><td><strong>TOTAL</strong></td>${totCells}<td class="${grandCl}">${grandAvg}%</td></tr></tbody>
       </table>
     </div>
+    ${buildRadarChart(BLOCKS.map((b,bi)=>blockAvgs[bi]!==null?{name:b.name,blockIndex:bi,score:blockAvgs[bi]}:null).filter(Boolean),'Perfil de Sostenibilidad Consolidado · Playa Piangüita')}
     <button class="btn btn-primary" onclick="generateConsolidatedAI()" style="width:100%;padding:14px;font-size:14px">
       Generar informe IA consolidado →
     </button>
@@ -1977,6 +2229,7 @@ async function descargarPDFGrupo(grupoKey) {
           const nl = NIVELES[ni]||('Nivel '+(ni+1));
           const rt = qdef.opts[ni]||'—';
           const ev = g.evidence&&g.evidence[qdef.n]?g.evidence[qdef.n]:null;
+          const foto = g.evidence_photos&&g.evidence_photos[qdef.n]?g.evidence_photos[qdef.n]:null;
           respHtml += `<div style="border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;margin-bottom:8px;background:#fafafa">
             <div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:3px">Pregunta ${qdef.n}</div>
             <div style="font-size:11px;font-weight:600;color:#111827;margin-bottom:6px;line-height:1.4">${qdef.q}</div>
@@ -1984,7 +2237,9 @@ async function descargarPDFGrupo(grupoKey) {
               <span style="font-size:10px;font-weight:700;color:white;background:${nc};padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0">${nl}</span>
               <div style="font-size:10px;color:#374151;line-height:1.5;font-style:italic">${rt}</div>
             </div>
-            ${ev?`<div style="padding:5px 8px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:2px;font-size:10px;color:#78350f"><strong>Evidencia:</strong> ${ev}</div>`:'<div style="font-size:9px;color:#9ca3af;font-style:italic">Sin evidencia registrada</div>'}
+            ${ev?`<div style="padding:5px 8px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:2px;font-size:10px;color:#78350f;margin-bottom:${foto?'5px':'0'}"><strong>Evidencia:</strong> ${ev}</div>`:''}
+            ${foto?`<div style="margin-top:4px"><img src="${foto}" style="max-width:180px;max-height:120px;border-radius:4px;border:1px solid #e5e7eb"/></div>`:''}
+            ${!ev&&!foto?'<div style="font-size:9px;color:#9ca3af;font-style:italic">Sin evidencia registrada</div>':''}
           </div>`;
         });
         respHtml += `</div>`;
@@ -2300,6 +2555,12 @@ if(new URLSearchParams(window.location.search).get('ver')==='datos'){
 // INICIO
 // ══════════════════════════════════════════════════════════════
 initSession();
+
+// Service Worker — modo offline
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/pianguita-diagnostico/sw.js')
+    .catch(()=>{}); // silencioso si falla (localhost sin HTTPS)
+}
 }
 </script>
 
