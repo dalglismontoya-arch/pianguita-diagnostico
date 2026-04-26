@@ -2870,75 +2870,49 @@ async function exportarInformeCompleto() {
     wrap.appendChild(rDiv);
   }
 
-  // Sección 4+: Un bloque por cada grupo (nueva página)
+  // Sección 4+: Resumen ejecutivo compacto por grupo (sin preguntas/fotos)
   groups.forEach((g, gi)=>{
     const np = g.participantes?g.participantes.length:0;
     const gcol = _nivelColor(g.total||0);
     const gnivel = _nivelLabel(g.total||0);
+    const ai = g.aiResult || null;
 
     const gDiv = document.createElement('div');
     gDiv.style.pageBreakBefore = 'always';
 
+    // Encabezado del grupo
     let gHtml = `
       <div style="border-bottom:2px solid #065f46;padding-bottom:12px;margin-bottom:22px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:4px">GRUPO ${gi+1} DE ${groups.length}</div>
-        <div style="font-size:16px;font-weight:700;color:#065f46;margin-bottom:2px">${g.nombre}</div>
-        <div style="font-size:11px;color:#6b7280">${g.fecha||'—'} &nbsp;·&nbsp; ${np} participante${np!==1?'s':''} &nbsp;·&nbsp;
-          <span style="font-weight:700;color:${gcol}">${g.total||0}% · ${gnivel}</span>
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:4px">GRUPO ${gi+1} DE ${groups.length} &nbsp;·&nbsp; RESUMEN EJECUTIVO</div>
+        <div style="font-size:17px;font-weight:700;color:#065f46;margin-bottom:2px">${g.nombre}</div>
+        <div style="font-size:11px;color:#6b7280">
+          ${g.fecha||'—'} &nbsp;·&nbsp; ${np} participante${np!==1?'s':''}
+          ${g.participantes?` &nbsp;·&nbsp; ${[...new Set(g.participantes.map(p=>p.grupoInteres))].join(', ')}`:''}
         </div>
       </div>
 
-      <!-- Ficha -->
-      <div style="margin-bottom:20px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">FICHA TÉCNICA</div>
-        <div style="border-left:3px solid #065f46;padding-left:14px">
-          <table style="width:100%;border-collapse:collapse;font-size:11px">
-            <tr><td style="padding:4px 0;color:#6b7280;width:38%;border-bottom:1px solid #f3f4f6">Componentes evaluados</td><td style="padding:4px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${g.bloques?g.bloques.map(bi=>BLOCKS[bi].name).join(', '):'—'}</td></tr>
-            <tr><td style="padding:4px 0;color:#6b7280;border-bottom:1px solid #f3f4f6">Grupos de interés</td><td style="padding:4px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${g.participantes?[...new Set(g.participantes.map(p=>p.grupoInteres))].join(', '):'—'}</td></tr>
-            <tr><td style="padding:4px 0;color:#6b7280">Sesión N°</td><td style="padding:4px 0;color:#111827;font-weight:500">${g.numero||'—'}</td></tr>
-          </table>
-        </div>
+      <!-- Resultado del grupo -->
+      <div style="text-align:center;border:1.5px solid #e5e7eb;border-radius:10px;padding:16px;margin-bottom:22px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">RESULTADO DE SOSTENIBILIDAD</div>
+        <div style="font-size:44px;font-weight:800;color:${gcol};line-height:1;margin-bottom:4px">${g.total||0}%</div>
+        <div style="font-size:11px;font-weight:700;color:${gcol}">${gnivel}</div>
+        ${ai&&ai.resumen?`<div style="font-size:10px;color:#4b5563;line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;text-align:left">${ai.resumen}</div>`:''}
       </div>`;
 
-    // Participantes
-    if(g.participantes&&g.participantes.length>0){
-      gHtml+=`<div style="margin-bottom:20px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">PARTICIPANTES</div>
-        <div style="border-left:3px solid #065f46;padding-left:14px">
-          <table style="width:100%;border-collapse:collapse;font-size:10px">
-            <thead><tr style="border-bottom:1.5px solid #065f46">
-              <th style="padding:4px 6px;text-align:left;color:#065f46;font-weight:600">Nombre</th>
-              <th style="padding:4px 6px;text-align:left;color:#065f46;font-weight:600">Grupo de Interés</th>
-              <th style="padding:4px 6px;text-align:left;color:#065f46;font-weight:600">Género</th>
-              <th style="padding:4px 6px;text-align:left;color:#065f46;font-weight:600">Documento</th>
-            </tr></thead>
-            <tbody>${g.participantes.map(p=>`
-              <tr style="border-bottom:1px solid #f3f4f6">
-                <td style="padding:4px 6px;font-weight:500">${p.nombre||'—'}</td>
-                <td style="padding:4px 6px;color:#374151">${p.grupoInteres||'—'}</td>
-                <td style="padding:4px 6px;color:#374151">${p.genero||'—'}</td>
-                <td style="padding:4px 6px;color:#374151">${p.tipoDoc||''} ${p.numDoc||''}</td>
-              </tr>`).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>`;
-    }
-
-    // Puntajes
+    // Puntajes por componente (barras compactas)
     if(g.scores&&g.scores.length>0){
-      gHtml+=`<div style="margin-bottom:20px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">PUNTAJES POR COMPONENTE</div>
+      gHtml+=`<div style="margin-bottom:22px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">PUNTAJES POR COMPONENTE</div>
         <div style="border-left:3px solid #065f46;padding-left:14px">`;
       g.scores.forEach(s=>{
-        const c=_nivelColor(s.score),l=_nivelLabel(s.score);
-        gHtml+=`<div style="margin-bottom:10px">
+        const c=_nivelColor(s.score), l=_nivelLabel(s.score);
+        gHtml+=`<div style="margin-bottom:9px">
           <table style="width:100%;border-collapse:collapse;margin-bottom:3px"><tr>
             <td style="font-size:11px;color:#111827;font-weight:500">${BLOCK_ICONS[s.blockIndex]||''} ${s.name}</td>
             <td style="text-align:right;font-size:11px;font-weight:700;color:${c}">${s.score}%</td>
           </tr></table>
-          <div style="background:#f3f4f6;border-radius:3px;height:5px;width:100%">
-            <div style="background:${c};border-radius:3px;height:5px;width:${s.score}%"></div>
+          <div style="background:#f3f4f6;border-radius:3px;height:4px;width:100%">
+            <div style="background:${c};border-radius:3px;height:4px;width:${s.score}%"></div>
           </div>
           <div style="font-size:9px;color:#9ca3af;margin-top:2px">${l}</div>
         </div>`;
@@ -2946,53 +2920,49 @@ async function exportarInformeCompleto() {
       gHtml+=`</div></div>`;
     }
 
-    // Respuestas
-    if(g.answers&&Object.keys(g.answers).length>0&&g.bloques){
-      gHtml+=`<div style="margin-bottom:20px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">RESPUESTAS POR COMPONENTE</div>`;
-      g.bloques.forEach((bi,bIdx)=>{
-        const block=BLOCKS[bi];
-        gHtml+=`<div style="margin-bottom:20px">
-          <div style="border-bottom:1.5px solid #065f46;padding-bottom:5px;margin-bottom:12px">
-            <div style="font-size:9px;letter-spacing:1px;color:#9ca3af;margin-bottom:1px">COMPONENTE ${bIdx+1}</div>
-            <div style="font-size:13px;font-weight:700;color:#065f46">${BLOCK_ICONS[bi]||''} ${block.name}</div>
-          </div>`;
-        block.questions.forEach((qdef,qIdx)=>{
-          const ans=g.answers[qdef.n];
-          if(ans===undefined||ans===null) return;
-          const ni=parseInt(ans), nc=NCOLS[ni]||'#374151', nl=NOMS[ni]||('Nivel '+(ni+1));
-          const rt=qdef.opts[ni]||'—';
-          const ev=g.evidence&&g.evidence[qdef.n]?g.evidence[qdef.n]:null;
-          const foto=g.evidence_photos&&g.evidence_photos[qdef.n]?g.evidence_photos[qdef.n]:null;
-          gHtml+=`<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f3f4f6">
-            <div style="font-size:9px;color:#9ca3af;margin-bottom:3px">Pregunta ${qdef.n}</div>
-            <div style="font-size:11px;font-weight:600;color:#111827;margin-bottom:8px;line-height:1.5">${qdef.q}</div>
-            <div style="margin-bottom:6px">
-              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:3px">NIVEL ALCANZADO</div>
-              <div style="display:inline-block;padding:2px 10px;border:1.5px solid ${nc};border-radius:20px;font-size:10px;font-weight:700;color:${nc}">${nl}</div>
-            </div>
-            <div style="margin-bottom:${ev||foto?'8px':'0'}">
-              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:3px">RESPUESTA</div>
-              <div style="font-size:10px;color:#374151;line-height:1.6;font-style:italic;padding-left:8px;border-left:2px solid #e5e7eb">${rt}</div>
-            </div>
-            ${ev?`<div style="margin-bottom:${foto?'8px':'0'}">
-              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:3px">EVIDENCIA</div>
-              <div style="font-size:10px;color:#374151;padding:6px 10px;background:#fafafa;border-radius:5px;border-left:3px solid #d97706">${ev}</div>
-            </div>`:''}
-            ${foto?`<div>
-              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:5px">EVIDENCIA FOTOGRÁFICA</div>
-              <img src="${foto}" style="max-width:100%;max-height:200px;border-radius:7px;border:1px solid #e5e7eb;display:block">
-              <div style="font-size:8px;color:#9ca3af;margin-top:3px">Registro fotográfico del estado actual</div>
-            </div>`:''}
-          </div>`;
-        });
-        gHtml+=`</div>`;
-      });
-      gHtml+=`</div>`;
+    // Puntos críticos IA
+    if(ai&&ai.nc&&ai.nc.length){
+      gHtml+=`<div style="margin-bottom:22px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">PUNTOS CRÍTICOS</div>
+        <div style="border-left:3px solid #dc2626;padding-left:14px">
+          ${ai.nc.map((n,i)=>`<div style="font-size:10px;color:#374151;padding:4px 0;border-bottom:1px solid #f3f4f6"><span style="font-weight:700;color:#dc2626">${i+1}. </span>${n}</div>`).join('')}
+        </div>
+      </div>`;
     }
 
-    // IA del grupo
-    gHtml += _buildAISection(g.aiResult, 'ANÁLISIS IA DEL GRUPO');
+    // Plan de acción IA (tabla compacta)
+    if(ai&&ai.acciones&&ai.acciones.length){
+      gHtml+=`<div style="margin-bottom:22px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">PLAN DE ACCIÓN</div>
+        <div style="border-left:3px solid #065f46;padding-left:14px">
+          <table style="width:100%;border-collapse:collapse;font-size:10px">
+            <thead><tr style="border-bottom:1.5px solid #065f46">
+              <th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:600;width:48%">Acción</th>
+              <th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:600">Prioridad</th>
+              <th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:600">Plazo</th>
+              <th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:600">Responsable</th>
+            </tr></thead>
+            <tbody>${ai.acciones.map(a=>`
+              <tr style="border-bottom:1px solid #f3f4f6">
+                <td style="padding:4px 6px;color:#111827">${a.acc||'—'}</td>
+                <td style="padding:4px 6px;font-weight:600;color:${a.p==='ALTA'?'#dc2626':a.p==='MEDIA'?'#d97706':'#374151'}">${a.p||'—'}</td>
+                <td style="padding:4px 6px;color:#374151">${a.plazo||'—'}</td>
+                <td style="padding:4px 6px;color:#374151">${a.resp||'—'}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }
+
+    // Ruta hacia la certificación
+    if(ai&&ai.ruta){
+      gHtml+=`<div style="border-left:3px solid #065f46;padding-left:14px;margin-bottom:22px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:5px">RUTA HACIA LA CERTIFICACIÓN</div>
+        <div style="font-size:10px;color:#374151;line-height:1.7">${ai.ruta}</div>
+      </div>`;
+    }
+
     gDiv.innerHTML = gHtml;
     wrap.appendChild(gDiv);
   });
