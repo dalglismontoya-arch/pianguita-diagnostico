@@ -963,16 +963,28 @@ async function fb_leer() {
     const timer = setTimeout(() => ctrl.abort(), FIREBASE_TIMEOUT);
     const r     = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, { signal: ctrl.signal });
     clearTimeout(timer);
-    if (r.ok) { const d = await r.json(); return d || {}; }
+    if (r.ok) {
+      const d = await r.json();
+      if (!d) return {};
+      // Filtrar grupos marcados como borrados
+      const filtrado = {};
+      Object.entries(d).forEach(([k, v]) => { if (v && !v._deleted) filtrado[k] = v; });
+      return filtrado;
+    }
   } catch(e) {}
   return null;
 }
 
 // ── Borrar un grupo ─────────────────────────────────────────────
+// Firebase exige _tk en el payload → usamos PUT con marca _deleted
 async function fb_borrar(grupo) {
   try {
     const token = await fb_getToken();
-    await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, { method:'DELETE' });
+    await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ _deleted: true, _tk: FB_SECRET })
+    });
   } catch(e) {}
 }
 
@@ -980,7 +992,15 @@ async function fb_borrar(grupo) {
 async function fb_borrar_todo() {
   try {
     const token = await fb_getToken();
-    await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, { method:'DELETE' });
+    const all = await fb_leer();
+    if (!all || Object.keys(all).length === 0) return;
+    const marcados = {};
+    Object.keys(all).forEach(k => { marcados[k] = { _deleted: true, _tk: FB_SECRET }; });
+    await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(marcados)
+    });
   } catch(e) {}
 }
 
