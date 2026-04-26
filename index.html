@@ -1726,8 +1726,13 @@ function clearAll() {
 function descargarPDFIndividual() {
   const btn = document.querySelector('[onclick="descargarPDFIndividual()"]');
   if(btn){ btn.textContent='Generando PDF...'; btn.disabled=true; }
+
+  // Expandir todos los bloques colapsados antes de clonar
+  document.querySelectorAll('.diag-body').forEach(el=>{ el._wasHidden=el.style.display==='none'; el.style.display='block'; });
+
   const wrap = document.createElement('div');
   wrap.style.cssText = 'font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:0 auto;color:#111827;';
+
   // Encabezado
   const tit = document.createElement('div');
   tit.style.cssText = 'text-align:center;margin-bottom:20px;padding-bottom:12px;border-bottom:3px solid #065f46;';
@@ -1735,9 +1740,20 @@ function descargarPDFIndividual() {
     '<h2 style="font-size:14px;color:#374151;font-weight:normal;margin-bottom:4px">Playa Piangüita Punta Bazán · Buenaventura</h2>'+
     '<p style="font-size:12px;color:#6b7280;margin:0">'+currentGroupName+' · '+new Date().toLocaleDateString('es-CO')+'</p>';
   wrap.appendChild(tit);
-  // Contenido de resultados
+
+  // Clonar contenido con todos los bloques visibles
   const rc = document.getElementById('results-content');
-  if(rc){ const cl = rc.cloneNode(true); cl.querySelectorAll('button').forEach(b=>b.remove()); wrap.appendChild(cl); }
+  if(rc){
+    const cl = rc.cloneNode(true);
+    // Asegurar que todo esté visible en el clon
+    cl.querySelectorAll('.diag-body').forEach(el=>{ el.style.display='block'; });
+    cl.querySelectorAll('button').forEach(b=>b.remove());
+    wrap.appendChild(cl);
+  }
+
+  // Restaurar estado colapsado original en la pantalla
+  document.querySelectorAll('.diag-body').forEach(el=>{ if(el._wasHidden) el.style.display='none'; });
+
   html2pdf().set({
     margin:[15,15,15,15],
     filename:'Informe_'+currentGroupName.replace(/[^a-zA-Z0-9]/g,'_')+'_Pianguita.pdf',
