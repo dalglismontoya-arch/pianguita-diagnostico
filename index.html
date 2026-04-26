@@ -1848,22 +1848,30 @@ async function exportarInformeCompleto() {
 
   // Resumen comparativo
   const grandAvg = groups.length > 0 ? Math.round(groups.reduce((s,g)=>s+(g.total||0),0)/groups.length) : 0;
-  const grandCol = grandAvg>=70?'#059669':grandAvg>=40?'#d97706':'#dc2626';
+  function nivelColor(v){ return v>=75?'#059669':v>=50?'#2563eb':v>=25?'#d97706':'#dc2626'; }
+  function nivelLabel(v){ return v>=75?'En Mejoramiento':v>=50?'En Medición y Seguimiento':v>=25?'En Ejecución':'En Planeación'; }
+  const grandCol = nivelColor(grandAvg);
 
   let resumenHtml = `<div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:8px;padding:14px;margin-bottom:20px">
     <div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:10px">Resumen General</div>
     <div style="display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
       ${groups.map(g=>{
-        const col=g.total>=70?'#059669':g.total>=40?'#d97706':'#dc2626';
+        const col=nivelColor(g.total||0);
+        const lbl=nivelLabel(g.total||0);
         return `<div style="text-align:center;min-width:80px">
           <div style="font-size:22px;font-weight:800;color:${col}">${g.total||0}%</div>
+          <div style="font-size:10px;font-weight:600;color:${col};margin:2px 0">${lbl}</div>
           <div style="font-size:10px;color:#374151;max-width:80px">${g.nombre}</div>
         </div>`;
       }).join('')}
       <div style="text-align:center;min-width:80px;border-left:2px solid #6ee7b7;padding-left:16px">
         <div style="font-size:22px;font-weight:800;color:${grandCol}">${grandAvg}%</div>
+        <div style="font-size:10px;font-weight:600;color:${grandCol};margin:2px 0">${nivelLabel(grandAvg)}</div>
         <div style="font-size:10px;color:#374151">Promedio general</div>
       </div>
+    </div>
+    <div style="font-size:10px;color:#6b7280;text-align:center;margin-top:6px;border-top:1px solid #d1fae5;padding-top:6px">
+      🔴 En Planeación (0–24%) &nbsp;·&nbsp; 🟠 En Ejecución (25–49%) &nbsp;·&nbsp; 🔵 En Medición y Seguimiento (50–74%) &nbsp;·&nbsp; 🟢 En Mejoramiento (75–100%)
     </div>
   </div>`;
   wrap.innerHTML += resumenHtml;
@@ -1871,7 +1879,7 @@ async function exportarInformeCompleto() {
   // Por cada grupo: ficha técnica + caracterización + preguntas
   groups.forEach((g, gi) => {
     const np = g.participantes ? g.participantes.length : 0;
-    const gcol = g.total>=70?'#059669':g.total>=40?'#d97706':'#dc2626';
+    const gcol = nivelColor(g.total||0);
 
     // ── Encabezado del grupo ──
     let gHtml = `<div style="page-break-before:${gi===0?'auto':'always'};margin-bottom:20px">
@@ -1932,8 +1940,8 @@ async function exportarInformeCompleto() {
             <th style="padding:5px 8px;text-align:center;color:#065f46;border:1px solid #e5e7eb">Nivel</th>
           </tr></thead>
           <tbody>${g.scores.map((s,si)=>{
-            const col=s.score>=70?'#059669':s.score>=40?'#d97706':'#dc2626';
-            const lbl=s.score>=70?'Bueno':s.score>=40?'En proceso':'Crítico';
+            const col=s.score>=75?'#059669':s.score>=50?'#2563eb':s.score>=25?'#d97706':'#dc2626';
+            const lbl=s.score>=75?'En Mejoramiento':s.score>=50?'En Medición y Seguimiento':s.score>=25?'En Ejecución':'En Planeación';
             return `<tr style="${si%2===0?'background:white':'background:#f9fafb'}">
               <td style="padding:5px 8px;border:1px solid #e5e7eb">${BLOCK_ICONS[s.blockIndex]||''} ${s.name}</td>
               <td style="padding:5px 8px;border:1px solid #e5e7eb;text-align:center;font-weight:700;color:${col}">${s.score}%</td>
