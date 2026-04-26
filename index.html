@@ -1683,18 +1683,42 @@ async function generateConsolidatedAI() {
   const iv=setInterval(()=>{ mi=(mi+1)%msgs.length; ml.textContent=msgs[mi]; },1800);
   try {
     const totPart=groups.reduce((s,g)=>s+(g.participantes?g.participantes.length:0),0);
-    const todosGrupos=[...new Set(groups.flatMap(g=>g.participantes?g.participantes.map(p=>p.grupoInteres):[]))].join(', ');
-    const cob=BLOCKS.map((b,bi)=>{
-      const ans=groups.filter(g=>g.bloques&&g.bloques.includes(bi));
-      if(ans.length===0) return null;
-      const avg=Math.round(ans.reduce((s,g)=>{const sc=g.scores?(g.scores.find(s=>s.blockIndex===bi)||{score:0}).score:0;return s+sc;},0)/ans.length);
-      return `${b.name}:${avg}%`;
-    }).filter(Boolean).join(', ');
-    const det=groups.map(g=>`${g.nombre}(${g.total}%)[${g.bloques?g.bloques.map(bi=>{const sc=g.scores?(g.scores.find(s=>s.blockIndex===bi)||{score:0}).score:0;return BLOCKS[bi].name+':'+sc+'%';}).join(','):''}]`).join('; ');
-    const prompt=`Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Diagnóstico participativo Playa Piangüita, Buenaventura. ${groups.length} grupos focales, ${totPart} participantes (${todosGrupos}).
-Bloques evaluados: ${cob}. Detalle: ${det.substring(0,400)}.
-Responde SOLO JSON puro sin markdown:
-{"nivel_general":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","diagnostico_general":"párrafo 40 palabras","consensos":["consenso1","consenso2","consenso3"],"brechas_criticas":["brecha1","brecha2","brecha3"],"acciones_prioritarias":[{"prioridad":"ALTA","accion":"acción concreta","responsable":"actor","plazo":"0-3m"},{"prioridad":"ALTA","accion":"acción","responsable":"actor","plazo":"0-3m"},{"prioridad":"MEDIA","accion":"acción","responsable":"actor","plazo":"3-6m"},{"prioridad":"BAJA","accion":"acción","responsable":"actor","plazo":"6-12m"}],"proximos_pasos":"párrafo 30 palabras","mensaje_comunidad":"frase motivadora 20 palabras"}`;
+    const actoresPresentes=[...new Set(groups.flatMap(g=>g.participantes?g.participantes.map(p=>p.grupoInteres):[]))].join(', ');
+    const NOMS_IA=['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
+
+    // Construir resumen detallado de respuestas y evidencias reales
+    const resumenGrupos=groups.map(g=>{
+      const bloqDetalle=g.bloques?g.bloques.map(bi=>{
+        const block=BLOCKS[bi];
+        const sc=g.scores?(g.scores.find(s=>s.blockIndex===bi)||{score:0}).score:0;
+        const preguntas=block.questions.map(qdef=>{
+          const ans=g.answers&&g.answers[qdef.n]!==undefined?parseInt(g.answers[qdef.n]):null;
+          if(ans===null) return null;
+          const nivel=NOMS_IA[ans]||('Nivel '+(ans+1));
+          const ev=g.evidence&&g.evidence[qdef.n]?` Evidencia: "${g.evidence[qdef.n]}"`:' Sin evidencia.';
+          return `  P${qdef.n}: ${nivel}.${ev}`;
+        }).filter(Boolean).join('\n');
+        return `${block.name} (${sc}%):\n${preguntas}`;
+      }).join('\n'):'-';
+      return `=== ${g.nombre} — Total: ${g.total}% ===\n${bloqDetalle}`;
+    }).join('\n\n');
+
+    const prompt=`Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD.
+
+CONTEXTO: Diagnóstico participativo Playa Piangüita, Punta Bazán, Buenaventura (Pacífico colombiano, comunidad afrocolombiana, ecosistema de manglar, acceso fluvial). ${groups.length} grupos focales, ${totPart} participantes. Grupos de interés participantes: ${actoresPresentes}.
+
+DATOS REALES DE LA EVALUACIÓN (usa ÚNICAMENTE estos datos para tu análisis):
+${resumenGrupos}
+
+REGLAS ESTRICTAS:
+1. Basa TODAS tus conclusiones ÚNICAMENTE en las respuestas y evidencias anteriores. No inventes situaciones no mencionadas.
+2. En "responsable" usa ÚNICAMENTE actores de esta lista: ${actoresPresentes}, comunidad de Piangüita, alcaldía de Buenaventura, DIMAR, autoridad ambiental. Si no está claro, escribe "comunidad de Piangüita".
+3. Las acciones deben derivarse directamente de las brechas identificadas en las respuestas. No inventes acciones genéricas.
+4. Si los datos no son suficientes para una recomendación específica, escribe "A definir con la comunidad".
+5. Responde SOLO JSON puro sin markdown ni texto adicional.
+
+JSON requerido:
+{"nivel_general":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","diagnostico_general":"párrafo 50 palabras basado en los datos reales","consensos":["hallazgo real 1 de los datos","hallazgo real 2","hallazgo real 3"],"brechas_criticas":["brecha concreta identificada en las respuestas 1","brecha 2","brecha 3"],"acciones_prioritarias":[{"prioridad":"ALTA","accion":"acción concreta derivada de las respuestas","responsable":"actor de la lista","plazo":"0-3m"},{"prioridad":"ALTA","accion":"acción","responsable":"actor","plazo":"0-3m"},{"prioridad":"MEDIA","accion":"acción","responsable":"actor","plazo":"3-6m"},{"prioridad":"BAJA","accion":"acción","responsable":"actor","plazo":"6-12m"}],"proximos_pasos":"párrafo 30 palabras basado en lo identificado","mensaje_comunidad":"frase motivadora 20 palabras referida a Piangüita"}`;
     const resp=await fetch('https://pianguita-proxy.onrender.com/api/messages',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
@@ -1730,7 +1754,7 @@ Responde SOLO JSON puro sin markdown:
         <div style="font-size:15px;font-weight:600;color:white;line-height:1.6">"${r.mensaje_comunidad||''}"</div>
       </div>
       <div style="text-align:center;margin-top:1.5rem;padding-bottom:1rem">
-        <button onclick="descargarPDF()" style="background:#065f46;color:white;border:none;padding:14px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;width:100%;font-family:inherit">Descargar informe consolidado en PDF</button>
+        <button onclick="exportarInformeCompleto()" style="background:#065f46;color:white;border:none;padding:14px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;width:100%;font-family:inherit">📊 Descargar informe completo en PDF (datos + análisis IA)</button>
       </div>`;
   } catch(err) {
     clearInterval(iv); document.getElementById('consolidated-loading').style.display='none';
@@ -2205,6 +2229,19 @@ async function exportarInformeCompleto() {
     gHtml += `</div>`; // cierra grupo
     wrap.innerHTML += gHtml;
   });
+
+  // Análisis IA (si ya fue generado)
+  const aiEl = document.getElementById('consolidated-ai-result');
+  if(aiEl && aiEl.innerHTML.trim() !== ''){
+    const aiClone = aiEl.cloneNode(true);
+    aiClone.querySelectorAll('button').forEach(b=>b.remove());
+    // Encabezado de sección IA
+    const aiSec = document.createElement('div');
+    aiSec.style.cssText = 'page-break-before:always;margin-bottom:16px;';
+    aiSec.innerHTML = `<div style="background:#065f46;color:white;padding:12px 16px;border-radius:8px;margin-bottom:14px;font-size:14px;font-weight:700">🤖 Análisis IA · Diagnóstico Consolidado · NTS TS 001-02</div>`;
+    aiSec.appendChild(aiClone);
+    wrap.appendChild(aiSec);
+  }
 
   // Pie de página
   wrap.innerHTML += `<div style="margin-top:24px;padding-top:12px;border-top:2px solid #e5e7eb;font-size:10px;color:#9ca3af;text-align:center">
