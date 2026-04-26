@@ -2658,11 +2658,12 @@ async function descargarPDFGrupo(grupoKey, _externalBtn) {
 // ══════════════════════════════════════════════════════════════
 // EXPORTAR INFORME COMPLETO — todas las respuestas + evidencias
 // ══════════════════════════════════════════════════════════════
+// EXPORTAR PDF CONSOLIDADO — diseño limpio
+// ══════════════════════════════════════════════════════════════
 async function exportarInformeCompleto() {
   const btn = document.getElementById('btn-export-completo');
-  if(btn){ btn.textContent='⏳ Generando informe...'; btn.disabled=true; }
+  if(btn){ btn.textContent='⏳ Generando...'; btn.disabled=true; }
 
-  // 1. Leer datos desde Firebase (o localStorage como respaldo)
   let all = {};
   try {
     const fb = await fb_leer();
@@ -2679,230 +2680,275 @@ async function exportarInformeCompleto() {
 
   if(groups.length===0){
     alert('No hay datos para exportar.');
-    if(btn){ btn.textContent='📊 Exportar Informe Completo'; btn.disabled=false; }
+    if(btn){ btn.textContent='📊 Exportar PDF Completo'; btn.disabled=false; }
     return;
   }
 
-  // 2. Construir mapa de preguntas {nPregunta → {q, opts, blockName}}
-  const qMap = {};
-  BLOCKS.forEach(b=>{
-    b.questions.forEach(q=>{
-      qMap[q.n] = { q: q.q, opts: q.opts, blockName: b.name };
-    });
-  });
-
-  const NIVELES = ['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
-  const NIVEL_COLOR = ['#dc2626','#d97706','#2563eb','#059669'];
-
-  // 3. Generar HTML completo
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'font-family:Arial,sans-serif;padding:20px;max-width:720px;margin:0 auto;color:#111827;font-size:12px;';
-
-  // Portada
-  wrap.innerHTML = `
-    <div style="text-align:center;padding:30px 20px 20px;border-bottom:3px solid #065f46;margin-bottom:24px">
-      <div style="font-size:11px;color:#6b7280;letter-spacing:1px;margin-bottom:6px">NORMA TÉCNICA SECTORIAL COLOMBIANA</div>
-      <h1 style="font-size:20px;color:#065f46;margin:0 0 6px 0">NTS TS 001-02 · Diagnóstico Participativo</h1>
-      <h2 style="font-size:15px;color:#374151;font-weight:normal;margin:0 0 6px 0">Playa Piangüita · Punta Bazán · Buenaventura</h2>
-      <div style="font-size:13px;font-weight:600;color:#065f46;margin:8px 0 4px">${groups.length} Grupo${groups.length!==1?'s':''} evaluados · ${groups.reduce((s,g)=>s+(g.participantes?g.participantes.length:0),0)} participantes en total</div>
-      <div style="font-size:11px;color:#6b7280">Informe generado el ${new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
-    </div>`;
-
-  // Resumen comparativo
-  const grandAvg = groups.length > 0 ? Math.round(groups.reduce((s,g)=>s+(g.total||0),0)/groups.length) : 0;
+  const NOMS  = ['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
+  const NCOLS = ['#dc2626','#d97706','#2563eb','#059669'];
+  const grandAvg = Math.round(groups.reduce((s,g)=>s+(g.total||0),0)/groups.length);
   const grandCol = _nivelColor(grandAvg);
+  const totalPart = groups.reduce((s,g)=>s+(g.participantes?g.participantes.length:0),0);
 
-  let resumenHtml = `<div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:8px;padding:14px;margin-bottom:20px">
-    <div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:10px">Resumen General</div>
-    <div style="display:flex;justify-content:center;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
-      ${groups.map(g=>{
-        const col=_nivelColor(g.total||0);
-        const lbl=_nivelLabel(g.total||0);
-        return `<div style="text-align:center;min-width:80px">
-          <div style="font-size:22px;font-weight:800;color:${col}">${g.total||0}%</div>
-          <div style="font-size:10px;font-weight:600;color:${col};margin:2px 0">${lbl}</div>
-          <div style="font-size:10px;color:#374151;max-width:80px">${g.nombre}</div>
-        </div>`;
-      }).join('')}
-      <div style="text-align:center;min-width:80px;border-left:2px solid #6ee7b7;padding-left:16px">
-        <div style="font-size:22px;font-weight:800;color:${grandCol}">${grandAvg}%</div>
-        <div style="font-size:10px;font-weight:600;color:${grandCol};margin:2px 0">${_nivelLabel(grandAvg)}</div>
-        <div style="font-size:10px;color:#374151">Promedio general</div>
-      </div>
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'font-family:Arial,sans-serif;padding:28px 32px;max-width:700px;margin:0 auto;color:#111827;background:white;';
+
+  // ── PORTADA ──
+  wrap.innerHTML = `
+    <div style="border-bottom:2px solid #065f46;padding-bottom:20px;margin-bottom:32px">
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">DIAGNÓSTICO PARTICIPATIVO · NTS TS 001-02</div>
+      <div style="font-size:22px;font-weight:700;color:#065f46;margin-bottom:4px">Playa Piangüita Punta Bazán</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:20px">Buenaventura · Valle del Cauca · Colombia</div>
+      <table style="width:100%;border-collapse:collapse">
+        <tr>
+          <td style="vertical-align:top">
+            <div style="font-size:13px;font-weight:700;color:#111827">Informe Consolidado · Todos los grupos</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:2px">${groups.length} grupo${groups.length!==1?'s':''} &nbsp;·&nbsp; ${totalPart} participantes</div>
+          </td>
+          <td style="text-align:right;vertical-align:top">
+            <div style="font-size:8px;letter-spacing:1.5px;color:#9ca3af;margin-bottom:2px">INFORME PDF COMPLETO</div>
+            <div style="font-size:10px;color:#6b7280">${new Date().toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'})}</div>
+          </td>
+        </tr>
+      </table>
     </div>
-    <div style="font-size:10px;color:#6b7280;text-align:center;margin-top:6px;border-top:1px solid #d1fae5;padding-top:6px">
-      🔴 En Planeación (0–24%) &nbsp;·&nbsp; 🟠 En Ejecución (25–49%) &nbsp;·&nbsp; 🔵 En Medición y Seguimiento (50–74%) &nbsp;·&nbsp; 🟢 En Mejoramiento (75–100%)
+
+    <!-- Resultado consolidado -->
+    <div style="text-align:center;border:1.5px solid #e5e7eb;border-radius:10px;padding:20px;margin-bottom:32px">
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">PROMEDIO GENERAL DE SOSTENIBILIDAD</div>
+      <div style="font-size:52px;font-weight:800;color:${grandCol};line-height:1;margin-bottom:6px">${grandAvg}%</div>
+      <div style="font-size:12px;font-weight:700;color:${grandCol};margin-bottom:12px">${_nivelLabel(grandAvg)}</div>
+      <div style="font-size:8px;color:#d1d5db;letter-spacing:0.5px">0–24% EN PLANEACIÓN &nbsp;·&nbsp; 25–49% EN EJECUCIÓN &nbsp;·&nbsp; 50–74% EN MEDICIÓN Y SEGUIMIENTO &nbsp;·&nbsp; 75–100% EN MEJORAMIENTO</div>
     </div>
-  </div>`;
-  wrap.innerHTML += resumenHtml;
 
-  // Por cada grupo: ficha técnica + caracterización + preguntas
-  groups.forEach((g, gi) => {
-    const np = g.participantes ? g.participantes.length : 0;
-    const gcol = _nivelColor(g.total||0);
-
-    // ── Encabezado del grupo ──
-    let gHtml = `<div style="page-break-before:${gi===0?'auto':'always'};margin-bottom:20px">
-      <div style="background:#065f46;color:white;padding:12px 16px;border-radius:8px 8px 0 0">
-        <div style="font-size:15px;font-weight:700">📋 ${g.nombre}</div>
-        <div style="font-size:11px;opacity:0.85;margin-top:3px">Fecha: ${g.fecha||'—'} · ${np} participante${np!==1?'s':''} · Puntaje total: <strong>${g.total||0}%</strong></div>
-      </div>`;
-
-    // ── Ficha técnica ──
-    gHtml += `<div style="border:1px solid #e5e7eb;border-top:none;padding:14px;background:white">
-      <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:8px;border-bottom:1px solid #e5e7eb;padding-bottom:4px">FICHA TÉCNICA</div>
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <tr><td style="padding:3px 8px;color:#6b7280;width:35%">Nombre del grupo:</td><td style="padding:3px 8px;font-weight:600">${g.nombre||'—'}</td></tr>
-        <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Fecha de evaluación:</td><td style="padding:3px 8px;font-weight:600">${g.fecha||'—'}</td></tr>
-        <tr><td style="padding:3px 8px;color:#6b7280">N° de sesión:</td><td style="padding:3px 8px;font-weight:600">${g.numero||'—'}</td></tr>
-        <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">N° de participantes:</td><td style="padding:3px 8px;font-weight:600">${np}</td></tr>
-        <tr><td style="padding:3px 8px;color:#6b7280">Componentes evaluados:</td><td style="padding:3px 8px;font-weight:600">${g.bloques?g.bloques.map(bi=>BLOCKS[bi].name).join(', '):'—'}</td></tr>
-        <tr style="background:#f9fafb"><td style="padding:3px 8px;color:#6b7280">Puntaje global:</td><td style="padding:3px 8px;font-weight:700;color:${gcol}">${g.total||0}%</td></tr>
-      </table>`;
-
-    // Lista de participantes
-    if(g.participantes && g.participantes.length > 0){
-      gHtml += `<div style="font-size:11px;font-weight:700;color:#065f46;margin:10px 0 6px">Listado de participantes</div>
+    <!-- Sección 1: Resumen de grupos -->
+    <div style="margin-bottom:28px">
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">1 &nbsp;·&nbsp; RESUMEN POR GRUPO</div>
+      <div style="border-left:3px solid #065f46;padding-left:14px">
         <table style="width:100%;border-collapse:collapse;font-size:10px">
-          <thead><tr style="background:#f0fdf4">
-            <th style="padding:4px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Nombre</th>
-            <th style="padding:4px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Grupo de interés</th>
-            <th style="padding:4px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Género</th>
-            <th style="padding:4px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Edad</th>
-            <th style="padding:4px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Documento</th>
+          <thead><tr style="border-bottom:1.5px solid #065f46">
+            <th style="padding:5px 8px;text-align:left;color:#065f46;font-weight:600">Grupo</th>
+            <th style="padding:5px 8px;text-align:left;color:#065f46;font-weight:600">Fecha</th>
+            <th style="padding:5px 8px;text-align:left;color:#065f46;font-weight:600">Componente(s)</th>
+            <th style="padding:5px 8px;text-align:center;color:#065f46;font-weight:600">Part.</th>
+            <th style="padding:5px 8px;text-align:center;color:#065f46;font-weight:600">Total</th>
+            <th style="padding:5px 8px;text-align:left;color:#065f46;font-weight:600">Nivel</th>
           </tr></thead>
-          <tbody>${g.participantes.map((p,pi)=>`
-            <tr style="${pi%2===0?'background:white':'background:#f9fafb'}">
-              <td style="padding:4px 8px;border:1px solid #e5e7eb">${p.nombre||'—'}</td>
-              <td style="padding:4px 8px;border:1px solid #e5e7eb">${p.grupoInteres||'—'}</td>
-              <td style="padding:4px 8px;border:1px solid #e5e7eb">${p.genero||'—'}</td>
-              <td style="padding:4px 8px;border:1px solid #e5e7eb">${p.edad||'—'}</td>
-              <td style="padding:4px 8px;border:1px solid #e5e7eb">${p.tipoDoc||''} ${p.numDoc||''}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>`;
-    }
-    gHtml += `</div>`; // cierra ficha técnica
-
-    // ── Caracterización de la población ──
-    if(g.participantes && g.participantes.length > 0){
-      gHtml += buildCaracterizacion(g.participantes);
-    }
-
-    // ── Puntajes por componente ──
-    if(g.scores && g.scores.length > 0){
-      gHtml += `<div style="border:1px solid #e5e7eb;border-radius:0 0 0 0;padding:12px;background:white;margin-top:1px">
-        <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:8px;border-bottom:1px solid #e5e7eb;padding-bottom:4px">PUNTAJES POR COMPONENTE</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead><tr style="background:#f0fdf4">
-            <th style="padding:5px 8px;text-align:left;color:#065f46;border:1px solid #e5e7eb">Componente</th>
-            <th style="padding:5px 8px;text-align:center;color:#065f46;border:1px solid #e5e7eb">Puntaje</th>
-            <th style="padding:5px 8px;text-align:center;color:#065f46;border:1px solid #e5e7eb">Nivel</th>
-          </tr></thead>
-          <tbody>${g.scores.map((s,si)=>{
-            const col=s.score>=75?'#059669':s.score>=50?'#2563eb':s.score>=25?'#d97706':'#dc2626';
-            const lbl=s.score>=75?'En Mejoramiento':s.score>=50?'En Medición y Seguimiento':s.score>=25?'En Ejecución':'En Planeación';
-            return `<tr style="${si%2===0?'background:white':'background:#f9fafb'}">
-              <td style="padding:5px 8px;border:1px solid #e5e7eb">${BLOCK_ICONS[s.blockIndex]||''} ${s.name}</td>
-              <td style="padding:5px 8px;border:1px solid #e5e7eb;text-align:center;font-weight:700;color:${col}">${s.score}%</td>
-              <td style="padding:5px 8px;border:1px solid #e5e7eb;text-align:center;font-size:10px;color:${col};font-weight:600">${lbl}</td>
-            </tr>`;
-          }).join('')}
+          <tbody>
+            ${groups.map((g,gi)=>{
+              const c=_nivelColor(g.total||0), l=_nivelLabel(g.total||0);
+              const np=g.participantes?g.participantes.length:0;
+              return `<tr style="border-bottom:1px solid #f3f4f6">
+                <td style="padding:5px 8px;font-weight:500">${g.nombre||'—'}</td>
+                <td style="padding:5px 8px;color:#6b7280">${g.fecha||'—'}</td>
+                <td style="padding:5px 8px;color:#374151">${g.bloques?g.bloques.map(bi=>BLOCKS[bi].name).join(', '):'—'}</td>
+                <td style="padding:5px 8px;text-align:center;color:#374151">${np}</td>
+                <td style="padding:5px 8px;text-align:center;font-weight:700;color:${c}">${g.total||0}%</td>
+                <td style="padding:5px 8px;color:${c};font-size:9px;font-weight:600">${l}</td>
+              </tr>`;
+            }).join('')}
+            <tr style="border-top:2px solid #065f46">
+              <td colspan="4" style="padding:5px 8px;font-weight:700;color:#065f46">PROMEDIO GENERAL</td>
+              <td style="padding:5px 8px;text-align:center;font-weight:800;color:${grandCol}">${grandAvg}%</td>
+              <td style="padding:5px 8px;color:${grandCol};font-size:9px;font-weight:600">${_nivelLabel(grandAvg)}</td>
+            </tr>
           </tbody>
         </table>
+      </div>
+    </div>`;
+
+  // Sección 2: Comparativo por componente
+  const blockAvgs = BLOCKS.map((b,bi)=>{
+    const relevant = groups.filter(g=>g.bloques&&g.bloques.includes(bi));
+    if(!relevant.length) return null;
+    return Math.round(relevant.reduce((s,g)=>{ const sc=g.scores?(g.scores.find(s=>s.blockIndex===bi)||{score:0}).score:0; return s+sc; },0)/relevant.length);
+  });
+
+  const compRows = BLOCKS.map((b,bi)=>{
+    const avg = blockAvgs[bi];
+    if(avg===null) return '';
+    const c = _nivelColor(avg);
+    return `<div style="margin-bottom:10px">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:3px"><tr>
+        <td style="font-size:11px;color:#111827;font-weight:500">${BLOCK_ICONS[bi]||''} ${b.name}</td>
+        <td style="text-align:right;font-size:11px;font-weight:700;color:${c}">${avg}%</td>
+      </tr></table>
+      <div style="background:#f3f4f6;border-radius:3px;height:5px;width:100%">
+        <div style="background:${c};border-radius:3px;height:5px;width:${avg}%"></div>
+      </div>
+      <div style="font-size:9px;color:#9ca3af;margin-top:2px">${_nivelLabel(avg)}</div>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML += `<div style="margin-bottom:28px">
+    <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">2 &nbsp;·&nbsp; PROMEDIO POR COMPONENTE</div>
+    <div style="border-left:3px solid #065f46;padding-left:14px">${compRows}</div>
+  </div>`;
+
+  // Sección 3: Radar consolidado (DOM)
+  const blockScoresForRadar = BLOCKS.map((b,bi)=>blockAvgs[bi]!==null?{name:b.name,blockIndex:bi,score:blockAvgs[bi]}:null).filter(Boolean);
+  if(blockScoresForRadar.length >= 2){
+    const rDiv = document.createElement('div');
+    rDiv.style.marginBottom = '28px';
+    rDiv.innerHTML = `<div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">3 &nbsp;·&nbsp; PERFIL DE SOSTENIBILIDAD CONSOLIDADO</div>`
+      + buildRadarChart(blockScoresForRadar, '');
+    wrap.appendChild(rDiv);
+  }
+
+  // Sección 4+: Un bloque por cada grupo (nueva página)
+  groups.forEach((g, gi)=>{
+    const np = g.participantes?g.participantes.length:0;
+    const gcol = _nivelColor(g.total||0);
+    const gnivel = _nivelLabel(g.total||0);
+
+    const gDiv = document.createElement('div');
+    gDiv.style.pageBreakBefore = 'always';
+
+    let gHtml = `
+      <div style="border-bottom:2px solid #065f46;padding-bottom:12px;margin-bottom:22px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:4px">GRUPO ${gi+1} DE ${groups.length}</div>
+        <div style="font-size:16px;font-weight:700;color:#065f46;margin-bottom:2px">${g.nombre}</div>
+        <div style="font-size:11px;color:#6b7280">${g.fecha||'—'} &nbsp;·&nbsp; ${np} participante${np!==1?'s':''} &nbsp;·&nbsp;
+          <span style="font-weight:700;color:${gcol}">${g.total||0}% · ${gnivel}</span>
+        </div>
+      </div>
+
+      <!-- Ficha -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">FICHA TÉCNICA</div>
+        <div style="border-left:3px solid #065f46;padding-left:14px">
+          <table style="width:100%;border-collapse:collapse;font-size:11px">
+            <tr><td style="padding:4px 0;color:#6b7280;width:38%;border-bottom:1px solid #f3f4f6">Componentes evaluados</td><td style="padding:4px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${g.bloques?g.bloques.map(bi=>BLOCKS[bi].name).join(', '):'—'}</td></tr>
+            <tr><td style="padding:4px 0;color:#6b7280;border-bottom:1px solid #f3f4f6">Grupos de interés</td><td style="padding:4px 0;color:#111827;font-weight:500;border-bottom:1px solid #f3f4f6">${g.participantes?[...new Set(g.participantes.map(p=>p.grupoInteres))].join(', '):'—'}</td></tr>
+            <tr><td style="padding:4px 0;color:#6b7280">Sesión N°</td><td style="padding:4px 0;color:#111827;font-weight:500">${g.numero||'—'}</td></tr>
+          </table>
+        </div>
+      </div>`;
+
+    // Participantes
+    if(g.participantes&&g.participantes.length>0){
+      gHtml+=`<div style="margin-bottom:20px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">PARTICIPANTES</div>
+        <div style="border-left:3px solid #065f46;padding-left:14px">
+          <table style="width:100%;border-collapse:collapse;font-size:10px">
+            <thead><tr style="border-bottom:1.5px solid #065f46">
+              <th style="padding:4px 6px;text-align:left;color:#065f46;font-weight:600">Nombre</th>
+              <th style="padding:4px 6px;text-align:left;color:#065f46;font-weight:600">Grupo de Interés</th>
+              <th style="padding:4px 6px;text-align:left;color:#065f46;font-weight:600">Género</th>
+              <th style="padding:4px 6px;text-align:left;color:#065f46;font-weight:600">Documento</th>
+            </tr></thead>
+            <tbody>${g.participantes.map(p=>`
+              <tr style="border-bottom:1px solid #f3f4f6">
+                <td style="padding:4px 6px;font-weight:500">${p.nombre||'—'}</td>
+                <td style="padding:4px 6px;color:#374151">${p.grupoInteres||'—'}</td>
+                <td style="padding:4px 6px;color:#374151">${p.genero||'—'}</td>
+                <td style="padding:4px 6px;color:#374151">${p.tipoDoc||''} ${p.numDoc||''}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
       </div>`;
     }
 
-    // ── Respuestas pregunta por pregunta ──
-    if(g.answers && Object.keys(g.answers).length > 0){
-      gHtml += `<div style="border:1px solid #e5e7eb;padding:12px;background:white;margin-top:1px">
-        <div style="font-size:12px;font-weight:700;color:#065f46;margin-bottom:10px;border-bottom:1px solid #e5e7eb;padding-bottom:4px">RESPUESTAS PREGUNTA POR PREGUNTA</div>`;
-
-      // Agrupar respuestas por bloque
-      if(g.bloques){
-        g.bloques.forEach(bi=>{
-          const block = BLOCKS[bi];
-          gHtml += `<div style="margin-bottom:12px">
-            <div style="font-size:11px;font-weight:700;background:#f0fdf4;color:#065f46;padding:6px 8px;border-radius:4px;margin-bottom:8px">${BLOCK_ICONS[bi]||''} ${block.name}</div>`;
-
-          block.questions.forEach(qdef=>{
-            const ans = g.answers[qdef.n];
-            if(ans === undefined || ans === null) return;
-            const nivelIdx = parseInt(ans);
-            const nivelNombre = NIVELES[nivelIdx] || ('Nivel '+(nivelIdx+1));
-            const nivelCol = NIVEL_COLOR[nivelIdx] || '#374151';
-            const respuestaTexto = qdef.opts[nivelIdx] || '—';
-            const evidencia = g.evidence && g.evidence[qdef.n] ? g.evidence[qdef.n] : null;
-
-            gHtml += `<div style="border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;margin-bottom:8px;background:#fafafa">
-              <div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:3px">Pregunta ${qdef.n}</div>
-              <div style="font-size:11px;font-weight:600;color:#111827;margin-bottom:6px;line-height:1.4">${qdef.q}</div>
-              <div style="display:flex;align-items:flex-start;gap:8px">
-                <span style="font-size:10px;font-weight:700;color:white;background:${nivelCol};padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0">${nivelNombre}</span>
-                <div style="font-size:10px;color:#374151;line-height:1.5;font-style:italic">${respuestaTexto}</div>
-              </div>
-              ${evidencia?`<div style="margin-top:6px;padding:5px 8px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:2px;font-size:10px;color:#78350f"><strong>Evidencia:</strong> ${evidencia}</div>`:'<div style="margin-top:4px;font-size:9px;color:#9ca3af;font-style:italic">Sin evidencia registrada</div>'}
-            </div>`;
-          });
-
-          gHtml += `</div>`; // cierra bloque
-        });
-      } else {
-        // Fallback: mostrar todas las respuestas sin agrupar por bloque
-        Object.entries(g.answers).sort((a,b)=>parseInt(a[0])-parseInt(b[0])).forEach(([n,ans])=>{
-          const qdef = qMap[n];
-          const nivelIdx = parseInt(ans);
-          const nivelNombre = NIVELES[nivelIdx] || ('Nivel '+(nivelIdx+1));
-          const nivelCol = NIVEL_COLOR[nivelIdx] || '#374151';
-          const respuestaTexto = qdef ? (qdef.opts[nivelIdx]||'—') : '—';
-          const evidencia = g.evidence && g.evidence[n] ? g.evidence[n] : null;
-          gHtml += `<div style="border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;margin-bottom:8px;background:#fafafa">
-            <div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:3px">Pregunta ${n}${qdef?' · '+qdef.blockName:''}</div>
-            <div style="font-size:11px;font-weight:600;color:#111827;margin-bottom:6px;line-height:1.4">${qdef?qdef.q:'—'}</div>
-            <div style="display:flex;align-items:flex-start;gap:8px">
-              <span style="font-size:10px;font-weight:700;color:white;background:${nivelCol};padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0">${nivelNombre}</span>
-              <div style="font-size:10px;color:#374151;line-height:1.5;font-style:italic">${respuestaTexto}</div>
-            </div>
-            ${evidencia?`<div style="margin-top:6px;padding:5px 8px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:2px;font-size:10px;color:#78350f"><strong>Evidencia:</strong> ${evidencia}</div>`:'<div style="margin-top:4px;font-size:9px;color:#9ca3af;font-style:italic">Sin evidencia registrada</div>'}
-          </div>`;
-        });
-      }
-
-      gHtml += `</div>`; // cierra respuestas
+    // Puntajes
+    if(g.scores&&g.scores.length>0){
+      gHtml+=`<div style="margin-bottom:20px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">PUNTAJES POR COMPONENTE</div>
+        <div style="border-left:3px solid #065f46;padding-left:14px">`;
+      g.scores.forEach(s=>{
+        const c=_nivelColor(s.score),l=_nivelLabel(s.score);
+        gHtml+=`<div style="margin-bottom:10px">
+          <table style="width:100%;border-collapse:collapse;margin-bottom:3px"><tr>
+            <td style="font-size:11px;color:#111827;font-weight:500">${BLOCK_ICONS[s.blockIndex]||''} ${s.name}</td>
+            <td style="text-align:right;font-size:11px;font-weight:700;color:${c}">${s.score}%</td>
+          </tr></table>
+          <div style="background:#f3f4f6;border-radius:3px;height:5px;width:100%">
+            <div style="background:${c};border-radius:3px;height:5px;width:${s.score}%"></div>
+          </div>
+          <div style="font-size:9px;color:#9ca3af;margin-top:2px">${l}</div>
+        </div>`;
+      });
+      gHtml+=`</div></div>`;
     }
 
-    gHtml += `</div>`; // cierra grupo
-    wrap.innerHTML += gHtml;
+    // Respuestas
+    if(g.answers&&Object.keys(g.answers).length>0&&g.bloques){
+      gHtml+=`<div style="margin-bottom:20px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">RESPUESTAS POR COMPONENTE</div>`;
+      g.bloques.forEach((bi,bIdx)=>{
+        const block=BLOCKS[bi];
+        gHtml+=`<div style="margin-bottom:20px">
+          <div style="border-bottom:1.5px solid #065f46;padding-bottom:5px;margin-bottom:12px">
+            <div style="font-size:9px;letter-spacing:1px;color:#9ca3af;margin-bottom:1px">COMPONENTE ${bIdx+1}</div>
+            <div style="font-size:13px;font-weight:700;color:#065f46">${BLOCK_ICONS[bi]||''} ${block.name}</div>
+          </div>`;
+        block.questions.forEach((qdef,qIdx)=>{
+          const ans=g.answers[qdef.n];
+          if(ans===undefined||ans===null) return;
+          const ni=parseInt(ans), nc=NCOLS[ni]||'#374151', nl=NOMS[ni]||('Nivel '+(ni+1));
+          const rt=qdef.opts[ni]||'—';
+          const ev=g.evidence&&g.evidence[qdef.n]?g.evidence[qdef.n]:null;
+          const foto=g.evidence_photos&&g.evidence_photos[qdef.n]?g.evidence_photos[qdef.n]:null;
+          gHtml+=`<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f3f4f6">
+            <div style="font-size:9px;color:#9ca3af;margin-bottom:3px">Pregunta ${qdef.n}</div>
+            <div style="font-size:11px;font-weight:600;color:#111827;margin-bottom:8px;line-height:1.5">${qdef.q}</div>
+            <div style="margin-bottom:6px">
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:3px">NIVEL ALCANZADO</div>
+              <div style="display:inline-block;padding:2px 10px;border:1.5px solid ${nc};border-radius:20px;font-size:10px;font-weight:700;color:${nc}">${nl}</div>
+            </div>
+            <div style="margin-bottom:${ev||foto?'8px':'0'}">
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:3px">RESPUESTA</div>
+              <div style="font-size:10px;color:#374151;line-height:1.6;font-style:italic;padding-left:8px;border-left:2px solid #e5e7eb">${rt}</div>
+            </div>
+            ${ev?`<div style="margin-bottom:${foto?'8px':'0'}">
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:3px">EVIDENCIA</div>
+              <div style="font-size:10px;color:#374151;padding:6px 10px;background:#fafafa;border-radius:5px;border-left:3px solid #d97706">${ev}</div>
+            </div>`:''}
+            ${foto?`<div>
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:5px">EVIDENCIA FOTOGRÁFICA</div>
+              <img src="${foto}" style="max-width:100%;max-height:200px;border-radius:7px;border:1px solid #e5e7eb;display:block">
+              <div style="font-size:8px;color:#9ca3af;margin-top:3px">Registro fotográfico del estado actual</div>
+            </div>`:''}
+          </div>`;
+        });
+        gHtml+=`</div>`;
+      });
+      gHtml+=`</div>`;
+    }
+
+    // IA del grupo
+    gHtml += _buildAISection(g.aiResult, 'ANÁLISIS IA DEL GRUPO');
+    gDiv.innerHTML = gHtml;
+    wrap.appendChild(gDiv);
   });
 
-  // Análisis IA (si ya fue generado)
+  // Análisis IA consolidado (si fue generado en pantalla)
   const aiEl = document.getElementById('consolidated-ai-result');
   if(aiEl && aiEl.innerHTML.trim() !== ''){
+    const aiSec = document.createElement('div');
+    aiSec.style.pageBreakBefore = 'always';
+    aiSec.innerHTML = `<div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">ANÁLISIS IA CONSOLIDADO · PLAYA PIANGÜITA</div>`;
     const aiClone = aiEl.cloneNode(true);
     aiClone.querySelectorAll('button').forEach(b=>b.remove());
-    // Encabezado de sección IA
-    const aiSec = document.createElement('div');
-    aiSec.style.cssText = 'page-break-before:always;margin-bottom:16px;';
-    aiSec.innerHTML = `<div style="background:#065f46;color:white;padding:12px 16px;border-radius:8px;margin-bottom:14px;font-size:14px;font-weight:700">🤖 Análisis IA · Diagnóstico Consolidado · NTS TS 001-02</div>`;
     aiSec.appendChild(aiClone);
     wrap.appendChild(aiSec);
   }
 
-  // Pie de página
-  wrap.innerHTML += `<div style="margin-top:24px;padding-top:12px;border-top:2px solid #e5e7eb;font-size:10px;color:#9ca3af;text-align:center">
-    Diagnóstico Participativo · Playa Piangüita Punta Bazán · NTS TS 001-02 · ${new Date().getFullYear()}
-  </div>`;
+  // Pie
+  const pie = document.createElement('div');
+  pie.style.cssText = 'margin-top:32px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:8px;color:#9ca3af;text-align:center;';
+  pie.textContent = `Diagnóstico Participativo · Playa Piangüita Punta Bazán · NTS TS 001-02 · ${new Date().getFullYear()}`;
+  wrap.appendChild(pie);
 
-  // 4. Generar PDF
   html2pdf().set({
-    margin:[12,12,12,12],
-    filename:'Informe_Completo_Pianguita_'+new Date().toISOString().slice(0,10)+'.pdf',
+    margin:[14,14,14,14],
+    filename:'Consolidado_Pianguita_'+new Date().toISOString().slice(0,10)+'.pdf',
     image:{type:'jpeg',quality:0.97},
     html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
     jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
   }).from(wrap).save()
-    .then(()=>{ if(btn){ btn.textContent='📊 Exportar Informe Completo'; btn.disabled=false; }})
-    .catch(err=>{ console.error(err); if(btn){ btn.textContent='📊 Exportar Informe Completo'; btn.disabled=false; }});
+    .then(()=>{ if(btn){ btn.textContent='📊 Exportar PDF Completo'; btn.disabled=false; }})
+    .catch(err=>{ console.error(err); if(btn){ btn.textContent='📊 Exportar PDF Completo'; btn.disabled=false; }});
 }
 
 // ══════════════════════════════════════════════════════════════
