@@ -1095,6 +1095,11 @@ function goToConfirm() {
 
 function startQuestions() {
   currentBlockStep=0; answers={}; evidence={};
+  // Actualizar nombre del grupo incluyendo el/los componente(s) evaluado(s)
+  const blockNames = selectedBlocks.map(bi=>BLOCKS[bi].name).join(' · ');
+  currentGroupName = `Grupo ${currentSessionNumber} · ${blockNames}`;
+  document.getElementById('session-name-display').textContent = currentGroupName;
+  document.getElementById('confirm-session-name').textContent = currentGroupName;
   document.getElementById('q-group-label').textContent = currentGroupName;
   buildProgressBar(); renderBlock(); showPage('page-questions');
 }
