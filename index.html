@@ -1767,7 +1767,7 @@ function tog(id){
   else{b.style.display='block';a.textContent='▴';}
 }
 
-function buildCaracterizacion(participants) {
+function buildCaracterizacion(participants, titulo) {
   if (!participants || participants.length === 0) return '';
 
   // Conteos
@@ -1790,8 +1790,9 @@ function buildCaracterizacion(participants) {
     `<tr><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#374151">${e} años</td><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;text-align:center;font-weight:700;font-size:11px;color:#065f46">${n}</td></tr>`
   ).join('');
 
+  const tituloFinal = titulo || `Caracterización · ${total} participante${total!==1?'s':''}`;
   return `<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:1rem">
-    <div style="padding:11px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;font-weight:600;color:#111827">Caracterización · ${total} participante${total!==1?'s':''}</div>
+    <div style="padding:11px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;font-weight:600;color:#111827">${tituloFinal}</div>
     <div style="padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div>
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:6px">Por Grupo de Interés</div>
@@ -2010,7 +2011,7 @@ function showResultsPage(scores,total,r) {
   document.getElementById('results-content').innerHTML =
     resultBox + barsHtml + radarHtml + ncHtml + diagContent +
     accionesHtml + rutaHtml + buildHojaDeRuta(scores) +
-    buildCaracterizacion(currentParticipants) + partHtml + fichaHtml +
+    partHtml + fichaHtml +
     buildProximaEval() +
     `<div style="margin-bottom:1rem">
       <button onclick="descargarCertificados()" style="background:white;color:#065f46;border:1.5px solid #065f46;padding:12px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;width:100%">📜 Certificados de participación</button>
@@ -2210,6 +2211,7 @@ async function showConsolidated() {
       </table>
     </div>
     ${buildRadarChart(BLOCKS.map((b,bi)=>blockAvgs[bi]!==null?{name:b.name,blockIndex:bi,score:blockAvgs[bi]}:null).filter(Boolean),'Perfil de Sostenibilidad Consolidado · Playa Piangüita')}
+    ${buildCaracterizacion(groups.flatMap(g=>g.participantes||[]), `Caracterización total de la población · ${totalPart} participantes · ${groups.length} grupos`)}
     <button class="btn btn-primary" onclick="generateConsolidatedAI()" style="width:100%;padding:14px;font-size:14px">
       Generar informe IA consolidado →
     </button>
@@ -2870,7 +2872,64 @@ async function exportarInformeCompleto() {
     wrap.appendChild(rDiv);
   }
 
-  // Sección 4+: Resumen ejecutivo compacto por grupo (sin preguntas/fotos)
+  // Sección 4: Caracterización consolidada de la población
+  const allPart = groups.flatMap(g=>g.participantes||[]);
+  if(allPart.length > 0){
+    const porGrupo={}, porGenero={Mujer:0,Hombre:0,'Prefiero no decir':0}, porEdad={};
+    allPart.forEach(p=>{
+      porGrupo[p.grupoInteres]=(porGrupo[p.grupoInteres]||0)+1;
+      if(porGenero[p.genero]!==undefined) porGenero[p.genero]++;
+      porEdad[p.edad]=(porEdad[p.edad]||0)+1;
+    });
+    const caraDiv = document.createElement('div');
+    caraDiv.style.pageBreakBefore = 'always';
+    caraDiv.innerHTML = `
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">4 &nbsp;·&nbsp; CARACTERIZACIÓN DE LA POBLACIÓN PARTICIPANTE</div>
+      <div style="border-left:3px solid #065f46;padding-left:14px;margin-bottom:28px">
+        <div style="font-size:11px;color:#6b7280;margin-bottom:16px">${allPart.length} participantes en total · ${groups.length} grupos evaluados</div>
+        <div style="display:table;width:100%;border-collapse:collapse">
+          <div style="display:table-row">
+            <div style="display:table-cell;vertical-align:top;width:40%;padding-right:16px">
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:8px">POR GRUPO DE INTERÉS</div>
+              <table style="width:100%;border-collapse:collapse;font-size:10px">
+                <tr style="border-bottom:1px solid #e5e7eb"><th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:500">Grupo</th><th style="padding:4px 6px;text-align:center;color:#6b7280;font-weight:500">N°</th><th style="padding:4px 6px;text-align:right;color:#6b7280;font-weight:500">%</th></tr>
+                ${Object.entries(porGrupo).sort((a,b)=>b[1]-a[1]).map(([g,n])=>`
+                  <tr style="border-bottom:1px solid #f3f4f6">
+                    <td style="padding:4px 6px;color:#374151">${g}</td>
+                    <td style="padding:4px 6px;text-align:center;font-weight:700;color:#065f46">${n}</td>
+                    <td style="padding:4px 6px;text-align:right;color:#9ca3af">${Math.round(n/allPart.length*100)}%</td>
+                  </tr>`).join('')}
+              </table>
+            </div>
+            <div style="display:table-cell;vertical-align:top;padding-left:8px">
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:8px">POR GÉNERO</div>
+              <table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:16px">
+                <tr style="border-bottom:1px solid #e5e7eb"><th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:500">Género</th><th style="padding:4px 6px;text-align:center;color:#6b7280;font-weight:500">N°</th><th style="padding:4px 6px;text-align:right;color:#6b7280;font-weight:500">%</th></tr>
+                ${Object.entries(porGenero).filter(([,n])=>n>0).map(([g,n])=>`
+                  <tr style="border-bottom:1px solid #f3f4f6">
+                    <td style="padding:4px 6px;color:#374151">${g}</td>
+                    <td style="padding:4px 6px;text-align:center;font-weight:700;color:#065f46">${n}</td>
+                    <td style="padding:4px 6px;text-align:right;color:#9ca3af">${Math.round(n/allPart.length*100)}%</td>
+                  </tr>`).join('')}
+              </table>
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:8px">POR RANGO DE EDAD</div>
+              <table style="width:100%;border-collapse:collapse;font-size:10px">
+                <tr style="border-bottom:1px solid #e5e7eb"><th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:500">Rango</th><th style="padding:4px 6px;text-align:center;color:#6b7280;font-weight:500">N°</th><th style="padding:4px 6px;text-align:right;color:#6b7280;font-weight:500">%</th></tr>
+                ${Object.entries(porEdad).map(([e,n])=>`
+                  <tr style="border-bottom:1px solid #f3f4f6">
+                    <td style="padding:4px 6px;color:#374151">${e} años</td>
+                    <td style="padding:4px 6px;text-align:center;font-weight:700;color:#065f46">${n}</td>
+                    <td style="padding:4px 6px;text-align:right;color:#9ca3af">${Math.round(n/allPart.length*100)}%</td>
+                  </tr>`).join('')}
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    wrap.appendChild(caraDiv);
+  }
+
+  // Sección 5+: Resumen ejecutivo compacto por grupo (sin preguntas/fotos)
   groups.forEach((g, gi)=>{
     const np = g.participantes?g.participantes.length:0;
     const gcol = _nivelColor(g.total||0);
@@ -2883,7 +2942,7 @@ async function exportarInformeCompleto() {
     // Encabezado del grupo
     let gHtml = `
       <div style="border-bottom:2px solid #065f46;padding-bottom:12px;margin-bottom:22px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:4px">GRUPO ${gi+1} DE ${groups.length} &nbsp;·&nbsp; RESUMEN EJECUTIVO</div>
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:4px">${gi+5} &nbsp;·&nbsp; GRUPO ${gi+1} DE ${groups.length} · RESUMEN EJECUTIVO</div>
         <div style="font-size:17px;font-weight:700;color:#065f46;margin-bottom:2px">${g.nombre}</div>
         <div style="font-size:11px;color:#6b7280">
           ${g.fecha||'—'} &nbsp;·&nbsp; ${np} participante${np!==1?'s':''}
