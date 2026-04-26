@@ -170,7 +170,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
 </div>
 
 <!-- SELECTOR DE FOTO (bottom sheet) -->
-<div id="photo-sheet-overlay" onclick="hidePhotoSheet()" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.45);align-items:flex-end;justify-content:center">
+<div id="photo-sheet-overlay" onclick="cancelPhotoSheet()" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.45);align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" style="background:white;border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-width:520px;box-shadow:0 -4px 24px rgba(0,0,0,0.15)">
     <div style="width:40px;height:4px;background:#e5e7eb;border-radius:2px;margin:0 auto 18px"></div>
     <div style="font-size:13px;font-weight:700;color:#065f46;text-align:center;margin-bottom:20px">Adjuntar evidencia fotográfica</div>
@@ -191,7 +191,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
         <span style="font-size:10px;color:#6b7280;text-align:center">Desde el dispositivo</span>
       </button>
     </div>
-    <button onclick="hidePhotoSheet()" style="width:100%;padding:13px;background:#f3f4f6;border:none;border-radius:10px;font-size:14px;font-weight:600;color:#374151;cursor:pointer;font-family:inherit">Cancelar</button>
+    <button onclick="cancelPhotoSheet()" style="width:100%;padding:13px;background:#f3f4f6;border:none;border-radius:10px;font-size:14px;font-weight:600;color:#374151;cursor:pointer;font-family:inherit">Cancelar</button>
   </div>
 </div>
 
@@ -1345,16 +1345,24 @@ function showPhotoSheet(qNum) {
   if(overlay){ overlay.style.display='flex'; }
 }
 function hidePhotoSheet() {
+  // Solo cierra el panel — NO borra _photoQNum aquí,
+  // porque el input de archivo se abre después y todavía lo necesita
   const overlay = document.getElementById('photo-sheet-overlay');
   if(overlay){ overlay.style.display='none'; }
+}
+function cancelPhotoSheet() {
+  // Cancelar sí borra _photoQNum
+  hidePhotoSheet();
   _photoQNum = null;
 }
-function triggerPhotoCamera()  { hidePhotoSheet(); setTimeout(()=>document.getElementById('photo-input-camera').click(),  150); }
-function triggerPhotoGallery() { hidePhotoSheet(); setTimeout(()=>document.getElementById('photo-input-gallery').click(), 150); }
-function triggerPhotoFile()    { hidePhotoSheet(); setTimeout(()=>document.getElementById('photo-input-file').click(),    150); }
+function triggerPhotoCamera()  { hidePhotoSheet(); setTimeout(()=>document.getElementById('photo-input-camera').click(),  200); }
+function triggerPhotoGallery() { hidePhotoSheet(); setTimeout(()=>document.getElementById('photo-input-gallery').click(), 200); }
+function triggerPhotoFile()    { hidePhotoSheet(); setTimeout(()=>document.getElementById('photo-input-file').click(),    200); }
 
 function addPhotoFromGlobal(input) {
-  if(_photoQNum !== null) addPhoto(_photoQNum, input);
+  const qn = _photoQNum; // guardar antes de limpiar
+  _photoQNum = null;
+  if(qn !== null && qn !== undefined) addPhoto(qn, input);
 }
 
 function addPhoto(qNum, input) {
