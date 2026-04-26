@@ -169,6 +169,37 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
   <button id="sync-btn" onclick="syncPendingManual()" style="margin-left:12px;background:white;color:#d97706;border:none;border-radius:5px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;display:none">↑ Sincronizar ahora</button>
 </div>
 
+<!-- SELECTOR DE FOTO (bottom sheet) -->
+<div id="photo-sheet-overlay" onclick="hidePhotoSheet()" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.45);align-items:flex-end;justify-content:center">
+  <div onclick="event.stopPropagation()" style="background:white;border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-width:520px;box-shadow:0 -4px 24px rgba(0,0,0,0.15)">
+    <div style="width:40px;height:4px;background:#e5e7eb;border-radius:2px;margin:0 auto 18px"></div>
+    <div style="font-size:13px;font-weight:700;color:#065f46;text-align:center;margin-bottom:20px">Adjuntar evidencia fotográfica</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+      <button onclick="triggerPhotoCamera()" style="background:#f0fdf4;border:1.5px solid #6ee7b7;border-radius:14px;padding:18px 8px 14px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:8px;transition:background 0.15s">
+        <span style="font-size:32px">📷</span>
+        <span style="font-size:12px;font-weight:700;color:#065f46">Cámara</span>
+        <span style="font-size:10px;color:#6b7280;text-align:center">Tomar foto ahora</span>
+      </button>
+      <button onclick="triggerPhotoGallery()" style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:14px;padding:18px 8px 14px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:8px">
+        <span style="font-size:32px">🖼️</span>
+        <span style="font-size:12px;font-weight:700;color:#1d4ed8">Imagen</span>
+        <span style="font-size:10px;color:#6b7280;text-align:center">Elegir de galería</span>
+      </button>
+      <button onclick="triggerPhotoFile()" style="background:#fdf4ff;border:1.5px solid #d8b4fe;border-radius:14px;padding:18px 8px 14px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:8px">
+        <span style="font-size:32px">📁</span>
+        <span style="font-size:12px;font-weight:700;color:#7c3aed">Archivo</span>
+        <span style="font-size:10px;color:#6b7280;text-align:center">Desde el dispositivo</span>
+      </button>
+    </div>
+    <button onclick="hidePhotoSheet()" style="width:100%;padding:13px;background:#f3f4f6;border:none;border-radius:10px;font-size:14px;font-weight:600;color:#374151;cursor:pointer;font-family:inherit">Cancelar</button>
+  </div>
+</div>
+
+<!-- Inputs de foto globales (reutilizados para todas las preguntas) -->
+<input type="file" id="photo-input-camera"  accept="image/*" capture="environment" style="display:none" onchange="addPhotoFromGlobal(this)">
+<input type="file" id="photo-input-gallery" accept="image/*" style="display:none" onchange="addPhotoFromGlobal(this)">
+<input type="file" id="photo-input-file"    accept="image/*,.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp" style="display:none" onchange="addPhotoFromGlobal(this)">
+
 <!-- ═══════════════════════════════════════════════════════════
      PAGE 1: BIENVENIDA / REGISTRO
 ════════════════════════════════════════════════════════════ -->
@@ -1261,10 +1292,9 @@ function renderBlock() {
           placeholder="Describe observaciones, contexto o aclaraciones sobre este aspecto..."
           oninput="saveEvidence(${q.n},this.value)">${savedEv}</textarea>
         <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
-          <button onclick="triggerPhoto(${q.n})" style="background:#e0f2fe;border:1px solid #7dd3fc;color:#0369a1;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:600;display:flex;align-items:center;gap:4px">📷 Foto / Galería</button>
-          <input type="file" id="photo-input-${q.n}" accept="image/*" style="display:none" onchange="addPhoto(${q.n},this)">
+          <button onclick="showPhotoSheet(${q.n})" style="background:#f0fdf4;border:1.5px solid #6ee7b7;color:#065f46;border-radius:8px;padding:6px 12px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;display:flex;align-items:center;gap:6px">📷 Adjuntar evidencia</button>
           <div id="photo-thumb-${q.n}" style="display:flex;align-items:center;gap:6px">
-            ${evidence_photos[q.n]?`<img src="${evidence_photos[q.n]}" style="height:50px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer" onclick="removePhoto(${q.n})" title="Toca para eliminar la foto"><span style="font-size:10px;color:#6b7280">Toca la foto para eliminar</span>`:'<span style="font-size:10px;color:#9ca3af">Sin foto adjunta</span>'}
+            ${evidence_photos[q.n]?`<img src="${evidence_photos[q.n]}" style="height:56px;width:auto;border-radius:8px;border:2px solid #6ee7b7;cursor:pointer;object-fit:cover" onclick="removePhoto(${q.n})" title="Toca para eliminar"><span style="font-size:10px;color:#059669;font-weight:600">✓ Guardada · Toca para eliminar</span>`:'<span style="font-size:10px;color:#9ca3af">Sin foto adjunta</span>'}
           </div>
         </div>
       </div>
@@ -1305,17 +1335,35 @@ function selectAnswer(qNum,optIdx,btn) {
 function saveEvidence(qNum,val) { evidence[qNum]=val; }
 
 // ══════════════════════════════════════════════════════════════
-// FOTOS DE EVIDENCIA
+// FOTOS DE EVIDENCIA — bottom sheet con 3 opciones
 // ══════════════════════════════════════════════════════════════
-function triggerPhoto(qNum) { document.getElementById('photo-input-'+qNum).click(); }
+let _photoQNum = null; // pregunta activa en el sheet
+
+function showPhotoSheet(qNum) {
+  _photoQNum = qNum;
+  const overlay = document.getElementById('photo-sheet-overlay');
+  if(overlay){ overlay.style.display='flex'; }
+}
+function hidePhotoSheet() {
+  const overlay = document.getElementById('photo-sheet-overlay');
+  if(overlay){ overlay.style.display='none'; }
+  _photoQNum = null;
+}
+function triggerPhotoCamera()  { hidePhotoSheet(); setTimeout(()=>document.getElementById('photo-input-camera').click(),  150); }
+function triggerPhotoGallery() { hidePhotoSheet(); setTimeout(()=>document.getElementById('photo-input-gallery').click(), 150); }
+function triggerPhotoFile()    { hidePhotoSheet(); setTimeout(()=>document.getElementById('photo-input-file').click(),    150); }
+
+function addPhotoFromGlobal(input) {
+  if(_photoQNum !== null) addPhoto(_photoQNum, input);
+}
 
 function addPhoto(qNum, input) {
   if (!input.files || !input.files[0]) return;
   const file = input.files[0];
 
-  // Feedback inmediato al usuario
+  // Feedback inmediato
   const thumb = document.getElementById('photo-thumb-'+qNum);
-  if(thumb) thumb.innerHTML = '<span style="font-size:10px;color:#2563eb">⏳ Procesando foto...</span>';
+  if(thumb) thumb.innerHTML = '<span style="font-size:10px;color:#2563eb">⏳ Procesando...</span>';
 
   const reader = new FileReader();
   reader.onerror = () => {
@@ -1341,7 +1389,7 @@ function addPhoto(qNum, input) {
         const b64 = canvas.toDataURL('image/jpeg', 0.7);
         evidence_photos[qNum] = b64;
         const t = document.getElementById('photo-thumb-'+qNum);
-        if(t) t.innerHTML = `<img src="${b64}" style="height:50px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer" onclick="removePhoto(${qNum})" title="Toca para eliminar"><span style="font-size:10px;color:#6b7280">Toca la foto para eliminar</span>`;
+        if(t) t.innerHTML = `<img src="${b64}" style="height:56px;width:auto;border-radius:8px;border:2px solid #6ee7b7;cursor:pointer;object-fit:cover" onclick="removePhoto(${qNum})" title="Toca para eliminar"><span style="font-size:10px;color:#059669;font-weight:600">✓ Guardada · Toca para eliminar</span>`;
       } catch(err) {
         const t = document.getElementById('photo-thumb-'+qNum);
         if(t) t.innerHTML = '<span style="font-size:10px;color:#dc2626">❌ Error al procesar la imagen</span>';
@@ -1356,7 +1404,7 @@ function addPhoto(qNum, input) {
 function removePhoto(qNum) {
   delete evidence_photos[qNum];
   const thumb = document.getElementById('photo-thumb-'+qNum);
-  if (thumb) thumb.innerHTML = '<span style="font-size:10px;color:#9ca3af">Sin foto adjunta</span>';
+  if(thumb) thumb.innerHTML = '<span style="font-size:10px;color:#9ca3af">Sin foto adjunta</span>';
 }
 
 // ══════════════════════════════════════════════════════════════
