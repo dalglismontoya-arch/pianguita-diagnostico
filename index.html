@@ -1613,6 +1613,33 @@ async function showConsolidated() {
         ${partList}
         <div style="font-size:11px;font-weight:600;color:#065f46;margin:10px 0 6px">BLOQUES EVALUADOS</div>
         ${bloqList}
+        <div style="font-size:11px;font-weight:600;color:#065f46;margin:12px 0 8px">PREGUNTAS · RESPUESTAS · EVIDENCIAS</div>
+        ${g.bloques ? g.bloques.map(bi=>{
+          const block=BLOCKS[bi];
+          const NOMS=['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
+          const NCOLS=['#dc2626','#d97706','#2563eb','#059669'];
+          const pregs=block.questions.map(qdef=>{
+            const ans=g.answers&&g.answers[qdef.n]!==undefined?parseInt(g.answers[qdef.n]):null;
+            if(ans===null) return '';
+            const nc=NCOLS[ans]||'#374151';
+            const nl=NOMS[ans]||('Nivel '+(ans+1));
+            const rt=qdef.opts[ans]||'—';
+            const ev=g.evidence&&g.evidence[qdef.n]?g.evidence[qdef.n]:null;
+            return `<div style="border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;margin-bottom:7px;background:#fafafa">
+              <div style="font-size:10px;color:#9ca3af;margin-bottom:2px">Pregunta ${qdef.n}</div>
+              <div style="font-size:12px;font-weight:600;color:#111827;margin-bottom:5px;line-height:1.4">${qdef.q}</div>
+              <div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:${ev?'5px':'0'}">
+                <span style="font-size:10px;font-weight:700;color:white;background:${nc};padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0">${nl}</span>
+                <span style="font-size:11px;color:#374151;font-style:italic;line-height:1.4">${rt}</span>
+              </div>
+              ${ev?`<div style="padding:4px 8px;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:2px;font-size:11px;color:#78350f"><strong>Evidencia:</strong> ${ev}</div>`:'<div style="font-size:10px;color:#9ca3af;font-style:italic">Sin evidencia registrada</div>'}
+            </div>`;
+          }).join('');
+          return `<div style="margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;background:#f0fdf4;color:#065f46;padding:5px 8px;border-radius:4px;margin-bottom:7px">${BLOCK_ICONS[bi]||''} ${block.name}</div>
+            ${pregs}
+          </div>`;
+        }).join('') : '<div style="font-size:11px;color:#9ca3af">Sin respuestas registradas.</div>'}
       </div>
     </div>`;
   }).join('');
