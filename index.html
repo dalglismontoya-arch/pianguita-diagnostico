@@ -2314,12 +2314,13 @@ JSON requerido:
 // ══════════════════════════════════════════════════════════════
 // BORRAR
 // ══════════════════════════════════════════════════════════════
-function deleteGroup(group) {
+async function deleteGroup(group) {
   if(!confirm('¿Seguro que quieres borrar este grupo? Esta acción no se puede deshacer.')) return;
   const all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
   delete all[group];
   localStorage.setItem('pianguita_diagnostico',JSON.stringify(all));
-  fb_borrar(group); showConsolidated();
+  await fb_borrar(group);
+  showConsolidated();
 }
 function clearAll() {
   if(!confirm('¿Seguro que quieres borrar TODOS los diagnósticos guardados? Esta acción no se puede deshacer.')) return;
