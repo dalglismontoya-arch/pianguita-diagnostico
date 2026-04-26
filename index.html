@@ -1261,8 +1261,8 @@ function renderBlock() {
           placeholder="Describe observaciones, contexto o aclaraciones sobre este aspecto..."
           oninput="saveEvidence(${q.n},this.value)">${savedEv}</textarea>
         <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
-          <button onclick="triggerPhoto(${q.n})" style="background:#e0f2fe;border:1px solid #7dd3fc;color:#0369a1;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:600;display:flex;align-items:center;gap:4px">📷 Foto</button>
-          <input type="file" id="photo-input-${q.n}" accept="image/*" capture="environment" style="display:none" onchange="addPhoto(${q.n},this)">
+          <button onclick="triggerPhoto(${q.n})" style="background:#e0f2fe;border:1px solid #7dd3fc;color:#0369a1;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:600;display:flex;align-items:center;gap:4px">📷 Foto / Galería</button>
+          <input type="file" id="photo-input-${q.n}" accept="image/*" style="display:none" onchange="addPhoto(${q.n},this)">
           <div id="photo-thumb-${q.n}" style="display:flex;align-items:center;gap:6px">
             ${evidence_photos[q.n]?`<img src="${evidence_photos[q.n]}" style="height:50px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer" onclick="removePhoto(${q.n})" title="Toca para eliminar la foto"><span style="font-size:10px;color:#6b7280">Toca la foto para eliminar</span>`:'<span style="font-size:10px;color:#9ca3af">Sin foto adjunta</span>'}
           </div>
@@ -1312,25 +1312,45 @@ function triggerPhoto(qNum) { document.getElementById('photo-input-'+qNum).click
 function addPhoto(qNum, input) {
   if (!input.files || !input.files[0]) return;
   const file = input.files[0];
+
+  // Feedback inmediato al usuario
+  const thumb = document.getElementById('photo-thumb-'+qNum);
+  if(thumb) thumb.innerHTML = '<span style="font-size:10px;color:#2563eb">⏳ Procesando foto...</span>';
+
   const reader = new FileReader();
+  reader.onerror = () => {
+    const t = document.getElementById('photo-thumb-'+qNum);
+    if(t) t.innerHTML = '<span style="font-size:10px;color:#dc2626">❌ Error al leer el archivo</span>';
+    input.value = '';
+  };
   reader.onload = e => {
     const img = new Image();
+    img.onerror = () => {
+      const t = document.getElementById('photo-thumb-'+qNum);
+      if(t) t.innerHTML = '<span style="font-size:10px;color:#dc2626">❌ Error al cargar la imagen</span>';
+      input.value = '';
+    };
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const maxW = 600;
-      const scale = Math.min(1, maxW / img.width);
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      const b64 = canvas.toDataURL('image/jpeg', 0.7);
-      evidence_photos[qNum] = b64;
-      const thumb = document.getElementById('photo-thumb-'+qNum);
-      if (thumb) thumb.innerHTML = `<img src="${b64}" style="height:50px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer" onclick="removePhoto(${qNum})" title="Toca para eliminar"><span style="font-size:10px;color:#6b7280">Toca la foto para eliminar</span>`;
+      try {
+        const canvas = document.createElement('canvas');
+        const maxW = 600;
+        const scale = Math.min(1, maxW / img.width);
+        canvas.width  = Math.round(img.width  * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        const b64 = canvas.toDataURL('image/jpeg', 0.7);
+        evidence_photos[qNum] = b64;
+        const t = document.getElementById('photo-thumb-'+qNum);
+        if(t) t.innerHTML = `<img src="${b64}" style="height:50px;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer" onclick="removePhoto(${qNum})" title="Toca para eliminar"><span style="font-size:10px;color:#6b7280">Toca la foto para eliminar</span>`;
+      } catch(err) {
+        const t = document.getElementById('photo-thumb-'+qNum);
+        if(t) t.innerHTML = '<span style="font-size:10px;color:#dc2626">❌ Error al procesar la imagen</span>';
+      }
+      input.value = '';
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
-  input.value = '';
 }
 
 function removePhoto(qNum) {
