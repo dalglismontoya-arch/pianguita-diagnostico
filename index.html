@@ -426,7 +426,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <button class="btn btn-primary" onclick="retryAI()" style="width:100%">Reintentar análisis IA (requiere internet) →</button>
   </div>
   <div style="text-align:center;margin:1rem 0">
-    <button onclick="descargarPDFIndividual()" style="background:#065f46;color:white;border:none;padding:14px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;width:100%;font-family:inherit">📄 Descargar Informe PDF del grupo</button>
+    <button onclick="descargarPDFIndividual()" style="background:#065f46;color:white;border:none;padding:14px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;width:100%;font-family:inherit">📄 Descargar Informe Completo del grupo (PDF)</button>
   </div>
   <div class="nav" style="margin-top:0.5rem">
     <button class="btn btn-outline" onclick="goHome()">← Inicio</button>
@@ -2179,7 +2179,7 @@ async function showConsolidated() {
         <div style="display:flex;gap:8px;margin-top:14px;padding-top:10px;border-top:1px solid #e5e7eb;flex-wrap:wrap">
           <button onclick="descargarPDFEjecutivoGrupo('${g.grupo||g.group}')" id="pdf-ej-${g.grupo||g.group}"
             style="flex:1;background:#065f46;color:white;border:none;border-radius:7px;padding:9px 8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
-            📋 Informe Ejecutivo
+            📋 Resumen Ejecutivo
           </button>
           <button onclick="descargarPDFGrupo('${g.grupo||g.group}')" id="pdf-btn-${g.grupo||g.group}"
             style="flex:1;background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;border-radius:7px;padding:9px 8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
@@ -2334,35 +2334,9 @@ async function descargarPDFIndividual() {
   if(btn){ btn.textContent='⏳ Generando...'; btn.disabled=true; }
   // Reutiliza exactamente el mismo generador limpio
   await descargarPDFGrupo(currentGroup, btn);
-  if(btn){ btn.textContent='📄 Descargar Informe PDF del grupo'; btn.disabled=false; }
+  if(btn){ btn.textContent='📄 Descargar Informe Completo del grupo (PDF)'; btn.disabled=false; }
 }
 
-// ══════════════════════════════════════════════════════════════
-// PDF — Informe consolidado
-// ══════════════════════════════════════════════════════════════
-function descargarPDF() {
-  const btns=document.querySelectorAll('[onclick="descargarPDF()"]');
-  btns.forEach(b=>{ b.textContent='Generando PDF...'; b.disabled=true; });
-  const wrap=document.createElement('div');
-  wrap.style.cssText='font-family:Arial,sans-serif;padding:20px;max-width:700px;margin:0 auto;color:#111827;';
-  const tit=document.createElement('div');
-  tit.style.cssText='text-align:center;margin-bottom:20px;padding-bottom:12px;border-bottom:3px solid #065f46;';
-  tit.innerHTML='<h1 style="font-size:18px;color:#065f46;margin-bottom:4px">Diagnóstico Participativo · NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</h1>'+
-    '<h2 style="font-size:14px;color:#374151;font-weight:normal;margin-bottom:4px">Playa Piangüita · Punta Bazán · Buenaventura</h2>'+
-    '<p style="font-size:12px;color:#6b7280;margin:0">Informe Consolidado · '+new Date().toLocaleDateString('es-CO')+'</p>';
-  wrap.appendChild(tit);
-  const c1=document.getElementById('consolidated-content');
-  const c2=document.getElementById('consolidated-ai-result');
-  if(c1){ const cl=c1.cloneNode(true); cl.querySelectorAll('button').forEach(b=>b.remove()); wrap.appendChild(cl); }
-  if(c2){ const cl=c2.cloneNode(true); cl.querySelectorAll('button').forEach(b=>b.remove()); wrap.appendChild(cl); }
-  html2pdf().set({
-    margin:[15,15,15,15], filename:'Diagnostico_Consolidado_Pianguita.pdf',
-    image:{type:'jpeg',quality:0.95},
-    html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-  }).from(wrap).save().then(()=>{ btns.forEach(b=>{ b.textContent='Descargar informe en PDF'; b.disabled=false; }); })
-    .catch(()=>{ btns.forEach(b=>{ b.textContent='Descargar informe en PDF'; b.disabled=false; }); });
-}
 
 // ══════════════════════════════════════════════════════════════
 // HELPERS compartidos de nivel/color para informes
@@ -2476,7 +2450,7 @@ async function descargarPDFEjecutivoGrupo(grupoKey) {
   if(btn){ btn.textContent='⏳...'; btn.disabled=true; }
 
   const g = await _leerGrupo(grupoKey);
-  if(!g){ alert('No se encontraron datos.'); if(btn){btn.textContent='📋 Informe Ejecutivo';btn.disabled=false;} return; }
+  if(!g){ alert('No se encontraron datos.'); if(btn){btn.textContent='📋 Resumen Ejecutivo';btn.disabled=false;} return; }
 
   const np = g.participantes ? g.participantes.length : 0;
   const gcol = _nivelColor(g.total||0);
@@ -2584,8 +2558,8 @@ async function descargarPDFEjecutivoGrupo(grupoKey) {
     html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
     jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
   }).from(wrap).save()
-    .then(()=>{ if(btn){btn.textContent='📋 Informe Ejecutivo';btn.disabled=false;} })
-    .catch(()=>{ if(btn){btn.textContent='📋 Informe Ejecutivo';btn.disabled=false;} });
+    .then(()=>{ if(btn){btn.textContent='📋 Resumen Ejecutivo';btn.disabled=false;} })
+    .catch(()=>{ if(btn){btn.textContent='📋 Resumen Ejecutivo';btn.disabled=false;} });
 }
 
 // ══════════════════════════════════════════════════════════════
