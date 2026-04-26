@@ -2269,6 +2269,50 @@ async function descargarPDFEjecutivoGrupo(grupoKey) {
       </div>
     </div>`:'<div style="background:#f0fdf4;border:1px solid #6ee7b7;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#065f46;text-align:center">✅ No se encontraron brechas en Nivel 1 — buen desempeño en los componentes evaluados</div>'}
 
+    <!-- ANÁLISIS IA -->
+    ${g.aiResult ? `
+    <div style="page-break-before:always;border:1px solid #d1fae5;border-radius:8px;margin-bottom:16px;overflow:hidden">
+      <div style="background:#065f46;color:white;padding:8px 12px;font-size:11px;font-weight:700">🤖 ANÁLISIS IA · NTS TS 001-02</div>
+      <div style="padding:10px 12px">
+        ${g.aiResult.resumen ? `<div style="font-size:11px;color:#374151;line-height:1.6;margin-bottom:10px;padding:8px;background:#f0fdf4;border-radius:6px">${g.aiResult.resumen}</div>` : ''}
+        ${g.aiResult.nc && g.aiResult.nc.length ? `
+        <div style="margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;color:#991b1b;margin-bottom:5px">⚠ Puntos críticos:</div>
+          ${g.aiResult.nc.map((n,i)=>`<div style="display:flex;gap:6px;padding:4px 0;border-bottom:1px solid #fee2e2;font-size:10px;color:#1f2937"><span style="min-width:16px;height:16px;border-radius:50%;background:#fee2e2;color:#991b1b;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span><span>${n}</span></div>`).join('')}
+        </div>` : ''}
+        ${g.aiResult.diag ? `
+        <div style="margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:6px">Diagnóstico por componente:</div>
+          ${Object.entries(g.aiResult.diag).map(([key,d])=>{
+            const bi = parseInt(key.replace('b',''));
+            const bname = BLOCKS[bi] ? BLOCKS[bi].name : key;
+            const bicon = BLOCK_ICONS[bi] || '';
+            return `<div style="border:1px solid #e5e7eb;border-radius:6px;margin-bottom:6px;overflow:hidden">
+              <div style="background:#f0fdf4;padding:5px 8px;font-size:10px;font-weight:700;color:#065f46">${bicon} ${bname}</div>
+              <div style="padding:6px 8px">
+                ${d.f?`<div style="font-size:10px;margin-bottom:3px"><span style="color:#059669;font-weight:600">✓ Fortaleza: </span>${d.f}</div>`:''}
+                ${d.b?`<div style="font-size:10px;margin-bottom:3px"><span style="color:#dc2626;font-weight:600">✗ Brecha: </span>${d.b}</div>`:''}
+                ${d.r?`<div style="font-size:10px"><span style="color:#2563eb;font-weight:600">→ Recomendación: </span>${d.r}</div>`:''}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>` : ''}
+        ${g.aiResult.acciones && g.aiResult.acciones.length ? `
+        <div style="margin-bottom:10px">
+          <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:6px">Plan de acción recomendado:</div>
+          ${g.aiResult.acciones.map((a,i)=>`
+            <div style="display:flex;gap:6px;padding:5px 0;border-bottom:1px solid #e5e7eb;font-size:10px">
+              <span style="min-width:18px;height:18px;border-radius:50%;background:#065f46;color:white;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
+              <div>
+                <div style="color:#111827;font-weight:500;margin-bottom:2px">${a.acc||''}</div>
+                <div style="color:#6b7280;font-size:9px">${a.p?'Prioridad: '+a.p+' · ':''}${a.cat||''}${a.plazo?' · '+a.plazo:''}${a.resp?' · Responsable: '+a.resp:''}</div>
+              </div>
+            </div>`).join('')}
+        </div>` : ''}
+        ${g.aiResult.ruta ? `<div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;padding:8px;font-size:10px;color:#78350f"><strong>Ruta hacia la certificación:</strong> ${g.aiResult.ruta}</div>` : ''}
+      </div>
+    </div>` : '<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:10px;color:#78350f">⚠ Análisis IA no disponible — el grupo no contó con conexión a internet durante el diagnóstico o el análisis está pendiente.</div>'}
+
     <!-- PIE -->
     <div style="margin-top:16px;padding-top:10px;border-top:2px solid #e5e7eb;font-size:9px;color:#9ca3af;text-align:center">
       Diagnóstico Participativo · Playa Piangüita Punta Bazán · NTS TS 001-02 · ${new Date().getFullYear()}
@@ -2426,6 +2470,49 @@ async function descargarPDFGrupo(grupoKey) {
     }
     respHtml += `</div>`;
     wrap.innerHTML += respHtml;
+  }
+
+  // Análisis IA del grupo
+  if(g.aiResult){
+    const ai = g.aiResult;
+    let aiHtml = `<div style="page-break-before:always;border:1px solid #d1fae5;border-radius:8px;margin-bottom:16px;overflow:hidden">
+      <div style="background:#065f46;color:white;padding:8px 12px;font-size:11px;font-weight:700">🤖 ANÁLISIS IA · NTS TS 001-02</div>
+      <div style="padding:10px 12px">`;
+    if(ai.resumen) aiHtml += `<div style="font-size:11px;color:#374151;line-height:1.6;margin-bottom:10px;padding:8px;background:#f0fdf4;border-radius:6px">${ai.resumen}</div>`;
+    if(ai.nc && ai.nc.length){
+      aiHtml += `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:#991b1b;margin-bottom:5px">⚠ Puntos críticos:</div>`;
+      ai.nc.forEach((n,i)=>{ aiHtml += `<div style="display:flex;gap:6px;padding:4px 0;border-bottom:1px solid #fee2e2;font-size:10px;color:#1f2937"><span style="min-width:16px;height:16px;border-radius:50%;background:#fee2e2;color:#991b1b;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span><span>${n}</span></div>`; });
+      aiHtml += `</div>`;
+    }
+    if(ai.diag){
+      aiHtml += `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:6px">Diagnóstico por componente:</div>`;
+      Object.entries(ai.diag).forEach(([key,d])=>{
+        const bi=parseInt(key.replace('b',''));
+        const bname=BLOCKS[bi]?BLOCKS[bi].name:key;
+        const bicon=BLOCK_ICONS[bi]||'';
+        aiHtml += `<div style="border:1px solid #e5e7eb;border-radius:6px;margin-bottom:6px;overflow:hidden">
+          <div style="background:#f0fdf4;padding:5px 8px;font-size:10px;font-weight:700;color:#065f46">${bicon} ${bname}</div>
+          <div style="padding:6px 8px">
+            ${d.f?`<div style="font-size:10px;margin-bottom:3px"><span style="color:#059669;font-weight:600">✓ Fortaleza: </span>${d.f}</div>`:''}
+            ${d.b?`<div style="font-size:10px;margin-bottom:3px"><span style="color:#dc2626;font-weight:600">✗ Brecha: </span>${d.b}</div>`:''}
+            ${d.r?`<div style="font-size:10px"><span style="color:#2563eb;font-weight:600">→ Recomendación: </span>${d.r}</div>`:''}
+          </div></div>`;
+      });
+      aiHtml += `</div>`;
+    }
+    if(ai.acciones && ai.acciones.length){
+      aiHtml += `<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:6px">Plan de acción recomendado:</div>`;
+      ai.acciones.forEach((a,i)=>{ aiHtml += `<div style="display:flex;gap:6px;padding:5px 0;border-bottom:1px solid #e5e7eb;font-size:10px">
+        <span style="min-width:18px;height:18px;border-radius:50%;background:#065f46;color:white;font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</span>
+        <div><div style="color:#111827;font-weight:500;margin-bottom:2px">${a.acc||''}</div>
+        <div style="color:#6b7280;font-size:9px">${a.p?'Prioridad: '+a.p+' · ':''}${a.cat||''}${a.plazo?' · '+a.plazo:''}${a.resp?' · Responsable: '+a.resp:''}</div></div></div>`; });
+      aiHtml += `</div>`;
+    }
+    if(ai.ruta) aiHtml += `<div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:4px;padding:8px;font-size:10px;color:#78350f"><strong>Ruta hacia la certificación:</strong> ${ai.ruta}</div>`;
+    aiHtml += `</div></div>`;
+    wrap.innerHTML += aiHtml;
+  } else {
+    wrap.innerHTML += `<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:10px;color:#78350f">⚠ Análisis IA no disponible para este grupo.</div>`;
   }
 
   // Pie
