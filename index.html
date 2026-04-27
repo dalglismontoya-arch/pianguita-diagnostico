@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-K</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-L</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -2438,34 +2438,6 @@ function buildComparativaSection(allGroups) {
     </div>`;
   }).join('');
 
-  // Evolución por componente
-  const compRows = BLOCKS.map((b,bi) => {
-    const hasData = sesData.some(s => s.blockAvgs[bi]!==null);
-    if(!hasData) return '';
-    const filas = sesData.map((s,i) => {
-      const avg = s.blockAvgs[bi]; if(avg===null) return '';
-      const prev = i>0 ? sesData[i-1].blockAvgs[bi] : null;
-      const diff = prev!==null ? avg-prev : null;
-      const col  = _nivelColor(avg);
-      const diffStr = diff===null ? '<div style="width:36px"></div>' :
-        diff>0  ? `<div style="font-size:9px;font-weight:700;color:#059669;width:36px">↑ +${diff}</div>` :
-        diff<0  ? `<div style="font-size:9px;font-weight:700;color:#dc2626;width:36px">↓ ${diff}</div>` :
-                  `<div style="font-size:9px;color:#9ca3af;width:36px">→</div>`;
-      return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-        <div style="font-size:9px;color:#6b7280;width:22px;flex-shrink:0">D${i+1}</div>
-        <div style="flex:1;background:#f3f4f6;border-radius:3px;height:5px">
-          <div style="background:${col};border-radius:3px;height:5px;width:${avg}%"></div>
-        </div>
-        <div style="font-size:10px;font-weight:700;color:${col};width:30px;text-align:right">${avg}%</div>
-        ${diffStr}
-      </div>`;
-    }).join('');
-    return `<div style="margin-bottom:10px">
-      <div style="font-size:10px;font-weight:600;color:#374151;margin-bottom:4px">${BLOCK_ICONS[bi]||''} ${b.name}</div>
-      ${filas}
-    </div>`;
-  }).join('');
-
   return `<div style="border:1.5px solid #e0e7ff;border-radius:12px;overflow:hidden;margin-bottom:1rem">
     <div style="background:#eef2ff;padding:12px 14px;border-bottom:1px solid #e0e7ff">
       <div style="font-size:8px;letter-spacing:2px;color:#6366f1;margin-bottom:2px">DIAGNÓSTICO LONGITUDINAL · PIANGÜITA</div>
@@ -2474,11 +2446,79 @@ function buildComparativaSection(allGroups) {
     <div style="padding:14px">
       <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">PROMEDIO GENERAL</div>
       ${trendBars}
-      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px;margin-top:4px">EVOLUCIÓN POR COMPONENTE</div>
-      ${compRows}
-      <div style="font-size:9px;color:#9ca3af;text-align:right;margin-top:4px">↑ mejoró · ↓ bajó · → sin cambio</div>
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:6px;margin-top:4px">EVOLUCIÓN POR COMPONENTE</div>
+      ${buildDumbbellChart(sesData)}
     </div>
   </div>`;
+}
+
+// Gráfico de mancuernas (dumbbell) — un punto por diagnóstico por componente
+function buildDumbbellChart(sesData) {
+  const sesCols = ['#2563eb','#059669','#d97706','#7c3aed'];
+  const components = BLOCKS.map((b,bi) => {
+    const vals = sesData.map(s => s.blockAvgs[bi]);
+    if(vals.every(v => v === null)) return null;
+    return { name: b.name, icon: BLOCK_ICONS[bi]||'', vals };
+  }).filter(Boolean);
+  if(!components.length) return '';
+
+  const rowH   = 46;
+  const padTop = 26;
+  const labelW = 108;
+  const svgW   = 340;
+  const chartW = svgW - labelW - 10;
+  const svgH   = components.length * rowH + padTop + 10;
+
+  let svg = `<svg viewBox="0 0 ${svgW} ${svgH}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
+
+  // Leyenda
+  sesData.forEach((s,i) => {
+    svg += `<circle cx="${8+i*110}" cy="13" r="5" fill="${sesCols[i]}"/>
+            <text x="${16+i*110}" y="17" font-size="9" fill="#374151" font-family="Arial,sans-serif">${s.nombre}</text>`;
+  });
+
+  // Líneas de cuadrícula
+  [0,25,50,75,100].forEach(pct => {
+    const x = labelW + pct/100*chartW;
+    svg += `<line x1="${x}" y1="${padTop-2}" x2="${x}" y2="${svgH-4}" stroke="#f0f0f0" stroke-width="1"/>`;
+    if(pct===0||pct===50||pct===100)
+      svg += `<text x="${x}" y="${padTop-4}" font-size="7" fill="#d1d5db" text-anchor="middle" font-family="Arial,sans-serif">${pct}%</text>`;
+  });
+
+  // Filas por componente
+  components.forEach((comp, ri) => {
+    const y = padTop + ri*rowH + rowH/2;
+
+    // Etiqueta
+    const nm = comp.name.length>16 ? comp.name.substring(0,15)+'…' : comp.name;
+    svg += `<text x="${labelW-5}" y="${y+4}" font-size="9" fill="#374151" text-anchor="end" font-family="Arial,sans-serif">${comp.icon} ${nm}</text>`;
+
+    // Línea de fondo tenue
+    svg += `<line x1="${labelW}" y1="${y}" x2="${labelW+chartW}" y2="${y}" stroke="#f3f4f6" stroke-width="1"/>`;
+
+    // Puntos con valores
+    const pts = comp.vals.map((v,i) => v!==null ? {v,i,x:labelW+v/100*chartW} : null).filter(Boolean);
+
+    // Línea conectora entre diagnósticos consecutivos
+    for(let k=0; k<pts.length-1; k++){
+      const diff = pts[k+1].v - pts[k].v;
+      const lc = diff>0?'#059669':diff<0?'#dc2626':'#9ca3af';
+      svg += `<line x1="${pts[k].x}" y1="${y}" x2="${pts[k+1].x}" y2="${y}" stroke="${lc}" stroke-width="2.5" stroke-linecap="round"/>`;
+    }
+
+    // Puntos y etiquetas de valor
+    pts.forEach(({v,i,x}) => {
+      const col = sesCols[i];
+      // Alternar etiqueta arriba/abajo para evitar solapamiento
+      const ty = i%2===0 ? y-11 : y+18;
+      svg += `<circle cx="${x}" cy="${y}" r="7" fill="${col}" stroke="white" stroke-width="2"/>`;
+      svg += `<text x="${x}" y="${ty}" font-size="8" fill="${col}" text-anchor="middle" font-weight="bold" font-family="Arial,sans-serif">${v}%</text>`;
+    });
+  });
+
+  svg += `</svg>`;
+  return `<div style="overflow-x:auto">${svg}</div>
+    <div style="font-size:9px;color:#9ca3af;text-align:right;margin-top:2px">● punto = diagnóstico · línea verde = mejora · roja = baja</div>`;
 }
 
 async function showConsolidated(skipFirebase=false) {
