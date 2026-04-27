@@ -2341,16 +2341,39 @@ JSON requerido:
 // ══════════════════════════════════════════════════════════════
 async function deleteGroup(group) {
   if(!confirm('¿Seguro que quieres borrar este grupo? Esta acción no se puede deshacer.')) return;
+
+  // 1. Borrar del localStorage inmediatamente
   const all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
   delete all[group];
   localStorage.setItem('pianguita_diagnostico',JSON.stringify(all));
-  fb_borrar(group); // Firebase en paralelo, no bloqueamos la UI
-  showConsolidated(true); // refresca desde localStorage ya actualizado
+
+  // 2. Mostrar banner de guardado
+  const banner = document.getElementById('sync-banner');
+  const bannerTxt = document.getElementById('sync-banner-text');
+  if(banner){ banner.style.display='block'; banner.style.background='#2563eb'; bannerTxt.textContent='⏳ Guardando cambios en la nube...'; }
+
+  // 3. Esperar a que Firebase confirme el borrado
+  await fb_borrar(group);
+
+  // 4. Confirmar guardado
+  if(banner){ bannerTxt.textContent='✓ Cambios guardados correctamente'; banner.style.background='#059669';
+    setTimeout(()=>{ banner.style.display='none'; }, 2500);
+  }
+
+  // 5. Refrescar vista desde localStorage (ya actualizado)
+  showConsolidated(true);
 }
-function clearAll() {
+async function clearAll() {
   if(!confirm('¿Seguro que quieres borrar TODOS los diagnósticos guardados? Esta acción no se puede deshacer.')) return;
   localStorage.removeItem('pianguita_diagnostico');
-  fb_borrar_todo(); goHome();
+  const banner = document.getElementById('sync-banner');
+  const bannerTxt = document.getElementById('sync-banner-text');
+  if(banner){ banner.style.display='block'; banner.style.background='#2563eb'; bannerTxt.textContent='⏳ Borrando todos los datos de la nube...'; }
+  await fb_borrar_todo();
+  if(banner){ bannerTxt.textContent='✓ Todos los datos borrados correctamente'; banner.style.background='#059669';
+    setTimeout(()=>{ banner.style.display='none'; }, 2500);
+  }
+  goHome();
 }
 
 // ══════════════════════════════════════════════════════════════
