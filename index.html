@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-L</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-M</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -490,7 +490,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <button class="btn btn-outline" onclick="goHome()">← Inicio</button>
     <button class="btn btn-primary" onclick="exportarInformeCompleto()" id="btn-export-completo" style="font-size:13px">📊 Exportar PDF Completo</button>
     <button class="btn btn-outline" onclick="exportarCSV()" style="font-size:12px">📥 Exportar CSV</button>
-    <button class="btn btn-danger" onclick="clearAll()" style="font-size:12px">🗑 Borrar todos los datos</button>
+    <button class="btn btn-danger" onclick="clearAll()" style="font-size:12px">🗑 Borrar diagnóstico activo</button>
   </div>
 </div>
 </div>
@@ -1433,15 +1433,13 @@ async function fb_leer_todas() {
   return {};
 }
 
-function loadRefAnswers(grupo) {
+function loadRefAnswers(grupo, el) {
   refAnswers = { ...(grupo.answers||{}) };
   document.getElementById('ref-loaded-badge').style.display = 'block';
   document.querySelectorAll('.ref-grupo-btn').forEach(b=>{
     b.style.background='#f3f4f6'; b.style.borderColor='#e5e7eb'; b.style.color='#374151';
   });
-  event.currentTarget.style.background='#f0fdf4';
-  event.currentTarget.style.borderColor='#6ee7b7';
-  event.currentTarget.style.color='#065f46';
+  if(el){ el.style.background='#f0fdf4'; el.style.borderColor='#6ee7b7'; el.style.color='#065f46'; }
 }
 
 function clearRefAnswers() {
@@ -1476,7 +1474,7 @@ async function populateRefSection() {
   list.innerHTML = matchingGrupos.map((g,i)=>{
     const col = _nivelColor(g.total||0);
     const bloqueMatch = (g.bloques||[]).filter(bi=>selectedBlocks.includes(bi)).map(bi=>BLOCKS[bi].name).join(', ');
-    return `<button class="ref-grupo-btn" onclick="loadRefAnswers(${JSON.stringify(g).replace(/"/g,'&quot;')})"
+    return `<button class="ref-grupo-btn" onclick="loadRefAnswers(${JSON.stringify(g).replace(/"/g,'&quot;')}, this)"
       style="width:100%;text-align:left;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;font-family:inherit">
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div style="font-size:12px;font-weight:600;color:#111827">${g.nombre||'Grupo '+(i+1)}</div>
@@ -1505,7 +1503,7 @@ async function goToConfirm() {
   ).join('');
   document.getElementById('confirm-participants-list').innerHTML = currentParticipants.map(p =>
     `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #e5e7eb;font-size:12px">
-      <div style="min-width:28px;height:28px;border-radius:50%;background:#d1fae5;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${p.nombre.charAt(0).toUpperCase()}</div>
+      <div style="min-width:28px;height:28px;border-radius:50%;background:#d1fae5;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${(p.nombre||'?').charAt(0).toUpperCase()}</div>
       <div>
         <div style="font-weight:600;color:#111827">${p.nombre}</div>
         <div style="color:#6b7280">${p.grupoInteres} · ${p.tipoDoc} ${p.numDoc}</div>
@@ -2307,8 +2305,8 @@ function showResultsPage(scores,total,r) {
     <div style="padding:4px 14px">
       ${currentParticipants.map(p=>`
       <div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid #f3f4f6;font-size:12px">
-        <div style="min-width:28px;height:28px;border-radius:50%;border:1.5px solid #065f46;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${p.nombre.charAt(0)}</div>
-        <div><div style="font-weight:500;color:#111827">${p.nombre}</div><div style="color:#9ca3af;font-size:11px">${p.grupoInteres}</div></div>
+        <div style="min-width:28px;height:28px;border-radius:50%;border:1.5px solid #065f46;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${(p.nombre||'?').charAt(0)}</div>
+        <div><div style="font-weight:500;color:#111827">${p.nombre||'—'}</div><div style="color:#9ca3af;font-size:11px">${p.grupoInteres||''}</div></div>
       </div>`).join('')}
     </div>
   </div>`;
@@ -2576,10 +2574,11 @@ async function showConsolidated(skipFirebase=false) {
   // Tarjetas por grupo
   const groupCards=groups.map(g=>{
     const col=g.total>=70?'#059669':g.total>=40?'#d97706':'#dc2626';
-    const gid='gev-'+(g.grupo||g.group); const np=g.participantes?g.participantes.length:0;
+    const gkey=g.grupo||g.group||Object.keys(all).find(k=>all[k]===g)||'grp'+Math.random().toString(36).substr(2,6);
+    const gid='gev-'+gkey; const np=g.participantes?g.participantes.length:0;
     const partList=g.participantes?g.participantes.map(p=>
       `<div style="display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid #f3f4f6;font-size:12px">
-        <div style="min-width:24px;height:24px;border-radius:50%;background:#d1fae5;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${p.nombre.charAt(0)}</div>
+        <div style="min-width:24px;height:24px;border-radius:50%;background:#d1fae5;color:#065f46;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${(p.nombre||'?').charAt(0)}</div>
         <div><div style="font-weight:500">${p.nombre}</div><div style="color:#6b7280;font-size:11px">${p.grupoInteres} · ${p.tipoDoc} ${p.numDoc}${p.celular?' · 📱 '+p.celular:''}</div></div>
       </div>`
     ).join(''):'';
@@ -2600,7 +2599,7 @@ async function showConsolidated(skipFirebase=false) {
         <div style="display:flex;align-items:center;gap:8px">
           <div style="font-size:22px;font-weight:700;color:${col}">${g.total}%</div>
           <button onclick="toggleEv('${gid}')" style="background:#e0f2fe;border:1px solid #7dd3fc;color:#0369a1;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500">Ver detalles</button>
-          <button onclick="deleteGroup('${g.grupo||g.group}')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑</button>
+          <button onclick="deleteGroup('${gkey}')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑</button>
         </div>
       </div>
       <div id="${gid}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb">
@@ -2636,11 +2635,11 @@ async function showConsolidated(skipFirebase=false) {
           </div>`;
         }).join('') : '<div style="font-size:11px;color:#9ca3af">Sin respuestas registradas.</div>'}
         <div style="display:flex;gap:8px;margin-top:14px;padding-top:10px;border-top:1px solid #e5e7eb;flex-wrap:wrap">
-          <button onclick="descargarPDFEjecutivoGrupo('${g.grupo||g.group}')" id="pdf-ej-${g.grupo||g.group}"
+          <button onclick="descargarPDFEjecutivoGrupo('${gkey}')" id="pdf-ej-${gkey}"
             style="flex:1;background:#065f46;color:white;border:none;border-radius:7px;padding:9px 8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
             📋 Resumen Ejecutivo
           </button>
-          <button onclick="descargarPDFGrupo('${g.grupo||g.group}')" id="pdf-btn-${g.grupo||g.group}"
+          <button onclick="descargarPDFGrupo('${gkey}')" id="pdf-btn-${gkey}"
             style="flex:1;background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;border-radius:7px;padding:9px 8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
             📄 Informe Completo
           </button>
@@ -2806,13 +2805,14 @@ async function deleteGroup(group) {
   showConsolidated(true);
 }
 async function clearAll() {
-  if(!confirm('¿Seguro que quieres borrar TODOS los diagnósticos guardados? Esta acción no se puede deshacer.')) return;
+  const nombre = getNombreSesion(currentDiagnostico);
+  if(!confirm(`¿Seguro que quieres borrar todos los grupos del "${nombre}"? Esta acción no se puede deshacer.`)) return;
   localStorage.removeItem(lsKey());
   const banner = document.getElementById('sync-banner');
   const bannerTxt = document.getElementById('sync-banner-text');
-  if(banner){ banner.style.display='block'; banner.style.background='#2563eb'; bannerTxt.textContent='⏳ Borrando todos los datos de la nube...'; }
+  if(banner){ banner.style.display='block'; banner.style.background='#2563eb'; bannerTxt.textContent='⏳ Borrando datos del diagnóstico activo...'; }
   await fb_borrar_todo();
-  if(banner){ bannerTxt.textContent='✓ Todos los datos borrados correctamente'; banner.style.background='#059669';
+  if(banner){ bannerTxt.textContent=`✓ Grupos del "${nombre}" borrados correctamente`; banner.style.background='#059669';
     setTimeout(()=>{ banner.style.display='none'; }, 2500);
   }
   goHome();
