@@ -214,6 +214,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
+    <div style="font-size:9px;opacity:0.45;margin-top:6px">v26ABR-C</div>
   </div>
 
   <!-- Grupos ya registrados hoy -->
@@ -980,12 +981,13 @@ async function fb_leer() {
 async function fb_borrar(grupo) {
   try {
     const token = await fb_getToken();
-    await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
+    const r = await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ _deleted: true, _tk: FB_SECRET })
     });
-  } catch(e) {}
+    return r && r.ok;
+  } catch(e) { return false; }
 }
 
 // ── Borrar todo ─────────────────────────────────────────────────
@@ -2353,11 +2355,18 @@ async function deleteGroup(group) {
   if(banner){ banner.style.display='block'; banner.style.background='#2563eb'; bannerTxt.textContent='⏳ Guardando cambios en la nube...'; }
 
   // 3. Esperar a que Firebase confirme el borrado
-  await fb_borrar(group);
+  const ok = await fb_borrar(group);
 
-  // 4. Confirmar guardado
-  if(banner){ bannerTxt.textContent='✓ Cambios guardados correctamente'; banner.style.background='#059669';
-    setTimeout(()=>{ banner.style.display='none'; }, 2500);
+  // 4. Confirmar o mostrar error
+  if(banner){
+    if(ok){
+      bannerTxt.textContent='✓ Borrado guardado en la nube correctamente';
+      banner.style.background='#059669';
+    } else {
+      bannerTxt.textContent='⚠️ Borrado local OK, pero falló la nube — intenta de nuevo con señal';
+      banner.style.background='#dc2626';
+    }
+    setTimeout(()=>{ banner.style.display='none'; }, 3500);
   }
 
   // 5. Refrescar vista desde localStorage (ya actualizado)
