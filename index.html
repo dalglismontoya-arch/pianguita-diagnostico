@@ -214,7 +214,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-E</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-F</div>
   </div>
 
   <!-- Grupos ya registrados hoy -->
@@ -851,10 +851,17 @@ const QUESTION_NORMS = {
 // ══════════════════════════════════════════════════════════════
 // FIREBASE — Seguridad Opción D: Token + Auth anónima + Validación
 // ══════════════════════════════════════════════════════════════
+// FIREBASE CONFIG — estructura longitudinal por sesión
+// ══════════════════════════════════════════════════════════════
 const FIREBASE_DB      = 'https://pianguita-diagnostico-default-rtdb.firebaseio.com/diagnosticos';
 const FIREBASE_TIMEOUT = 8000;
-const FB_SECRET        = 'PIANGUITA_2025_SC';                 // token de escritura
+const FB_SECRET        = 'PIANGUITA_2025_SC';
 const FIREBASE_API_KEY = 'AIzaSyDl8puSlM43sozOv5vvjNKiVQ8R0Wr9PiM';
+
+// Sesión/diagnóstico activo (longitudinal)
+let currentDiagnostico = 'sesion_1';
+function lsKey()  { return 'pianguita_' + currentDiagnostico; }          // clave localStorage
+function fbBase() { return `${FIREBASE_DB}/${currentDiagnostico}/grupos`; } // ruta Firebase
 
 // ── Auth anónima via REST API ──────────────────────────────────
 let _fbToken   = null;
@@ -870,7 +877,7 @@ async function fb_getToken() {
     const d = await r.json();
     if (d.idToken) {
       _fbToken  = d.idToken;
-      _fbExpiry = Date.now() + (parseInt(d.expiresIn) - 120) * 1000; // renueva 2 min antes
+      _fbExpiry = Date.now() + (parseInt(d.expiresIn) - 120) * 1000;
       return _fbToken;
     }
   } catch(e) {}
@@ -879,26 +886,19 @@ async function fb_getToken() {
 
 function fb_authParam(token) { return token ? `?auth=${token}` : ''; }
 
-// ── Guardar (incluye token secreto en el payload) ──────────────
+// ── Guardar ────────────────────────────────────────────────────
 const PENDING_KEY = 'pianguita_pending_sync';
 
 async function fb_guardar(grupo, datos) {
   try {
     const token   = await fb_getToken();
     const payload = { ...datos, _tk: FB_SECRET };
-    const r = await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
+    const r = await fetch(`${fbBase()}/${grupo}.json${fb_authParam(token)}`, {
       method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
     });
-    if(r.ok) {
-      _removePending(grupo);
-      _updateSyncBanner();
-      return true;
-    }
+    if(r.ok) { _removePending(grupo); _updateSyncBanner(); return true; }
   } catch(e) {}
-  // Sin internet → marcar pendiente
-  _addPending(grupo);
-  _updateSyncBanner();
-  return false;
+  _addPending(grupo); _updateSyncBanner(); return false;
 }
 
 function _addPending(grupo) {
@@ -907,8 +907,7 @@ function _addPending(grupo) {
 }
 function _removePending(grupo) {
   const p = JSON.parse(localStorage.getItem(PENDING_KEY)||'[]');
-  const f = p.filter(g=>g!==grupo);
-  localStorage.setItem(PENDING_KEY, JSON.stringify(f));
+  localStorage.setItem(PENDING_KEY, JSON.stringify(p.filter(g=>g!==grupo)));
 }
 function _getPending() { return JSON.parse(localStorage.getItem(PENDING_KEY)||'[]'); }
 
@@ -945,14 +944,13 @@ async function syncPendingManual() {
 async function _syncPending() {
   const pending = _getPending();
   if(pending.length === 0) return;
-  const all = JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+  const all = JSON.parse(localStorage.getItem(lsKey())||'{}');
   for(const grupo of [...pending]) {
     if(all[grupo]) await fb_guardar(grupo, all[grupo]);
   }
   _updateSyncBanner();
 }
 
-// Auto-sync cuando vuelve la señal
 window.addEventListener('online',  () => { _updateSyncBanner(); _syncPending(); });
 window.addEventListener('offline', () => { _updateSyncBanner(); });
 
@@ -962,12 +960,11 @@ async function fb_leer() {
     const token = await fb_getToken();
     const ctrl  = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), FIREBASE_TIMEOUT);
-    const r     = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, { signal: ctrl.signal });
+    const r     = await fetch(`${fbBase()}.json${fb_authParam(token)}`, { signal: ctrl.signal });
     clearTimeout(timer);
     if (r.ok) {
       const d = await r.json();
       if (!d) return {};
-      // Filtrar grupos marcados como borrados
       const filtrado = {};
       Object.entries(d).forEach(([k, v]) => { if (v && !v._deleted) filtrado[k] = v; });
       return filtrado;
@@ -980,8 +977,7 @@ async function fb_leer() {
 async function fb_borrar(grupo) {
   try {
     const token = await fb_getToken();
-    // Intentar con PATCH — solo agrega los campos, no reemplaza todo
-    const r = await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
+    const r = await fetch(`${fbBase()}/${grupo}.json${fb_authParam(token)}`, {
       method:'PATCH',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ _deleted: true, _tk: FB_SECRET })
@@ -992,25 +988,54 @@ async function fb_borrar(grupo) {
   } catch(e) { return { ok: false, status: 0, msg: e.message }; }
 }
 
-// ── Borrar todo ─────────────────────────────────────────────────
+// ── Borrar todo (dentro de la sesión activa) ────────────────────
 async function fb_borrar_todo() {
   try {
     const token = await fb_getToken();
-    // Leer todo sin filtro (incluyendo los ya marcados)
-    const rLeer = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`);
+    const rLeer = await fetch(`${fbBase()}.json${fb_authParam(token)}`);
     const all = rLeer.ok ? (await rLeer.json() || {}) : {};
     if(Object.keys(all).length === 0) return;
-    // Marcar cada grupo como _deleted conservando su estructura
     const marcados = {};
     Object.entries(all).forEach(([k,v]) => {
       marcados[k] = { ...(v||{}), _deleted: true, _tk: FB_SECRET };
     });
-    await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, {
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(marcados)
+    await fetch(`${fbBase()}.json${fb_authParam(token)}`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(marcados)
     });
   } catch(e) {}
+}
+
+// ── Migración: datos planos → sesion_1 ─────────────────────────
+// Se ejecuta una sola vez al detectar datos en la raíz antigua
+async function fb_migrar() {
+  try {
+    const token = await fb_getToken();
+    // Leer raíz de diagnosticos (formato antiguo)
+    const rRaiz = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`);
+    if(!rRaiz.ok) return;
+    const raiz = await rRaiz.json();
+    if(!raiz) return;
+    // Si ya existe sesion_1, la migración ya se hizo
+    if(raiz.sesion_1) return;
+    // Recoger grupos planos (grupo_xxx) que no estén borrados
+    const grupos = {};
+    Object.entries(raiz).forEach(([k,v]) => {
+      if(k.startsWith('grupo_') && v && !v._deleted) grupos[k] = { ...v, _tk: FB_SECRET };
+    });
+    if(Object.keys(grupos).length === 0) return;
+    // Escribir en sesion_1/grupos
+    await fetch(`${FIREBASE_DB}/sesion_1/grupos.json${fb_authParam(token)}`, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(grupos)
+    });
+    // Migrar localStorage: copiar pianguita_diagnostico → pianguita_sesion_1
+    const oldData = localStorage.getItem('pianguita_diagnostico');
+    if(oldData && !localStorage.getItem('pianguita_sesion_1')) {
+      localStorage.setItem('pianguita_sesion_1', oldData);
+    }
+    console.log('[Piangüita] ✓ Migración a sesion_1 completada —', Object.keys(grupos).length, 'grupos');
+  } catch(e) {
+    console.warn('[Piangüita] Migración falló:', e.message);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1048,6 +1073,9 @@ function getTodayStr() {
 function getTodayISO() { return new Date().toISOString().split('T')[0]; }
 
 async function initSession() {
+  // Migración única: datos planos → sesion_1 (solo corre si hay datos viejos)
+  await fb_migrar();
+
   selectedBlocks = []; currentParticipants = []; answers = {}; evidence = {}; evidence_photos = {};
   consent1 = null; consent2 = null;
   ['1','2'].forEach(n => {
@@ -1061,8 +1089,8 @@ async function initSession() {
   renderBlockSelectors(); renderParticipants(); checkStartButton();
 
   const fb = await fb_leer();
-  const all = fb || JSON.parse(localStorage.getItem('pianguita_diagnostico') || '{}');
-  if (fb && Object.keys(fb).length > 0) localStorage.setItem('pianguita_diagnostico', JSON.stringify(fb));
+  const all = fb || JSON.parse(localStorage.getItem(lsKey()) || '{}');
+  if (fb && Object.keys(fb).length > 0) localStorage.setItem(lsKey(), JSON.stringify(fb));
 
   const hoy = getTodayISO();
   const sesionesHoy = Object.values(all).filter(g => g.fechaISO === hoy);
@@ -1568,8 +1596,8 @@ function setProximaEval(meses, fechaStr, btn) {
   const msg=document.getElementById('proxima-eval-msg');
   if(msg){ msg.textContent=`✅ Próxima evaluación programada: ${fechaStr}`; msg.style.display='block'; }
   if(lastScores && lastTotal !== null) {
-    const all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
-    if(all[currentGroup]){ all[currentGroup].proximaEval={meses,fecha:fechaStr}; localStorage.setItem('pianguita_diagnostico',JSON.stringify(all)); fb_guardar(currentGroup,all[currentGroup]); }
+    const all=JSON.parse(localStorage.getItem(lsKey())||'{}');
+    if(all[currentGroup]){ all[currentGroup].proximaEval={meses,fecha:fechaStr}; localStorage.setItem(lsKey(),JSON.stringify(all)); fb_guardar(currentGroup,all[currentGroup]); }
   }
 }
 
@@ -1649,8 +1677,8 @@ function descargarCertificados() {
 // ══════════════════════════════════════════════════════════════
 async function exportarCSV() {
   let all={};
-  try { const fb=await fb_leer(); if(fb&&Object.keys(fb).length>0) all=fb; else all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}'); }
-  catch(e){ all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}'); }
+  try { const fb=await fb_leer(); if(fb&&Object.keys(fb).length>0) all=fb; else all=JSON.parse(localStorage.getItem(lsKey())||'{}'); }
+  catch(e){ all=JSON.parse(localStorage.getItem(lsKey())||'{}'); }
 
   const NOMS=['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
   const esc=s=>`"${(s||'').toString().replace(/"/g,'""')}"`;
@@ -1763,7 +1791,7 @@ Responde SOLO JSON puro sin markdown. Máximo 20 palabras por campo. Exactamente
 // GUARDAR RESULTADO
 // ══════════════════════════════════════════════════════════════
 function saveGroupResult(scores,total,aiResult) {
-  const key='pianguita_diagnostico';
+  const key=lsKey();
   const all=JSON.parse(localStorage.getItem(key)||'{}');
   const datos={
     grupo:currentGroup, nombre:currentGroupName,
@@ -2102,11 +2130,11 @@ function checkPin() {
 async function showConsolidated(skipFirebase=false) {
   let all;
   if(skipFirebase){
-    all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+    all=JSON.parse(localStorage.getItem(lsKey())||'{}');
   } else {
     const fb=await fb_leer();
-    if(fb&&Object.keys(fb).length>0) localStorage.setItem('pianguita_diagnostico',JSON.stringify(fb));
-    all=fb||JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+    if(fb&&Object.keys(fb).length>0) localStorage.setItem(lsKey(),JSON.stringify(fb));
+    all=fb||JSON.parse(localStorage.getItem(lsKey())||'{}');
   }
   const groups=Object.values(all).sort((a,b)=>{ if(a.fechaISO!==b.fechaISO) return a.fechaISO>b.fechaISO?1:-1; return (a.numero||0)-(b.numero||0); });
 
@@ -2257,7 +2285,7 @@ async function showConsolidated(skipFirebase=false) {
 // IA CONSOLIDADO
 // ══════════════════════════════════════════════════════════════
 async function generateConsolidatedAI() {
-  const all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+  const all=JSON.parse(localStorage.getItem(lsKey())||'{}');
   const groups=Object.values(all);
   document.getElementById('consolidated-loading').style.display='block';
   document.getElementById('consolidated-ai-result').innerHTML='';
@@ -2352,9 +2380,9 @@ async function deleteGroup(group) {
   if(!confirm('¿Seguro que quieres borrar este grupo? Esta acción no se puede deshacer.')) return;
 
   // 1. Borrar del localStorage inmediatamente
-  const all=JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+  const all=JSON.parse(localStorage.getItem(lsKey())||'{}');
   delete all[group];
-  localStorage.setItem('pianguita_diagnostico',JSON.stringify(all));
+  localStorage.setItem(lsKey(),JSON.stringify(all));
 
   // 2. Mostrar banner de guardado
   const banner = document.getElementById('sync-banner');
@@ -2382,7 +2410,7 @@ async function deleteGroup(group) {
 }
 async function clearAll() {
   if(!confirm('¿Seguro que quieres borrar TODOS los diagnósticos guardados? Esta acción no se puede deshacer.')) return;
-  localStorage.removeItem('pianguita_diagnostico');
+  localStorage.removeItem(lsKey());
   const banner = document.getElementById('sync-banner');
   const bannerTxt = document.getElementById('sync-banner-text');
   if(banner){ banner.style.display='block'; banner.style.background='#2563eb'; bannerTxt.textContent='⏳ Borrando todos los datos de la nube...'; }
@@ -2421,9 +2449,9 @@ async function _leerGrupo(grupoKey) {
   try {
     const fb = await fb_leer();
     if(fb && Object.keys(fb).length > 0) all = fb;
-    else all = JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+    else all = JSON.parse(localStorage.getItem(lsKey())||'{}');
   } catch(e) {
-    all = JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+    all = JSON.parse(localStorage.getItem(lsKey())||'{}');
   }
   return all[grupoKey] || null;
 }
@@ -2811,9 +2839,9 @@ async function exportarInformeCompleto() {
   try {
     const fb = await fb_leer();
     if(fb && Object.keys(fb).length > 0) all = fb;
-    else all = JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+    else all = JSON.parse(localStorage.getItem(lsKey())||'{}');
   } catch(e) {
-    all = JSON.parse(localStorage.getItem('pianguita_diagnostico')||'{}');
+    all = JSON.parse(localStorage.getItem(lsKey())||'{}');
   }
 
   const groups = Object.values(all).sort((a,b)=>{
@@ -3125,7 +3153,7 @@ async function exportarInformeCompleto() {
 // ══════════════════════════════════════════════════════════════
 if(new URLSearchParams(window.location.search).get('ver')==='datos'){
   document.body.style.cssText='font-family:Arial,sans-serif;padding:16px;background:#f0fdf4;';
-  const raw=localStorage.getItem('pianguita_diagnostico');
+  const raw=localStorage.getItem(lsKey());
   if(!raw||raw==='null'){
     document.body.innerHTML='<h2 style="color:#dc2626">No hay datos guardados en este celular.</h2>';
   } else {
