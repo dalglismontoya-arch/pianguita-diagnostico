@@ -977,14 +977,20 @@ async function fb_leer() {
 }
 
 // ── Borrar un grupo ─────────────────────────────────────────────
-// Firebase exige _tk en el payload → usamos PUT con marca _deleted
+// Firebase requiere la estructura completa del grupo → leemos, marcamos _deleted y reescribimos
 async function fb_borrar(grupo) {
   try {
     const token = await fb_getToken();
+    // 1. Leer el dato actual
+    const rLeer = await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`);
+    const actual = rLeer.ok ? await rLeer.json() : {};
+    // 2. Agregar marca _deleted al dato completo
+    const payload = { ...(actual||{}), _deleted: true, _tk: FB_SECRET };
+    // 3. Reescribir con la marca
     const r = await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ _deleted: true, _tk: FB_SECRET })
+      body: JSON.stringify(payload)
     });
     return r && r.ok;
   } catch(e) { return false; }
@@ -994,10 +1000,15 @@ async function fb_borrar(grupo) {
 async function fb_borrar_todo() {
   try {
     const token = await fb_getToken();
-    const all = await fb_leer();
-    if (!all || Object.keys(all).length === 0) return;
+    // Leer todo sin filtro (incluyendo los ya marcados)
+    const rLeer = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`);
+    const all = rLeer.ok ? (await rLeer.json() || {}) : {};
+    if(Object.keys(all).length === 0) return;
+    // Marcar cada grupo como _deleted conservando su estructura
     const marcados = {};
-    Object.keys(all).forEach(k => { marcados[k] = { _deleted: true, _tk: FB_SECRET }; });
+    Object.entries(all).forEach(([k,v]) => {
+      marcados[k] = { ...(v||{}), _deleted: true, _tk: FB_SECRET };
+    });
     await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
