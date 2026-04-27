@@ -214,7 +214,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-F</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-G</div>
   </div>
 
   <!-- Grupos ya registrados hoy -->
@@ -1006,33 +1006,57 @@ async function fb_borrar_todo() {
 }
 
 // ── Migración: datos planos → sesion_1 ─────────────────────────
-// Se ejecuta una sola vez al detectar datos en la raíz antigua
 async function fb_migrar() {
   try {
     const token = await fb_getToken();
-    // Leer raíz de diagnosticos (formato antiguo)
-    const rRaiz = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`);
-    if(!rRaiz.ok) return;
-    const raiz = await rRaiz.json();
-    if(!raiz) return;
-    // Si ya existe sesion_1, la migración ya se hizo
-    if(raiz.sesion_1) return;
-    // Recoger grupos planos (grupo_xxx) que no estén borrados
-    const grupos = {};
-    Object.entries(raiz).forEach(([k,v]) => {
-      if(k.startsWith('grupo_') && v && !v._deleted) grupos[k] = { ...v, _tk: FB_SECRET };
-    });
-    if(Object.keys(grupos).length === 0) return;
-    // Escribir en sesion_1/grupos
-    await fetch(`${FIREBASE_DB}/sesion_1/grupos.json${fb_authParam(token)}`, {
-      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(grupos)
-    });
-    // Migrar localStorage: copiar pianguita_diagnostico → pianguita_sesion_1
-    const oldData = localStorage.getItem('pianguita_diagnostico');
-    if(oldData && !localStorage.getItem('pianguita_sesion_1')) {
-      localStorage.setItem('pianguita_sesion_1', oldData);
+
+    // 1. Verificar si sesion_1 ya existe en Firebase
+    const rCheck = await fetch(`${FIREBASE_DB}/sesion_1/grupos.json${fb_authParam(token)}`);
+    if(rCheck.ok) {
+      const existing = await rCheck.json();
+      if(existing && Object.keys(existing).length > 0) return; // ya migrado
     }
-    console.log('[Piangüita] ✓ Migración a sesion_1 completada —', Object.keys(grupos).length, 'grupos');
+
+    // 2. Recoger grupos: primero desde Firebase plano, luego desde localStorage
+    const grupos = {};
+
+    // 2a. Desde Firebase (ruta antigua plana)
+    try {
+      const rRaiz = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`);
+      if(rRaiz.ok) {
+        const raiz = await rRaiz.json();
+        if(raiz) {
+          Object.entries(raiz).forEach(([k,v]) => {
+            if(k.startsWith('grupo_') && v && !v._deleted) grupos[k] = v;
+          });
+        }
+      }
+    } catch(e) {}
+
+    // 2b. Desde localStorage antiguo (complementa o reemplaza si Firebase vacío)
+    const oldData = localStorage.getItem('pianguita_diagnostico');
+    if(oldData) {
+      try {
+        const parsed = JSON.parse(oldData);
+        Object.entries(parsed).forEach(([k,v]) => {
+          if(!grupos[k] && v && !v._deleted) grupos[k] = v;
+        });
+      } catch(e) {}
+    }
+
+    if(Object.keys(grupos).length === 0) return;
+
+    // 3. Guardar en localStorage sesion_1 de inmediato (visible aunque Firebase falle)
+    if(!localStorage.getItem('pianguita_sesion_1')) {
+      localStorage.setItem('pianguita_sesion_1', JSON.stringify(grupos));
+    }
+
+    // 4. Escribir en Firebase sesion_1/grupos — uno por uno con fb_guardar (usa _tk correctamente)
+    for(const [key, data] of Object.entries(grupos)) {
+      await fb_guardar(key, data);
+    }
+
+    console.log('[Piangüita] ✓ Migración a sesion_1 —', Object.keys(grupos).length, 'grupos');
   } catch(e) {
     console.warn('[Piangüita] Migración falló:', e.message);
   }
