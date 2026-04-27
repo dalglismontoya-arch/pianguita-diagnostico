@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-I</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-J</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -387,6 +387,18 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
   <div class="card">
     <div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:10px">Participantes registrados</div>
     <div id="confirm-participants-list"></div>
+  </div>
+
+  <!-- Referencia diagnóstico anterior (solo en sesiones de seguimiento) -->
+  <div id="ref-section" style="display:none" class="card">
+    <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:6px">SEGUIMIENTO LONGITUDINAL</div>
+    <div style="font-size:13px;font-weight:700;color:#1e3a5f;margin-bottom:4px">📊 Cargar respuestas del diagnóstico anterior</div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:12px">Selecciona un grupo anterior con los mismos componentes. Sus respuestas aparecerán como referencia en cada pregunta — el grupo actual responde de forma independiente.</div>
+    <div id="ref-groups-list"></div>
+    <div id="ref-loaded-badge" style="display:none;background:#f0fdf4;border:1px solid #6ee7b7;border-radius:8px;padding:10px;margin-top:8px;font-size:12px;color:#065f46;font-weight:600">
+      ✅ Referencia cargada · Las respuestas anteriores se mostrarán como guía en cada pregunta
+      <button onclick="clearRefAnswers()" style="float:right;background:none;border:none;color:#dc2626;font-size:11px;cursor:pointer;font-family:inherit">✕ Quitar</button>
+    </div>
   </div>
 
   <div class="nav">
@@ -1371,10 +1383,96 @@ function checkStartButton() {
 }
 
 // ══════════════════════════════════════════════════════════════
+// FASE 3 — REFERENCIA DE DIAGNÓSTICO ANTERIOR
+// ══════════════════════════════════════════════════════════════
+let refAnswers = {}; // respuestas del diagnóstico anterior como referencia
+
+function getPrevSesionId() {
+  const n = parseInt(currentDiagnostico.replace('sesion_',''))||1;
+  return n > 1 ? `sesion_${n-1}` : null;
+}
+
+async function fb_leer_sesion(sesionId) {
+  try {
+    const token = await fb_getToken();
+    const ctrl  = new AbortController();
+    const timer = setTimeout(()=>ctrl.abort(), FIREBASE_TIMEOUT);
+    const r = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, { signal: ctrl.signal });
+    clearTimeout(timer);
+    if(r.ok) {
+      const d = await r.json(); if(!d) return {};
+      const out = {};
+      Object.entries(d).forEach(([k,v])=>{
+        const s = v.sesion||'sesion_1';
+        if(v && !v._deleted && s===sesionId) out[k]=v;
+      });
+      return out;
+    }
+  } catch(e) {}
+  // Fallback: localStorage
+  try { return JSON.parse(localStorage.getItem('pianguita_'+sesionId)||'{}'); } catch(e) { return {}; }
+}
+
+function loadRefAnswers(grupo) {
+  refAnswers = { ...(grupo.answers||{}) };
+  document.getElementById('ref-loaded-badge').style.display = 'block';
+  document.querySelectorAll('.ref-grupo-btn').forEach(b=>{
+    b.style.background='#f3f4f6'; b.style.borderColor='#e5e7eb'; b.style.color='#374151';
+  });
+  event.currentTarget.style.background='#f0fdf4';
+  event.currentTarget.style.borderColor='#6ee7b7';
+  event.currentTarget.style.color='#065f46';
+}
+
+function clearRefAnswers() {
+  refAnswers = {};
+  document.getElementById('ref-loaded-badge').style.display='none';
+  document.querySelectorAll('.ref-grupo-btn').forEach(b=>{
+    b.style.background='#f3f4f6'; b.style.borderColor='#e5e7eb'; b.style.color='#374151';
+  });
+}
+
+async function populateRefSection() {
+  const prevId = getPrevSesionId();
+  const sec = document.getElementById('ref-section');
+  const list = document.getElementById('ref-groups-list');
+  if(!sec||!list) return;
+  if(!prevId) { sec.style.display='none'; return; }
+
+  sec.style.display='block';
+  list.innerHTML='<div style="font-size:11px;color:#9ca3af;text-align:center;padding:8px">Buscando grupos del diagnóstico anterior...</div>';
+
+  const prevGrupos = await fb_leer_sesion(prevId);
+  const matchingGrupos = Object.values(prevGrupos).filter(g=>{
+    if(!g.bloques||!g.answers) return false;
+    return selectedBlocks.some(bi=>g.bloques.includes(bi));
+  });
+
+  if(matchingGrupos.length===0) {
+    list.innerHTML='<div style="font-size:11px;color:#9ca3af">No hay grupos del diagnóstico anterior con los mismos componentes.</div>';
+    return;
+  }
+
+  list.innerHTML = matchingGrupos.map((g,i)=>{
+    const col = _nivelColor(g.total||0);
+    const bloqueMatch = (g.bloques||[]).filter(bi=>selectedBlocks.includes(bi)).map(bi=>BLOCKS[bi].name).join(', ');
+    return `<button class="ref-grupo-btn" onclick="loadRefAnswers(${JSON.stringify(g).replace(/"/g,'&quot;')})"
+      style="width:100%;text-align:left;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;font-family:inherit">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:12px;font-weight:600;color:#111827">${g.nombre||'Grupo '+(i+1)}</div>
+        <div style="font-size:13px;font-weight:700;color:${col}">${g.total||0}%</div>
+      </div>
+      <div style="font-size:10px;color:#6b7280;margin-top:2px">${g.fecha||''} · ${bloqueMatch}</div>
+    </button>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
 // CONFIRMACIÓN
 // ══════════════════════════════════════════════════════════════
-function goToConfirm() {
+async function goToConfirm() {
   if (currentParticipants.length<1 || selectedBlocks.length<1) return;
+  refAnswers = {};
   document.getElementById('confirm-session-name').textContent = currentGroupName;
   document.getElementById('confirm-blocks-list').innerHTML = selectedBlocks.map(bi =>
     `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #e5e7eb;font-size:13px">
@@ -1395,6 +1493,7 @@ function goToConfirm() {
     </div>`
   ).join('');
   showPage('page-confirm');
+  await populateRefSection();
 }
 
 function startQuestions() {
@@ -1474,6 +1573,7 @@ function renderBlock() {
       <div class="q-num">Pregunta ${q.n} · <span style="color:#059669;font-weight:600">${QUESTION_NORMS[q.n]}</span> · ${saved!==undefined?'<span style="color:'+NIVEL_COLS[saved]+';font-weight:700">'+NIVEL_ETIQUETAS[saved]+' — '+NIVEL_NAMES[saved]+'</span>':'<span style="color:#9ca3af">Sin responder</span>'}</div>
       <div class="q-text">${q.q}</div>
       ${q.hint?`<div class="q-hint">💡 ${q.hint}</div>`:''}
+      ${refAnswers[q.n]!==undefined?`<div style="font-size:10px;color:#6b7280;background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid ${NIVEL_COLS[refAnswers[q.n]]};border-radius:4px;padding:4px 8px;margin-bottom:6px">📊 Diagnóstico anterior: <strong style="color:${NIVEL_COLS[refAnswers[q.n]]}">${NIVEL_NAMES[refAnswers[q.n]]}</strong></div>`:''}
       <div class="q-stair-wrap">
         <div class="q-stair-row">
           ${[0,1,2,3].map(i=>`
