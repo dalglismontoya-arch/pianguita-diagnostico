@@ -977,23 +977,19 @@ async function fb_leer() {
 }
 
 // ── Borrar un grupo ─────────────────────────────────────────────
-// Firebase requiere la estructura completa del grupo → leemos, marcamos _deleted y reescribimos
 async function fb_borrar(grupo) {
   try {
     const token = await fb_getToken();
-    // 1. Leer el dato actual
-    const rLeer = await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`);
-    const actual = rLeer.ok ? await rLeer.json() : {};
-    // 2. Agregar marca _deleted al dato completo
-    const payload = { ...(actual||{}), _deleted: true, _tk: FB_SECRET };
-    // 3. Reescribir con la marca
+    // Intentar con PATCH — solo agrega los campos, no reemplaza todo
     const r = await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
-      method:'PUT',
+      method:'PATCH',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ _deleted: true, _tk: FB_SECRET })
     });
-    return r && r.ok;
-  } catch(e) { return false; }
+    if(r.ok) return { ok: true };
+    const errBody = await r.text();
+    return { ok: false, status: r.status, msg: errBody };
+  } catch(e) { return { ok: false, status: 0, msg: e.message }; }
 }
 
 // ── Borrar todo ─────────────────────────────────────────────────
@@ -2366,18 +2362,19 @@ async function deleteGroup(group) {
   if(banner){ banner.style.display='block'; banner.style.background='#2563eb'; bannerTxt.textContent='⏳ Guardando cambios en la nube...'; }
 
   // 3. Esperar a que Firebase confirme el borrado
-  const ok = await fb_borrar(group);
+  const res = await fb_borrar(group);
 
-  // 4. Confirmar o mostrar error
+  // 4. Confirmar o mostrar error exacto
   if(banner){
-    if(ok){
+    if(res.ok){
       bannerTxt.textContent='✓ Borrado guardado en la nube correctamente';
       banner.style.background='#059669';
+      setTimeout(()=>{ banner.style.display='none'; }, 3000);
     } else {
-      bannerTxt.textContent='⚠️ Borrado local OK, pero falló la nube — intenta de nuevo con señal';
+      bannerTxt.textContent=`⚠️ Firebase error ${res.status}: ${res.msg}`;
       banner.style.background='#dc2626';
+      setTimeout(()=>{ banner.style.display='none'; }, 8000);
     }
-    setTimeout(()=>{ banner.style.display='none'; }, 3500);
   }
 
   // 5. Refrescar vista desde localStorage (ya actualizado)
