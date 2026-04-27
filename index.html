@@ -214,7 +214,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-C</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-D</div>
   </div>
 
   <!-- Grupos ya registrados hoy -->
@@ -2371,9 +2371,9 @@ async function deleteGroup(group) {
       banner.style.background='#059669';
       setTimeout(()=>{ banner.style.display='none'; }, 3000);
     } else {
-      bannerTxt.textContent=`⚠️ Firebase error ${res.status}: ${res.msg}`;
+      bannerTxt.textContent='⚠️ Borrado local OK — falló la sincronización con la nube. Intenta de nuevo.';
       banner.style.background='#dc2626';
-      setTimeout(()=>{ banner.style.display='none'; }, 8000);
+      setTimeout(()=>{ banner.style.display='none'; }, 4000);
     }
   }
 
