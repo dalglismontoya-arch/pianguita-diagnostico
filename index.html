@@ -214,7 +214,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-G</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-H</div>
   </div>
 
   <!-- Grupos ya registrados hoy -->
@@ -859,9 +859,9 @@ const FB_SECRET        = 'PIANGUITA_2025_SC';
 const FIREBASE_API_KEY = 'AIzaSyDl8puSlM43sozOv5vvjNKiVQ8R0Wr9PiM';
 
 // Sesión/diagnóstico activo (longitudinal)
+// Ruta Firebase NO cambia — cada grupo lleva campo { sesion: currentDiagnostico }
 let currentDiagnostico = 'sesion_1';
-function lsKey()  { return 'pianguita_' + currentDiagnostico; }          // clave localStorage
-function fbBase() { return `${FIREBASE_DB}/${currentDiagnostico}/grupos`; } // ruta Firebase
+function lsKey() { return 'pianguita_' + currentDiagnostico; }
 
 // ── Auth anónima via REST API ──────────────────────────────────
 let _fbToken   = null;
@@ -892,8 +892,8 @@ const PENDING_KEY = 'pianguita_pending_sync';
 async function fb_guardar(grupo, datos) {
   try {
     const token   = await fb_getToken();
-    const payload = { ...datos, _tk: FB_SECRET };
-    const r = await fetch(`${fbBase()}/${grupo}.json${fb_authParam(token)}`, {
+    const payload = { ...datos, sesion: currentDiagnostico, _tk: FB_SECRET };
+    const r = await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
       method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
     });
     if(r.ok) { _removePending(grupo); _updateSyncBanner(); return true; }
@@ -960,13 +960,20 @@ async function fb_leer() {
     const token = await fb_getToken();
     const ctrl  = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), FIREBASE_TIMEOUT);
-    const r     = await fetch(`${fbBase()}.json${fb_authParam(token)}`, { signal: ctrl.signal });
+    const r     = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, { signal: ctrl.signal });
     clearTimeout(timer);
     if (r.ok) {
       const d = await r.json();
       if (!d) return {};
       const filtrado = {};
-      Object.entries(d).forEach(([k, v]) => { if (v && !v._deleted) filtrado[k] = v; });
+      Object.entries(d).forEach(([k, v]) => {
+        // Excluir borrados y filtrar por sesión activa
+        // Grupos sin campo sesion (datos viejos) se asignan a sesion_1
+        if (v && !v._deleted) {
+          const s = v.sesion || 'sesion_1';
+          if (s === currentDiagnostico) filtrado[k] = v;
+        }
+      });
       return filtrado;
     }
   } catch(e) {}
@@ -977,7 +984,7 @@ async function fb_leer() {
 async function fb_borrar(grupo) {
   try {
     const token = await fb_getToken();
-    const r = await fetch(`${fbBase()}/${grupo}.json${fb_authParam(token)}`, {
+    const r = await fetch(`${FIREBASE_DB}/${grupo}.json${fb_authParam(token)}`, {
       method:'PATCH',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ _deleted: true, _tk: FB_SECRET })
@@ -988,75 +995,51 @@ async function fb_borrar(grupo) {
   } catch(e) { return { ok: false, status: 0, msg: e.message }; }
 }
 
-// ── Borrar todo (dentro de la sesión activa) ────────────────────
+// ── Borrar todo (solo grupos de la sesión activa) ───────────────
 async function fb_borrar_todo() {
   try {
     const token = await fb_getToken();
-    const rLeer = await fetch(`${fbBase()}.json${fb_authParam(token)}`);
+    const rLeer = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`);
     const all = rLeer.ok ? (await rLeer.json() || {}) : {};
-    if(Object.keys(all).length === 0) return;
     const marcados = {};
     Object.entries(all).forEach(([k,v]) => {
-      marcados[k] = { ...(v||{}), _deleted: true, _tk: FB_SECRET };
+      const s = (v && v.sesion) || 'sesion_1';
+      if(s === currentDiagnostico) marcados[k] = { ...(v||{}), _deleted: true, _tk: FB_SECRET };
     });
-    await fetch(`${fbBase()}.json${fb_authParam(token)}`, {
-      method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(marcados)
+    if(Object.keys(marcados).length === 0) return;
+    await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, {
+      method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(marcados)
     });
   } catch(e) {}
 }
 
-// ── Migración: datos planos → sesion_1 ─────────────────────────
+// ── Migración: añadir campo sesion a grupos que no lo tienen ────
 async function fb_migrar() {
   try {
     const token = await fb_getToken();
+    const r = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`);
+    if(!r.ok) return;
+    const all = await r.json();
+    if(!all) return;
 
-    // 1. Verificar si sesion_1 ya existe en Firebase
-    const rCheck = await fetch(`${FIREBASE_DB}/sesion_1/grupos.json${fb_authParam(token)}`);
-    if(rCheck.ok) {
-      const existing = await rCheck.json();
-      if(existing && Object.keys(existing).length > 0) return; // ya migrado
+    // Buscar grupos sin campo sesion (formato antiguo)
+    const sinSesion = Object.entries(all).filter(([k,v]) =>
+      k.startsWith('grupo_') && v && !v._deleted && !v.sesion
+    );
+    if(sinSesion.length === 0) return;
+
+    // Asignarles sesion_1 y guardar (uno por uno, ruta original, _tk correcto)
+    for(const [key, data] of sinSesion) {
+      await fb_guardar(key, { ...data, sesion: 'sesion_1' });
     }
 
-    // 2. Recoger grupos: primero desde Firebase plano, luego desde localStorage
-    const grupos = {};
-
-    // 2a. Desde Firebase (ruta antigua plana)
-    try {
-      const rRaiz = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`);
-      if(rRaiz.ok) {
-        const raiz = await rRaiz.json();
-        if(raiz) {
-          Object.entries(raiz).forEach(([k,v]) => {
-            if(k.startsWith('grupo_') && v && !v._deleted) grupos[k] = v;
-          });
-        }
-      }
-    } catch(e) {}
-
-    // 2b. Desde localStorage antiguo (complementa o reemplaza si Firebase vacío)
+    // Migrar localStorage antiguo → sesion_1
     const oldData = localStorage.getItem('pianguita_diagnostico');
-    if(oldData) {
-      try {
-        const parsed = JSON.parse(oldData);
-        Object.entries(parsed).forEach(([k,v]) => {
-          if(!grupos[k] && v && !v._deleted) grupos[k] = v;
-        });
-      } catch(e) {}
+    if(oldData && !localStorage.getItem('pianguita_sesion_1')) {
+      localStorage.setItem('pianguita_sesion_1', oldData);
     }
 
-    if(Object.keys(grupos).length === 0) return;
-
-    // 3. Guardar en localStorage sesion_1 de inmediato (visible aunque Firebase falle)
-    if(!localStorage.getItem('pianguita_sesion_1')) {
-      localStorage.setItem('pianguita_sesion_1', JSON.stringify(grupos));
-    }
-
-    // 4. Escribir en Firebase sesion_1/grupos — uno por uno con fb_guardar (usa _tk correctamente)
-    for(const [key, data] of Object.entries(grupos)) {
-      await fb_guardar(key, data);
-    }
-
-    console.log('[Piangüita] ✓ Migración a sesion_1 —', Object.keys(grupos).length, 'grupos');
+    console.log('[Piangüita] ✓ Migración sesion_1 —', sinSesion.length, 'grupos actualizados');
   } catch(e) {
     console.warn('[Piangüita] Migración falló:', e.message);
   }
