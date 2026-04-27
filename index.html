@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-J</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-K</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -1413,6 +1413,26 @@ async function fb_leer_sesion(sesionId) {
   try { return JSON.parse(localStorage.getItem('pianguita_'+sesionId)||'{}'); } catch(e) { return {}; }
 }
 
+// Lee TODOS los grupos de todas las sesiones (para comparativa)
+async function fb_leer_todas() {
+  try {
+    const token = await fb_getToken();
+    const ctrl  = new AbortController();
+    const timer = setTimeout(()=>ctrl.abort(), FIREBASE_TIMEOUT);
+    const r = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`, { signal: ctrl.signal });
+    clearTimeout(timer);
+    if(r.ok) {
+      const d = await r.json(); if(!d) return {};
+      const out = {};
+      Object.entries(d).forEach(([k,v])=>{
+        if(v && !v._deleted && k.startsWith('grupo_')) out[k]=v;
+      });
+      return out;
+    }
+  } catch(e) {}
+  return {};
+}
+
 function loadRefAnswers(grupo) {
   refAnswers = { ...(grupo.answers||{}) };
   document.getElementById('ref-loaded-badge').style.display = 'block';
@@ -2369,14 +2389,108 @@ function checkPin() {
   }
 }
 
+// ══════════════════════════════════════════════════════════════
+// FASE 4 — COMPARATIVA ENTRE DIAGNÓSTICOS
+// ══════════════════════════════════════════════════════════════
+function buildComparativaSection(allGroups) {
+  // Agrupar por sesión
+  const porSesion = {};
+  Object.values(allGroups).forEach(g => {
+    const s = g.sesion || 'sesion_1';
+    if(!porSesion[s]) porSesion[s] = [];
+    porSesion[s].push(g);
+  });
+  const sesIds = Object.keys(porSesion).sort();
+  if(sesIds.length < 2) return ''; // Solo muestra si hay 2+ diagnósticos
+
+  const sesiones = getSesionesLS();
+
+  // Calcular promedio general y por bloque para cada sesión
+  const sesData = sesIds.map(id => {
+    const gs = porSesion[id];
+    const grandAvg = Math.round(gs.reduce((s,g)=>s+(g.total||0),0)/gs.length);
+    const blockAvgs = BLOCKS.map((_,bi) => {
+      const rel = gs.filter(g=>g.bloques&&g.bloques.includes(bi));
+      if(!rel.length) return null;
+      return Math.round(rel.reduce((s,g)=>{ const sc=g.scores?(g.scores.find(s=>s.blockIndex===bi)||{score:0}).score:0; return s+sc; },0)/rel.length);
+    });
+    return { id, nombre: sesiones[id]?.nombre || getNombreSesion(id), gs, grandAvg, blockAvgs };
+  });
+
+  // Barras de promedio general por diagnóstico
+  const trendBars = sesData.map((s,i) => {
+    const prev = i>0 ? sesData[i-1].grandAvg : null;
+    const diff = prev!==null ? s.grandAvg - prev : null;
+    const col  = _nivelColor(s.grandAvg);
+    const diffStr = diff===null ? '' :
+      diff>0  ? `<span style="font-size:10px;font-weight:700;color:#059669">↑ +${diff}%</span>` :
+      diff<0  ? `<span style="font-size:10px;font-weight:700;color:#dc2626">↓ ${diff}%</span>` :
+                `<span style="font-size:10px;color:#9ca3af">→ sin cambio</span>`;
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+        <div style="font-size:11px;font-weight:600;color:#374151">${s.nombre}</div>
+        <div style="display:flex;align-items:center;gap:8px">${diffStr}<span style="font-size:13px;font-weight:800;color:${col}">${s.grandAvg}%</span></div>
+      </div>
+      <div style="background:#f3f4f6;border-radius:4px;height:8px">
+        <div style="background:${col};border-radius:4px;height:8px;width:${s.grandAvg}%"></div>
+      </div>
+      <div style="font-size:9px;color:#9ca3af;margin-top:2px">${s.gs.length} grupo${s.gs.length!==1?'s':''} · ${_nivelLabel(s.grandAvg)}</div>
+    </div>`;
+  }).join('');
+
+  // Evolución por componente
+  const compRows = BLOCKS.map((b,bi) => {
+    const hasData = sesData.some(s => s.blockAvgs[bi]!==null);
+    if(!hasData) return '';
+    const filas = sesData.map((s,i) => {
+      const avg = s.blockAvgs[bi]; if(avg===null) return '';
+      const prev = i>0 ? sesData[i-1].blockAvgs[bi] : null;
+      const diff = prev!==null ? avg-prev : null;
+      const col  = _nivelColor(avg);
+      const diffStr = diff===null ? '<div style="width:36px"></div>' :
+        diff>0  ? `<div style="font-size:9px;font-weight:700;color:#059669;width:36px">↑ +${diff}</div>` :
+        diff<0  ? `<div style="font-size:9px;font-weight:700;color:#dc2626;width:36px">↓ ${diff}</div>` :
+                  `<div style="font-size:9px;color:#9ca3af;width:36px">→</div>`;
+      return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+        <div style="font-size:9px;color:#6b7280;width:22px;flex-shrink:0">D${i+1}</div>
+        <div style="flex:1;background:#f3f4f6;border-radius:3px;height:5px">
+          <div style="background:${col};border-radius:3px;height:5px;width:${avg}%"></div>
+        </div>
+        <div style="font-size:10px;font-weight:700;color:${col};width:30px;text-align:right">${avg}%</div>
+        ${diffStr}
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:10px">
+      <div style="font-size:10px;font-weight:600;color:#374151;margin-bottom:4px">${BLOCK_ICONS[bi]||''} ${b.name}</div>
+      ${filas}
+    </div>`;
+  }).join('');
+
+  return `<div style="border:1.5px solid #e0e7ff;border-radius:12px;overflow:hidden;margin-bottom:1rem">
+    <div style="background:#eef2ff;padding:12px 14px;border-bottom:1px solid #e0e7ff">
+      <div style="font-size:8px;letter-spacing:2px;color:#6366f1;margin-bottom:2px">DIAGNÓSTICO LONGITUDINAL · PIANGÜITA</div>
+      <div style="font-size:13px;font-weight:700;color:#1e3a5f">📈 Comparativa entre diagnósticos</div>
+    </div>
+    <div style="padding:14px">
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">PROMEDIO GENERAL</div>
+      ${trendBars}
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px;margin-top:4px">EVOLUCIÓN POR COMPONENTE</div>
+      ${compRows}
+      <div style="font-size:9px;color:#9ca3af;text-align:right;margin-top:4px">↑ mejoró · ↓ bajó · → sin cambio</div>
+    </div>
+  </div>`;
+}
+
 async function showConsolidated(skipFirebase=false) {
-  let all;
+  let all, allSesiones={};
   if(skipFirebase){
     all=JSON.parse(localStorage.getItem(lsKey())||'{}');
   } else {
     const fb=await fb_leer();
     if(fb&&Object.keys(fb).length>0) localStorage.setItem(lsKey(),JSON.stringify(fb));
     all=fb||JSON.parse(localStorage.getItem(lsKey())||'{}');
+    // Leer todos los grupos para la comparativa
+    allSesiones = await fb_leer_todas();
   }
   const groups=Object.values(all).sort((a,b)=>{ if(a.fechaISO!==b.fechaISO) return a.fechaISO>b.fechaISO?1:-1; return (a.numero||0)-(b.numero||0); });
 
@@ -2496,6 +2610,7 @@ async function showConsolidated(skipFirebase=false) {
   }).join('');
 
   document.getElementById('consolidated-content').innerHTML = `
+    ${buildComparativaSection(allSesiones)}
     <div class="card" style="background:#f0fdf4;border-color:#6ee7b7;padding:1.5rem">
       <div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:12px;text-align:center">Acción y Legado</div>
       <p style="font-size:14px;color:#1a1a18;line-height:1.7;text-align:center;margin-bottom:16px">
