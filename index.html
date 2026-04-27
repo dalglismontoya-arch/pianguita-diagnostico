@@ -195,6 +195,17 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
   </div>
 </div>
 
+<!-- ═══ PANEL DE SESIONES/DIAGNÓSTICOS ════════════════════════ -->
+<div id="sesiones-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:flex-end;justify-content:center">
+  <div style="background:white;border-radius:18px 18px 0 0;padding:20px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto">
+    <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:4px">DIAGNÓSTICO LONGITUDINAL</div>
+    <div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:16px">Seleccionar diagnóstico</div>
+    <div id="sesiones-list"></div>
+    <button onclick="crearNuevaSesion()" style="width:100%;background:#065f46;color:white;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px">+ Nuevo diagnóstico</button>
+    <button onclick="closeSesionesPanel()" style="width:100%;background:#f3f4f6;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;color:#374151;cursor:pointer;font-family:inherit;margin-top:8px">Cancelar</button>
+  </div>
+</div>
+
 <!-- Inputs de foto globales (reutilizados para todas las preguntas) -->
 <input type="file" id="photo-input-camera"  accept="image/*" capture="environment" style="display:none" onchange="addPhotoFromGlobal(this)">
 <input type="file" id="photo-input-gallery" accept="image/*" style="display:none" onchange="addPhotoFromGlobal(this)">
@@ -214,7 +225,18 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-H</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-I</div>
+  </div>
+
+  <!-- Selector de diagnóstico/sesión -->
+  <div class="card" style="border-color:#d1fae5;background:#f0fdf4;padding:12px 14px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:9px;letter-spacing:1.5px;color:#9ca3af;margin-bottom:3px">DIAGNÓSTICO ACTIVO</div>
+        <div style="font-size:13px;font-weight:700;color:#065f46" id="sesion-indicator-nombre">Diagnóstico 1</div>
+      </div>
+      <button onclick="showSesionesPanel()" style="background:white;border:1px solid #6ee7b7;color:#065f46;border-radius:7px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">⚙ Cambiar</button>
+    </div>
   </div>
 
   <!-- Grupos ya registrados hoy -->
@@ -1046,6 +1068,114 @@ async function fb_migrar() {
 }
 
 // ══════════════════════════════════════════════════════════════
+// GESTIÓN DE SESIONES (DIAGNÓSTICO LONGITUDINAL)
+// ══════════════════════════════════════════════════════════════
+function getSesionesLS() { return JSON.parse(localStorage.getItem('pianguita_sesiones')||'{}'); }
+function setSesionesLS(s) { localStorage.setItem('pianguita_sesiones', JSON.stringify(s)); }
+
+function getNombreSesion(id) {
+  const s = getSesionesLS();
+  if(s[id]) return s[id].nombre;
+  const n = parseInt(id.replace('sesion_',''))||1;
+  return `Diagnóstico ${n}`;
+}
+
+function ensureSesion1(grupos) {
+  // Crea metadata de sesion_1 si no existe, usando la fecha más antigua de los grupos
+  const s = getSesionesLS();
+  if(!s['sesion_1']) {
+    const fechas = Object.values(grupos).map(g=>g.fechaISO).filter(Boolean).sort();
+    s['sesion_1'] = { nombre:'Diagnóstico 1', fecha: fechas[0]||getTodayISO(), creadoEn: new Date().toISOString() };
+    setSesionesLS(s);
+  }
+}
+
+function crearNuevaSesion() {
+  const s = getSesionesLS();
+  const nums = Object.keys(s).map(k=>parseInt(k.replace('sesion_',''))||0);
+  const sig = (nums.length > 0 ? Math.max(...nums) : 1) + 1;
+  const id = `sesion_${sig}`;
+  s[id] = { nombre:`Diagnóstico ${sig}`, fecha:getTodayISO(), creadoEn:new Date().toISOString() };
+  setSesionesLS(s);
+  currentDiagnostico = id;
+  localStorage.setItem('pianguita_last_sesion', id);
+  closeSesionesPanel();
+  updateSesionIndicator();
+  initSession();
+}
+
+function cambiarSesion(id) {
+  currentDiagnostico = id;
+  localStorage.setItem('pianguita_last_sesion', id);
+  closeSesionesPanel();
+  updateSesionIndicator();
+  initSession();
+}
+
+function updateSesionIndicator() {
+  const el = document.getElementById('sesion-indicator-nombre');
+  if(el) el.textContent = getNombreSesion(currentDiagnostico);
+}
+
+async function showSesionesPanel() {
+  const panel = document.getElementById('sesiones-panel');
+  const list  = document.getElementById('sesiones-list');
+  if(!panel||!list) return;
+  list.innerHTML = '<div style="font-size:12px;color:#9ca3af;text-align:center;padding:16px">Cargando...</div>';
+  panel.style.display = 'flex';
+
+  // Leer todos los grupos de Firebase para contar por sesión
+  let porSesion = {};
+  try {
+    const token = await fb_getToken();
+    const r = await fetch(`${FIREBASE_DB}.json${fb_authParam(token)}`);
+    const all = r.ok ? (await r.json()||{}) : {};
+    Object.entries(all).forEach(([k,v])=>{
+      if(v && !v._deleted && k.startsWith('grupo_')){
+        const s = v.sesion||'sesion_1';
+        if(!porSesion[s]) porSesion[s]=[];
+        porSesion[s].push(v);
+      }
+    });
+  } catch(e) {}
+
+  const sesiones = getSesionesLS();
+  // Unir sesiones de Firebase + metadata local
+  const allIds = new Set([...Object.keys(porSesion), ...Object.keys(sesiones), 'sesion_1']);
+  const sorted = [...allIds].sort();
+
+  list.innerHTML = sorted.map(id=>{
+    const gs = porSesion[id]||[];
+    const meta = sesiones[id];
+    const nombre = meta ? meta.nombre : getNombreSesion(id);
+    const fecha  = meta ? meta.fecha : (gs[0]?.fechaISO||'');
+    const isActive = id === currentDiagnostico;
+    const fechaStr = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'}) : '—';
+    return `<div onclick="cambiarSesion('${id}')"
+      style="padding:12px;border:${isActive?'2px solid #065f46':'1px solid #e5e7eb'};border-radius:8px;margin-bottom:8px;cursor:pointer;background:${isActive?'#f0fdf4':'white'}">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:${isActive?'#065f46':'#111827'}">${nombre}</div>
+          <div style="font-size:11px;color:#6b7280;margin-top:2px">${fechaStr} · ${gs.length} grupo${gs.length!==1?'s':''}</div>
+        </div>
+        ${isActive?'<div style="font-size:9px;font-weight:700;color:#065f46;background:#d1fae5;padding:2px 8px;border-radius:10px">ACTIVA</div>':''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function closeSesionesPanel() {
+  const p = document.getElementById('sesiones-panel');
+  if(p) p.style.display='none';
+}
+
+// Restaurar última sesión usada al iniciar la app
+(function(){
+  const last = localStorage.getItem('pianguita_last_sesion');
+  if(last) currentDiagnostico = last;
+})();
+
+// ══════════════════════════════════════════════════════════════
 // ESTADO GLOBAL
 // ══════════════════════════════════════════════════════════════
 const PIN = "1234";
@@ -1095,9 +1225,14 @@ async function initSession() {
   });
   renderBlockSelectors(); renderParticipants(); checkStartButton();
 
+  updateSesionIndicator();
+
   const fb = await fb_leer();
   const all = fb || JSON.parse(localStorage.getItem(lsKey()) || '{}');
   if (fb && Object.keys(fb).length > 0) localStorage.setItem(lsKey(), JSON.stringify(fb));
+
+  // Asegura que sesion_1 tenga metadata
+  if(currentDiagnostico === 'sesion_1') ensureSesion1(all);
 
   const hoy = getTodayISO();
   const sesionesHoy = Object.values(all).filter(g => g.fechaISO === hoy);
