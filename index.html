@@ -214,7 +214,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-D</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-E</div>
   </div>
 
   <!-- Grupos ya registrados hoy -->
@@ -2834,14 +2834,14 @@ async function exportarInformeCompleto() {
   const totalPart = groups.reduce((s,g)=>s+(g.participantes?g.participantes.length:0),0);
 
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'font-family:Arial,sans-serif;padding:28px 32px;max-width:700px;margin:0 auto;color:#111827;background:white;';
+  wrap.style.cssText = 'font-family:Arial,sans-serif;padding:18px 24px;max-width:700px;margin:0 auto;color:#111827;background:white;';
 
   // ── PORTADA ──
   wrap.innerHTML = `
-    <div style="border-bottom:2px solid #065f46;padding-bottom:20px;margin-bottom:32px">
-      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">DIAGNÓSTICO PARTICIPATIVO · NTS TS 001-02</div>
-      <div style="font-size:22px;font-weight:700;color:#065f46;margin-bottom:4px">Playa Piangüita Punta Bazán</div>
-      <div style="font-size:12px;color:#6b7280;margin-bottom:20px">Buenaventura · Valle del Cauca · Colombia</div>
+    <div style="border-bottom:2px solid #065f46;padding-bottom:12px;margin-bottom:18px">
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:6px">DIAGNÓSTICO PARTICIPATIVO · NTS TS 001-02</div>
+      <div style="font-size:22px;font-weight:700;color:#065f46;margin-bottom:2px">Playa Piangüita Punta Bazán</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:12px">Buenaventura · Valle del Cauca · Colombia</div>
       <table style="width:100%;border-collapse:collapse">
         <tr>
           <td style="vertical-align:top">
@@ -2857,16 +2857,16 @@ async function exportarInformeCompleto() {
     </div>
 
     <!-- Resultado consolidado -->
-    <div style="text-align:center;border:1.5px solid #e5e7eb;border-radius:10px;padding:20px;margin-bottom:32px">
-      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">PROMEDIO GENERAL DE SOSTENIBILIDAD</div>
-      <div style="font-size:52px;font-weight:800;color:${grandCol};line-height:1;margin-bottom:6px">${grandAvg}%</div>
-      <div style="font-size:12px;font-weight:700;color:${grandCol};margin-bottom:12px">${_nivelLabel(grandAvg)}</div>
+    <div style="text-align:center;border:1.5px solid #e5e7eb;border-radius:10px;padding:14px;margin-bottom:18px">
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:6px">PROMEDIO GENERAL DE SOSTENIBILIDAD</div>
+      <div style="font-size:44px;font-weight:800;color:${grandCol};line-height:1;margin-bottom:4px">${grandAvg}%</div>
+      <div style="font-size:12px;font-weight:700;color:${grandCol};margin-bottom:8px">${_nivelLabel(grandAvg)}</div>
       <div style="font-size:8px;color:#d1d5db;letter-spacing:0.5px">0–24% EN PLANEACIÓN &nbsp;·&nbsp; 25–49% EN EJECUCIÓN &nbsp;·&nbsp; 50–74% EN MEDICIÓN Y SEGUIMIENTO &nbsp;·&nbsp; 75–100% EN MEJORAMIENTO</div>
     </div>
 
     <!-- Sección 1: Resumen de grupos -->
-    <div style="margin-bottom:28px">
-      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">1 &nbsp;·&nbsp; RESUMEN POR GRUPO</div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">1 &nbsp;·&nbsp; RESUMEN POR GRUPO</div>
       <div style="border-left:3px solid #065f46;padding-left:14px">
         <table style="width:100%;border-collapse:collapse;font-size:10px">
           <thead><tr style="border-bottom:1.5px solid #065f46">
@@ -2923,8 +2923,8 @@ async function exportarInformeCompleto() {
     </div>`;
   }).join('');
 
-  wrap.innerHTML += `<div style="margin-bottom:28px">
-    <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">2 &nbsp;·&nbsp; PROMEDIO POR COMPONENTE</div>
+  wrap.innerHTML += `<div style="margin-bottom:16px">
+    <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">2 &nbsp;·&nbsp; PROMEDIO POR COMPONENTE</div>
     <div style="border-left:3px solid #065f46;padding-left:14px">${compRows}</div>
   </div>`;
 
@@ -2932,8 +2932,8 @@ async function exportarInformeCompleto() {
   const blockScoresForRadar = BLOCKS.map((b,bi)=>blockAvgs[bi]!==null?{name:b.name,blockIndex:bi,score:blockAvgs[bi]}:null).filter(Boolean);
   if(blockScoresForRadar.length >= 2){
     const rDiv = document.createElement('div');
-    rDiv.style.marginBottom = '28px';
-    rDiv.innerHTML = `<div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">3 &nbsp;·&nbsp; PERFIL DE SOSTENIBILIDAD CONSOLIDADO</div>`
+    rDiv.style.marginBottom = '16px';
+    rDiv.innerHTML = `<div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">3 &nbsp;·&nbsp; PERFIL DE SOSTENIBILIDAD CONSOLIDADO</div>`
       + buildRadarChart(blockScoresForRadar, '');
     wrap.appendChild(rDiv);
   }
@@ -2948,10 +2948,9 @@ async function exportarInformeCompleto() {
       porEdad[p.edad]=(porEdad[p.edad]||0)+1;
     });
     const caraDiv = document.createElement('div');
-    caraDiv.style.pageBreakBefore = 'always';
     caraDiv.innerHTML = `
-      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">4 &nbsp;·&nbsp; CARACTERIZACIÓN DE LA POBLACIÓN PARTICIPANTE</div>
-      <div style="border-left:3px solid #065f46;padding-left:14px;margin-bottom:28px">
+      <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px;margin-top:4px">4 &nbsp;·&nbsp; CARACTERIZACIÓN DE LA POBLACIÓN PARTICIPANTE</div>
+      <div style="border-left:3px solid #065f46;padding-left:14px;margin-bottom:16px">
         <div style="font-size:11px;color:#6b7280;margin-bottom:16px">${allPart.length} participantes en total · ${groups.length} grupos evaluados</div>
         <div style="display:table;width:100%;border-collapse:collapse">
           <div style="display:table-row">
@@ -3007,8 +3006,8 @@ async function exportarInformeCompleto() {
 
     // Encabezado del grupo
     let gHtml = `
-      <div style="border-bottom:2px solid #065f46;padding-bottom:12px;margin-bottom:22px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:4px">${gi+5} &nbsp;·&nbsp; GRUPO ${gi+1} DE ${groups.length} · RESUMEN EJECUTIVO</div>
+      <div style="border-bottom:2px solid #065f46;padding-bottom:8px;margin-bottom:14px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:3px">GRUPO ${gi+1} DE ${groups.length} · RESUMEN EJECUTIVO</div>
         <div style="font-size:17px;font-weight:700;color:#065f46;margin-bottom:2px">${g.nombre}</div>
         <div style="font-size:11px;color:#6b7280">
           ${g.fecha||'—'} &nbsp;·&nbsp; ${np} participante${np!==1?'s':''}
@@ -3017,17 +3016,17 @@ async function exportarInformeCompleto() {
       </div>
 
       <!-- Resultado del grupo -->
-      <div style="text-align:center;border:1.5px solid #e5e7eb;border-radius:10px;padding:16px;margin-bottom:22px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">RESULTADO DE SOSTENIBILIDAD</div>
-        <div style="font-size:44px;font-weight:800;color:${gcol};line-height:1;margin-bottom:4px">${g.total||0}%</div>
+      <div style="text-align:center;border:1.5px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:14px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:6px">RESULTADO DE SOSTENIBILIDAD</div>
+        <div style="font-size:40px;font-weight:800;color:${gcol};line-height:1;margin-bottom:3px">${g.total||0}%</div>
         <div style="font-size:11px;font-weight:700;color:${gcol}">${gnivel}</div>
-        ${ai&&ai.resumen?`<div style="font-size:10px;color:#4b5563;line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;text-align:left">${ai.resumen}</div>`:''}
+        ${ai&&ai.resumen?`<div style="font-size:10px;color:#4b5563;line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid #f3f4f6;text-align:left">${ai.resumen}</div>`:''}
       </div>`;
 
     // Puntajes por componente (barras compactas)
     if(g.scores&&g.scores.length>0){
-      gHtml+=`<div style="margin-bottom:22px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:10px">PUNTAJES POR COMPONENTE</div>
+      gHtml+=`<div style="margin-bottom:14px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:7px">PUNTAJES POR COMPONENTE</div>
         <div style="border-left:3px solid #065f46;padding-left:14px">`;
       g.scores.forEach(s=>{
         const c=_nivelColor(s.score), l=_nivelLabel(s.score);
@@ -3047,18 +3046,18 @@ async function exportarInformeCompleto() {
 
     // Puntos críticos IA
     if(ai&&ai.nc&&ai.nc.length){
-      gHtml+=`<div style="margin-bottom:22px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">PUNTOS CRÍTICOS</div>
+      gHtml+=`<div style="margin-bottom:14px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:6px">PUNTOS CRÍTICOS</div>
         <div style="border-left:3px solid #dc2626;padding-left:14px">
-          ${ai.nc.map((n,i)=>`<div style="font-size:10px;color:#374151;padding:4px 0;border-bottom:1px solid #f3f4f6"><span style="font-weight:700;color:#dc2626">${i+1}. </span>${n}</div>`).join('')}
+          ${ai.nc.map((n,i)=>`<div style="font-size:10px;color:#374151;padding:3px 0;border-bottom:1px solid #f3f4f6"><span style="font-weight:700;color:#dc2626">${i+1}. </span>${n}</div>`).join('')}
         </div>
       </div>`;
     }
 
     // Plan de acción IA (tabla compacta)
     if(ai&&ai.acciones&&ai.acciones.length){
-      gHtml+=`<div style="margin-bottom:22px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px">PLAN DE ACCIÓN</div>
+      gHtml+=`<div style="margin-bottom:14px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:6px">PLAN DE ACCIÓN</div>
         <div style="border-left:3px solid #065f46;padding-left:14px">
           <table style="width:100%;border-collapse:collapse;font-size:10px">
             <thead><tr style="border-bottom:1.5px solid #065f46">
@@ -3082,9 +3081,9 @@ async function exportarInformeCompleto() {
 
     // Ruta hacia la certificación
     if(ai&&ai.ruta){
-      gHtml+=`<div style="border-left:3px solid #065f46;padding-left:14px;margin-bottom:22px">
-        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:5px">RUTA HACIA LA CERTIFICACIÓN</div>
-        <div style="font-size:10px;color:#374151;line-height:1.7">${ai.ruta}</div>
+      gHtml+=`<div style="border-left:3px solid #065f46;padding-left:14px;margin-bottom:14px">
+        <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:4px">RUTA HACIA LA CERTIFICACIÓN</div>
+        <div style="font-size:10px;color:#374151;line-height:1.5">${ai.ruta}</div>
       </div>`;
     }
 
