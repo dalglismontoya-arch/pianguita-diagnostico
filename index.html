@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-N</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-A</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -1565,9 +1565,27 @@ function updateProgress() {
   const b = BLOCKS[selectedBlocks[currentBlockStep]];
   document.getElementById('progress-label').textContent =
     `Componente ${currentBlockStep+1} de ${selectedBlocks.length} · ${b.name}`;
-  document.getElementById('q-btn-back').style.visibility = currentBlockStep===0?'hidden':'visible';
+  const backBtn = document.getElementById('q-btn-back');
+  backBtn.style.visibility = 'visible';
+  if(currentBlockStep === 0) {
+    backBtn.textContent = '👥 Participantes';
+    backBtn.onclick = volverAParticipantes;
+  } else {
+    backBtn.textContent = '← Anterior';
+    backBtn.onclick = blockBack;
+  }
   document.getElementById('q-btn-next').textContent =
     currentBlockStep===selectedBlocks.length-1?'Generar diagnóstico ✓':'Siguiente →';
+}
+
+function volverAParticipantes() {
+  const hayRespuestas = Object.keys(answers).length > 0;
+  if(hayRespuestas) {
+    if(!confirm('¿Volver a la lista de participantes?\nLas respuestas ingresadas hasta ahora se borrarán.')) return;
+  }
+  if(autosaveInterval) { clearInterval(autosaveInterval); autosaveInterval = null; }
+  answers = {}; evidence = {}; evidence_photos = {};
+  showPage('page-welcome');
 }
 
 // ══════════════════════════════════════════════════════════════
