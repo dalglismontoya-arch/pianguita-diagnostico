@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-M</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v26ABR-N</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -296,6 +296,9 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
         <option value="Autoridad local y regional">🏛️ Autoridad local y regional</option>
         <option value="Institución educativa">🎓 Institución educativa</option>
       </select>
+
+      <label class="p-label" style="margin-top:8px">Ocupación / rol <span style="color:#9ca3af;font-weight:400">(opcional)</span></label>
+      <input class="p-input" id="p-ocupacion" type="text" placeholder="ej. pescador, docente, líder comunitario" autocomplete="off">
 
       <div class="p-row" style="margin-top:8px">
         <div>
@@ -1202,6 +1205,7 @@ let evidence = {};
 let lastScores = null;
 let lastTotal  = null;
 let evidence_photos = {}; // base64 fotos por n° de pregunta
+let autosaveInterval = null; // temporizador de autoguardado durante preguntas
 
 // ══════════════════════════════════════════════════════════════
 // NAVEGACIÓN
@@ -1210,6 +1214,10 @@ function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
+  // Detener autosave al salir de la página de preguntas
+  if(id !== 'page-questions' && autosaveInterval) {
+    clearInterval(autosaveInterval); autosaveInterval = null;
+  }
 }
 function goHome() { initSession(); showPage('page-welcome'); }
 
@@ -1311,16 +1319,18 @@ function addParticipant() {
   const tipoDoc = document.getElementById('p-tipo-doc').value;
   const numDoc  = document.getElementById('p-num-doc').value.trim();
   const grupoInteres = document.getElementById('p-grupo-interes').value;
+  const ocupacion = document.getElementById('p-ocupacion').value.trim();
   const genero = document.getElementById('p-genero').value;
   const edad = document.getElementById('p-edad').value;
   const celular = document.getElementById('p-celular').value.trim();
   const err = document.getElementById('p-err');
   if (!nombre) { err.textContent='El nombre completo es obligatorio.'; err.style.display='block'; return; }
   err.style.display = 'none';
-  currentParticipants.push({nombre,tipoDoc,numDoc,grupoInteres,genero,edad,celular});
+  currentParticipants.push({nombre,tipoDoc,numDoc,grupoInteres,ocupacion,genero,edad,celular});
   renderParticipants(); checkStartButton();
   document.getElementById('p-nombre').value = '';
   document.getElementById('p-num-doc').value = '';
+  document.getElementById('p-ocupacion').value = '';
   document.getElementById('p-celular').value = '';
   document.getElementById('p-genero').selectedIndex = 0;
   document.getElementById('p-edad').selectedIndex = 0;
@@ -1344,7 +1354,7 @@ function renderParticipants() {
     `<div class="participant-item">
       <div style="font-size:12px;flex:1">
         <div style="font-weight:600;color:#111827">${p.nombre}</div>
-        <div style="color:#6b7280;margin-top:2px">${p.grupoInteres} · ${p.genero||''} · ${p.edad||''} años · ${p.tipoDoc} ${p.numDoc}${p.celular?' · 📱 '+p.celular:''}</div>
+        <div style="color:#6b7280;margin-top:2px">${p.grupoInteres}${p.ocupacion?' · '+p.ocupacion:''} · ${p.genero||''} · ${p.edad||''} años · ${p.tipoDoc} ${p.numDoc}${p.celular?' · 📱 '+p.celular:''}</div>
       </div>
       <button onclick="removeParticipant(${i})" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;font-family:inherit;margin-left:8px;flex-shrink:0">✕</button>
     </div>`
@@ -1523,6 +1533,20 @@ function startQuestions() {
   document.getElementById('confirm-session-name').textContent = currentGroupName;
   document.getElementById('q-group-label').textContent = currentGroupName;
   buildProgressBar(); renderBlock(); showPage('page-questions');
+  // Autosave cada 5 s mientras el grupo responde
+  if(autosaveInterval) clearInterval(autosaveInterval);
+  autosaveInterval = setInterval(() => {
+    if(Object.keys(answers).length > 0) {
+      try {
+        localStorage.setItem('pianguita_autosave_tmp', JSON.stringify({
+          grupo: currentGroup, nombre: currentGroupName,
+          sesion: currentDiagnostico, ts: Date.now(),
+          answers: {...answers}, evidence: {...evidence},
+          evidence_photos: {...evidence_photos}
+        }));
+      } catch(e) {}
+    }
+  }, 5000);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2003,6 +2027,31 @@ function calcTotalScore(scores) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// HELPER IA — timeout 30 s · hasta 3 reintentos automáticos
+// ══════════════════════════════════════════════════════════════
+async function fetchIA(payload, maxIntentos=3) {
+  let lastErr;
+  for(let intento=0; intento<maxIntentos; intento++) {
+    const ctrl = new AbortController();
+    const tout = setTimeout(() => ctrl.abort(), 30000);
+    try {
+      const resp = await fetch('https://pianguita-proxy.onrender.com/api/messages', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload), signal: ctrl.signal
+      });
+      clearTimeout(tout);
+      if(!resp.ok) throw new Error('HTTP '+resp.status);
+      return resp;
+    } catch(e) {
+      clearTimeout(tout);
+      lastErr = e;
+      if(intento < maxIntentos-1) await new Promise(r=>setTimeout(r,2000));
+    }
+  }
+  throw lastErr;
+}
+
+// ══════════════════════════════════════════════════════════════
 // GENERAR DIAGNÓSTICO IA
 // ══════════════════════════════════════════════════════════════
 async function generateDiagnosis() {
@@ -2024,16 +2073,9 @@ Componentes evaluados: ${blocksStr}. Promedio: ${total}%.
 Observaciones: ${evStr.substring(0,300)}
 Responde SOLO JSON puro sin markdown. Máximo 20 palabras por campo. Exactamente 4 acciones:
 {"nivel":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","resumen":"frase","nc":["nc1","nc2"],"diag":{${scores.map(s=>`"b${s.blockIndex}":{"f":"frase","b":"frase","r":"frase"}`).join(',')}},"acciones":[{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"BAJA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"}],"ruta":"frase"}`;
-    const ctrl=new AbortController();
-    const tout=setTimeout(()=>ctrl.abort(),15000);
-    const resp=await fetch('https://pianguita-proxy.onrender.com/api/messages',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
-        system:'Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Responde SOLO JSON válido sin markdown.',
-        messages:[{role:'user',content:prompt}]}),
-      signal:ctrl.signal
-    });
-    clearTimeout(tout);
+    const resp=await fetchIA({model:'claude-sonnet-4-20250514',max_tokens:2000,
+      system:'Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Responde SOLO JSON válido sin markdown.',
+      messages:[{role:'user',content:prompt}]});
     if(resp.ok){
       const data=await resp.json();
       if(!data.error){
@@ -2355,10 +2397,7 @@ async function generateDiagnosisWithAI(scores,total) {
 Componentes evaluados: ${blocksStr}. Promedio: ${total}%.
 Responde SOLO JSON puro sin markdown. Máximo 20 palabras por campo. Exactamente 4 acciones:
 {"nivel":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","resumen":"frase","nc":["nc1","nc2"],"diag":{${scores.map(s=>`"b${s.blockIndex}":{"f":"frase","b":"frase","r":"frase"}`).join(',')}},"acciones":[{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"ALTA","cat":"cat","acc":"accion","resp":"actor","plazo":"0-3m"},{"p":"MEDIA","cat":"cat","acc":"accion","resp":"actor","plazo":"3-6m"},{"p":"BAJA","cat":"cat","acc":"accion","resp":"actor","plazo":"6-12m"}],"ruta":"frase"}`;
-    const resp=await fetch('https://pianguita-proxy.onrender.com/api/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
-    });
+    const resp=await fetchIA({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]});
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     const data=await resp.json();
     const raw=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
@@ -2726,12 +2765,9 @@ REGLAS ESTRICTAS:
 
 JSON requerido:
 {"nivel_general":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","diagnostico_general":"párrafo 50 palabras basado en los datos reales","consensos":["hallazgo real 1 de los datos","hallazgo real 2","hallazgo real 3"],"brechas_criticas":["brecha concreta identificada en las respuestas 1","brecha 2","brecha 3"],"acciones_prioritarias":[{"prioridad":"ALTA","accion":"acción concreta derivada de las respuestas","responsable":"actor de la lista","plazo":"0-3m"},{"prioridad":"ALTA","accion":"acción","responsable":"actor","plazo":"0-3m"},{"prioridad":"MEDIA","accion":"acción","responsable":"actor","plazo":"3-6m"},{"prioridad":"BAJA","accion":"acción","responsable":"actor","plazo":"6-12m"}],"proximos_pasos":"párrafo 30 palabras basado en lo identificado","mensaje_comunidad":"frase motivadora 20 palabras referida a Piangüita"}`;
-    const resp=await fetch('https://pianguita-proxy.onrender.com/api/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,
-        system:'Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Responde SOLO JSON válido sin markdown.',
-        messages:[{role:'user',content:prompt}]})
-    });
+    const resp=await fetchIA({model:'claude-sonnet-4-20250514',max_tokens:2000,
+      system:'Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Responde SOLO JSON válido sin markdown.',
+      messages:[{role:'user',content:prompt}]});
     clearInterval(iv); document.getElementById('consolidated-loading').style.display='none';
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     const data=await resp.json();
