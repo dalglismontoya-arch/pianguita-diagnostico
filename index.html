@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-B</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-C</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -251,6 +251,13 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
   <div class="session-name-box">
     <div class="sn-label">Identificador de este grupo</div>
     <div class="sn-value" id="session-name-display">Cargando...</div>
+  </div>
+
+  <!-- Banner modo edición -->
+  <div id="edit-mode-banner" style="display:none;background:#fef3c7;border:2px solid #fcd34d;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+    <div style="font-size:11px;font-weight:700;color:#92400e;letter-spacing:1px">✏️ MODO EDICIÓN</div>
+    <div style="font-size:13px;font-weight:600;color:#78350f;margin-top:3px" id="edit-mode-banner-name"></div>
+    <div style="font-size:11px;color:#92400e;margin-top:4px">Modifica lo que necesites y regenera el diagnóstico al finalizar. Los cambios sobreescribirán el resultado anterior.</div>
   </div>
 
   <!-- Registro de participantes -->
@@ -1207,6 +1214,7 @@ let lastTotal  = null;
 let evidence_photos = {}; // base64 fotos por n° de pregunta
 let autosaveInterval = null; // temporizador de autoguardado durante preguntas
 let preserveAnswers  = false; // true cuando se vuelve a participantes sin borrar respuestas
+let editingGroupKey  = null;  // key del grupo en edición (null = grupo nuevo)
 
 // ══════════════════════════════════════════════════════════════
 // NAVEGACIÓN
@@ -1234,7 +1242,8 @@ async function initSession() {
   // Migración única: datos planos → sesion_1 (solo corre si hay datos viejos)
   await fb_migrar();
 
-  selectedBlocks = []; currentParticipants = []; answers = {}; evidence = {}; evidence_photos = {}; preserveAnswers = false;
+  selectedBlocks = []; currentParticipants = []; answers = {}; evidence = {}; evidence_photos = {}; preserveAnswers = false; editingGroupKey = null;
+  document.getElementById('edit-mode-banner').style.display = 'none';
   consent1 = null; consent2 = null;
   ['1','2'].forEach(n => {
     const si = document.getElementById(`consent${n}-si`);
@@ -2655,6 +2664,7 @@ async function showConsolidated(skipFirebase=false) {
         <div style="display:flex;align-items:center;gap:8px">
           <div style="font-size:22px;font-weight:700;color:${col}">${g.total}%</div>
           <button onclick="toggleEv('${gid}')" style="background:#e0f2fe;border:1px solid #7dd3fc;color:#0369a1;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500">Ver detalles</button>
+          <button onclick="editGroup('${gkey}')" style="background:#fef3c7;border:1px solid #fcd34d;color:#92400e;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:500">✏️ Editar</button>
           <button onclick="deleteGroup('${gkey}')" style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit">🗑</button>
         </div>
       </div>
@@ -2820,6 +2830,53 @@ JSON requerido:
     clearInterval(iv); document.getElementById('consolidated-loading').style.display='none';
     document.getElementById('consolidated-ai-result').innerHTML=`<div class="err" style="display:block;margin-top:1rem">Error al generar informe: ${err.message}</div>`;
   }
+}
+
+// ══════════════════════════════════════════════════════════════
+// EDITAR GRUPO
+// ══════════════════════════════════════════════════════════════
+function editGroup(gkey) {
+  const all = JSON.parse(localStorage.getItem(lsKey()) || '{}');
+  const g = all[gkey];
+  if (!g) { alert('No se encontraron los datos del grupo.'); return; }
+
+  // Cargar todos los datos del grupo en los globals
+  currentGroup        = gkey;
+  currentGroupName    = g.nombre || '';
+  currentSessionNumber= g.numero || 1;
+  currentParticipants = [...(g.participantes || [])];
+  selectedBlocks      = [...(g.bloques || [])];
+  answers             = {...(g.answers || {})};
+  evidence            = {...(g.evidence || {})};
+  evidence_photos     = {...(g.evidence_photos || {})};
+  preserveAnswers     = true;
+  editingGroupKey     = gkey;
+
+  // Marcar consentimientos como aceptados (grupo ya fue guardado antes)
+  consent1 = 'si'; consent2 = 'si';
+  ['1','2'].forEach(n => {
+    const si  = document.getElementById(`consent${n}-si`);
+    const no  = document.getElementById(`consent${n}-no`);
+    const msg = document.getElementById(`consent${n}-msg`);
+    if(si) { si.style.background='#059669'; si.style.color='white'; si.style.borderColor='#059669'; }
+    if(no) { no.style.background='#e5e7eb'; no.style.color='#374151'; no.style.borderColor='#d1d5db'; }
+    if(msg) { msg.style.display='none'; }
+  });
+
+  // Mostrar banner de edición
+  const banner = document.getElementById('edit-mode-banner');
+  if(banner) {
+    document.getElementById('edit-mode-banner-name').textContent = currentGroupName;
+    banner.style.display = 'block';
+  }
+
+  // Actualizar UI de la pantalla de bienvenida
+  document.getElementById('session-name-display').textContent = currentGroupName;
+  renderBlockSelectors();
+  renderParticipants();
+  checkStartButton();
+  showPage('page-welcome');
+  window.scrollTo(0, 0);
 }
 
 // ══════════════════════════════════════════════════════════════
