@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-E</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-F</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -2175,6 +2175,41 @@ function buildCaracterizacion(participants, titulo) {
     `<tr><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;font-size:11px;color:#374151">${e} años</td><td style="padding:5px 8px;border-bottom:1px solid #f3f4f6;text-align:center;font-weight:700;font-size:11px;color:#065f46">${n}</td></tr>`
   ).join('');
 
+  // ── Gráfico de barras horizontal ──────────────────────────────
+  const BAR_COLORS = ['#065f46','#059669','#34d399','#6ee7b7','#a7f3d0','#d1fae5','#ecfdf5','#047857','#10b981'];
+  const maxGrupo = Math.max(...Object.values(porGrupo), 1);
+  const maxEdad  = Math.max(...Object.values(porEdad), 1);
+  const maxGen   = Math.max(...Object.values(porGenero), 1);
+
+  const barH = (val, max, color, label, n) =>
+    `<div style="margin-bottom:7px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#374151;margin-bottom:2px">
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">${label}</span>
+        <span style="font-weight:700;color:${color};flex-shrink:0">${n}</span>
+      </div>
+      <div style="background:#f3f4f6;border-radius:4px;height:10px;overflow:hidden">
+        <div style="background:${color};height:100%;border-radius:4px;width:${Math.round((val/max)*100)}%;transition:width .4s"></div>
+      </div>
+    </div>`;
+
+  const grupoBarras = Object.entries(porGrupo).map(([g,n],i)=>barH(n,maxGrupo,BAR_COLORS[i%BAR_COLORS.length],g,n)).join('');
+  const generoBarras = Object.entries(porGenero).filter(([,n])=>n>0).map(([g,n],i)=>barH(n,maxGen,['#7c3aed','#2563eb','#6b7280'][i]||'#065f46',g,n)).join('');
+  const edadOrden = ['14-17','18-29','30-45','46-60','61+'];
+  const edadBarras = edadOrden.filter(e=>porEdad[e]).map((e,i)=>barH(porEdad[e],maxEdad,BAR_COLORS[i],`${e} años`,porEdad[e])).join('');
+
+  // Análisis automático
+  const grupoMayoritario = Object.entries(porGrupo).sort((a,b)=>b[1]-a[1])[0];
+  const genMayoritario   = Object.entries(porGenero).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1])[0];
+  const edadMayoritaria  = Object.entries(porEdad).sort((a,b)=>b[1]-a[1])[0];
+  const pctMujer  = total>0?Math.round((porGenero['Mujer']||0)/total*100):0;
+  const pctHombre = total>0?Math.round((porGenero['Hombre']||0)/total*100):0;
+  const nGrupos   = Object.keys(porGrupo).length;
+  const analisis  = `El proceso contó con <strong>${total} participante${total!==1?'s':''}</strong> provenientes de <strong>${nGrupos} grupo${nGrupos!==1?'s':''} de interés</strong>.
+    El grupo más representado fue <strong>${grupoMayoritario?grupoMayoritario[0]:'—'}</strong> con ${grupoMayoritario?grupoMayoritario[1]:0} persona${grupoMayoritario&&grupoMayoritario[1]!==1?'s':''}.
+    En cuanto al género, las <strong>mujeres representaron el ${pctMujer}%</strong> y los hombres el ${pctHombre}% de los participantes.
+    El rango de edad predominante fue <strong>${edadMayoritaria?edadMayoritaria[0]+'años':'—'}</strong>.
+    Esta diversidad de actores fortalece la legitimidad del diagnóstico participativo.`;
+
   const tituloFinal = titulo || `Caracterización · ${total} participante${total!==1?'s':''}`;
   return `<div style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:1rem">
     <div style="padding:11px 14px;border-bottom:1px solid #e5e7eb;font-size:12px;font-weight:600;color:#111827">${tituloFinal}</div>
@@ -2197,6 +2232,24 @@ function buildCaracterizacion(participants, titulo) {
           <tr style="border-bottom:1px solid #e5e7eb"><th style="padding:4px 8px;text-align:left;font-size:10px;color:#9ca3af;font-weight:500">Rango</th><th style="padding:4px 8px;font-size:10px;color:#9ca3af;font-weight:500">N°</th></tr>
           ${edadRows}
         </table>
+      </div>
+    </div>
+    <div style="border-top:1px solid #e5e7eb;padding:12px">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af;margin-bottom:10px">📊 Gráfico de participación</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:10px;font-weight:600;color:#065f46;margin-bottom:8px">Por Grupo de Interés</div>
+          ${grupoBarras}
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:600;color:#7c3aed;margin-bottom:8px">Por Género</div>
+          ${generoBarras}
+          <div style="font-size:10px;font-weight:600;color:#065f46;margin:10px 0 8px">Por Rango de Edad</div>
+          ${edadBarras}
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:10px 12px;background:#f0fdf4;border-radius:8px;font-size:12px;color:#374151;line-height:1.7;border-left:3px solid #059669">
+        <strong style="color:#065f46">Análisis de caracterización:</strong> ${analisis}
       </div>
     </div>
   </div>`;
@@ -2756,10 +2809,21 @@ async function generateConsolidatedAI() {
   const iv=setInterval(()=>{ mi=(mi+1)%msgs.length; ml.textContent=msgs[mi]; },1800);
   try {
     const totPart=groups.reduce((s,g)=>s+(g.participantes?g.participantes.length:0),0);
+    const grandAvg=groups.length>0?Math.round(groups.reduce((s,g)=>s+(g.total||0),0)/groups.length):0;
     const actoresPresentes=[...new Set(groups.flatMap(g=>g.participantes?g.participantes.map(p=>p.grupoInteres):[]))].join(', ');
     const NOMS_IA=['En Planeación','En Ejecución','En Medición y Seguimiento','En Mejoramiento'];
+    const nivelLabel = v=>v>=75?'En Mejoramiento':v>=50?'En Medición y Seguimiento':v>=25?'En Ejecución':'En Planeación';
 
-    // Construir resumen detallado de respuestas y evidencias reales
+    // Resumen de componentes evaluados ordenado de mayor a menor puntaje
+    const compScores=BLOCKS.map((b,bi)=>{
+      const relevant=groups.filter(g=>g.bloques&&g.bloques.includes(bi));
+      if(!relevant.length) return null;
+      const avg=Math.round(relevant.reduce((s,g)=>{const sc=g.scores?(g.scores.find(s=>s.blockIndex===bi)||{score:0}).score:0;return s+sc;},0)/relevant.length);
+      return {name:b.name, avg, nivel:nivelLabel(avg)};
+    }).filter(Boolean).sort((a,b)=>b.avg-a.avg);
+    const compResumen=compScores.map(c=>`  - ${c.name}: ${c.avg}% → ${c.nivel}`).join('\n');
+
+    // Construir resumen detallado de respuestas Y EVIDENCIAS reales
     const resumenGrupos=groups.map(g=>{
       const bloqDetalle=g.bloques?g.bloques.map(bi=>{
         const block=BLOCKS[bi];
@@ -2768,8 +2832,10 @@ async function generateConsolidatedAI() {
           const ans=g.answers&&g.answers[qdef.n]!==undefined?parseInt(g.answers[qdef.n]):null;
           if(ans===null) return null;
           const nivel=NOMS_IA[ans]||('Nivel '+(ans+1));
-          const ev=g.evidence&&g.evidence[qdef.n]?` Evidencia: "${g.evidence[qdef.n]}"`:' Sin evidencia.';
-          return `  P${qdef.n}: ${nivel}.${ev}`;
+          const ev=g.evidence&&g.evidence[qdef.n]
+            ?`\n    ► EVIDENCIA REAL: "${g.evidence[qdef.n]}"`
+            :'\n    ► Sin evidencia registrada.';
+          return `  P${qdef.n} [${qdef.q.substring(0,60)}...]: ${nivel}.${ev}`;
         }).filter(Boolean).join('\n');
         return `${block.name} (${sc}%):\n${preguntas}`;
       }).join('\n'):'-';
@@ -2778,25 +2844,32 @@ async function generateConsolidatedAI() {
 
     const prompt=`Eres un Consultor Senior en Turismo Sostenible y Regenerativo con alta sensibilidad social. Tu tarea es generar un Informe Consolidado de Autodiagnóstico NTS-TS 001-02 Playa para la comunidad de Piangüita, Punta Bazán, Buenaventura (Pacífico colombiano, comunidad afrocolombiana, ecosistema de manglar, acceso fluvial).
 
-OBJETIVO: Transformar datos técnicos en un documento inspirador, claro y orientado a la acción que empodere a la comunidad local tras la evaluación de sus componentes.
+OBJETIVO: Transformar datos técnicos en un documento inspirador, claro y orientado a la acción que empodere a la comunidad local.
+
+RESULTADO GLOBAL CALCULADO: ${grandAvg}% — usa EXACTAMENTE este porcentaje, no inventes otro.
+ESCALA NTS: En Planeación (0-24%) | En Ejecución (25-49%) | En Medición y Seguimiento (50-74%) | En Mejoramiento (75-100%).
+
+COMPONENTES EVALUADOS (de mayor a menor puntaje):
+${compResumen}
 
 DATOS REALES DEL DIAGNÓSTICO (${groups.length} grupos focales, ${totPart} participantes, actores: ${actoresPresentes}):
 ${resumenGrupos}
 
 LIMITACIONES CRÍTICAS:
-1. NO inventes datos, porcentajes ni hallazgos que no estén en los datos anteriores.
-2. Si un componente tiene datos insuficientes, indícalo como oportunidad de mejora en la recolección.
-3. Tono: profesional pero accesible, empoderador y cercano para los habitantes de Piangüita. Evita lenguaje burocrático.
-4. El plan debe ser realista y ejecutable por la comunidad, no puramente teórico.
-5. En "quien" usa solo actores de: ${actoresPresentes}, comunidad de Piangüita, alcaldía de Buenaventura, DIMAR, autoridad ambiental.
-6. Responde SOLO JSON puro sin markdown ni texto adicional.
+1. USA el porcentaje global exacto: ${grandAvg}%. No inventes otro número.
+2. NO inventes datos ni hallazgos que no estén en los datos anteriores.
+3. Las BRECHAS CRÍTICAS deben basarse OBLIGATORIAMENTE en las EVIDENCIAS REALES marcadas con ► EVIDENCIA REAL. Cita el contenido de las evidencias para justificar cada brecha. Si no hay evidencia en una pregunta, indícalo.
+4. Tono: profesional pero accesible, empoderador y cercano para los habitantes de Piangüita.
+5. El plan debe ser realista y ejecutable por la comunidad.
+6. En "quien" usa solo actores de: ${actoresPresentes}, comunidad de Piangüita, alcaldía de Buenaventura, DIMAR, autoridad ambiental.
+7. Responde SOLO JSON puro sin markdown ni texto adicional.
 
 JSON requerido exacto:
 {
-  "nivel_general": "CRITICO|EN_DESARROLLO|AVANZADO",
-  "diagnostico_detallado": "Párrafo de 80-100 palabras analizando el estado general de Piangüita frente a la NTS-TS 001-02: qué encontró la comunidad, qué significa el resultado global, cuáles son las dimensiones más críticas y qué oportunidad representa este diagnóstico para el territorio. Tono motivador y técnico a la vez.",
-  "fortalezas": ["Solo incluye aspectos donde las respuestas indiquen nivel En Mejoramiento. Máximo 5. Si ningún ítem está en Mejoramiento escribe exactamente: La comunidad aún no ha consolidado fortalezas medibles en la norma; este diagnóstico es el primer paso para construirlas."],
-  "brechas_criticas": ["brecha 1 concreta","brecha 2","brecha 3","brecha 4","brecha 5","brecha 6","brecha 7","brecha 8","brecha 9","brecha 10"],
+  "nivel_general": "EN_PLANEACION|EN_EJECUCION|EN_MEDICION|EN_MEJORAMIENTO",
+  "diagnostico_detallado": "Párrafo 80-100 palabras: menciona el ${grandAvg}% exacto, analiza el estado general de Piangüita frente a NTS-TS 001-02, lista TODOS los componentes evaluados de mayor a menor puntaje con su nivel según la escala NTS (Planeación/Ejecución/Medición/Mejoramiento), y qué oportunidad representa este diagnóstico. Tono motivador.",
+  "fortalezas": ["Solo aspectos donde las respuestas sean En Mejoramiento. Máximo 5. Si ninguno está en Mejoramiento, escribe literalmente: La comunidad aún no ha consolidado fortalezas medibles; este diagnóstico es el primer paso para construirlas."],
+  "brechas_criticas": ["brecha 1 con cita de evidencia real","brecha 2 con evidencia","brecha 3","brecha 4","brecha 5","brecha 6","brecha 7","brecha 8","brecha 9","brecha 10"],
   "plan_5w2h": [
     {"prioridad":"ALTA","componente":"nombre componente","que":"acción específica y concreta","como":"pasos clave de ejecución en Piangüita","quien":"actor responsable","donde":"lugar exacto en Piangüita","cuando":"0-3 meses"},
     {"prioridad":"ALTA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"0-3 meses"},
@@ -2831,8 +2904,8 @@ JSON requerido exacto:
     const match=raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim().match(/\{[\s\S]*\}/);
     if(!match) throw new Error('Sin JSON');
     const r=JSON.parse(match[0]);
-    const nCol=r.nivel_general==='AVANZADO'?'#059669':r.nivel_general==='EN_DESARROLLO'?'#d97706':'#dc2626';
-    const nLabel=r.nivel_general==='AVANZADO'?'AVANZADO':r.nivel_general==='EN_DESARROLLO'?'EN DESARROLLO':'CRÍTICO';
+    const nMap={'EN_MEJORAMIENTO':['#059669','En Mejoramiento'],'EN_MEDICION':['#2563eb','En Medición y Seguimiento'],'EN_EJECUCION':['#d97706','En Ejecución'],'EN_PLANEACION':['#dc2626','En Planeación']};
+    const [nCol,nLabel]=nMap[r.nivel_general]||[grandAvg>=75?'#059669':grandAvg>=50?'#2563eb':grandAvg>=25?'#d97706':'#dc2626', grandAvg>=75?'En Mejoramiento':grandAvg>=50?'En Medición y Seguimiento':grandAvg>=25?'En Ejecución':'En Planeación'];
 
     // Fortalezas
     const fortHtml=r.fortalezas&&r.fortalezas.length>0
