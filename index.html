@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-G</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-H</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -3670,28 +3670,77 @@ async function exportarInformeCompleto() {
     const pctH = Math.round((porGenero['Hombre']||0)/allPart.length*100);
     const analisisPdf = `El proceso contó con <b>${allPart.length} participante${allPart.length!==1?'s':''}</b> de <b>${Object.keys(porGrupo).length} grupo${Object.keys(porGrupo).length!==1?'s':''} de interés</b>. El grupo más representado fue <b>${grpMay?grpMay[0]:'—'}</b> (${grpMay?grpMay[1]:0} persona${grpMay&&grpMay[1]!==1?'s':''}). Las mujeres representaron el <b>${pctM}%</b> y los hombres el <b>${pctH}%</b>. El rango de edad predominante fue <b>${edMay?edMay[0]+' años':'—'}</b>. Esta diversidad de actores fortalece la legitimidad del diagnóstico participativo.`;
 
+    // Filas de tabla para PDF
+    const grpTableRows = Object.entries(porGrupo).sort((a,b)=>b[1]-a[1]).map(([g,n])=>
+      `<tr style="border-bottom:1px solid #f3f4f6">
+        <td style="padding:4px 6px;font-size:10px;color:#374151">${g}</td>
+        <td style="padding:4px 6px;font-size:10px;text-align:center;font-weight:700;color:#065f46">${n}</td>
+        <td style="padding:4px 6px;font-size:10px;text-align:right;color:#9ca3af">${Math.round(n/allPart.length*100)}%</td>
+      </tr>`).join('');
+    const genTableRows = Object.entries(porGenero).filter(([,n])=>n>0).map(([g,n])=>
+      `<tr style="border-bottom:1px solid #f3f4f6">
+        <td style="padding:4px 6px;font-size:10px;color:#374151">${g}</td>
+        <td style="padding:4px 6px;font-size:10px;text-align:center;font-weight:700;color:#065f46">${n}</td>
+        <td style="padding:4px 6px;font-size:10px;text-align:right;color:#9ca3af">${Math.round(n/allPart.length*100)}%</td>
+      </tr>`).join('');
+    const edadOrdenPdf2 = ['14-17','18-29','30-45','46-60','61+'];
+    const edadTableRows = edadOrdenPdf2.filter(e=>porEdad[e]).map(e=>
+      `<tr style="border-bottom:1px solid #f3f4f6">
+        <td style="padding:4px 6px;font-size:10px;color:#374151">${e} años</td>
+        <td style="padding:4px 6px;font-size:10px;text-align:center;font-weight:700;color:#065f46">${porEdad[e]}</td>
+        <td style="padding:4px 6px;font-size:10px;text-align:right;color:#9ca3af">${Math.round(porEdad[e]/allPart.length*100)}%</td>
+      </tr>`).join('');
+    const thStyle = 'padding:4px 6px;font-size:9px;font-weight:600;color:#6b7280;border-bottom:1.5px solid #e5e7eb;text-align:left';
+
     const caraDiv = document.createElement('div');
-    caraDiv.style.pageBreakInside = 'avoid';
     caraDiv.innerHTML = `
       <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px;margin-top:4px">4 &nbsp;·&nbsp; CARACTERIZACIÓN DE LA POBLACIÓN PARTICIPANTE</div>
       <div style="border-left:3px solid #065f46;padding-left:14px;margin-bottom:16px">
         <div style="font-size:11px;color:#6b7280;margin-bottom:14px">${allPart.length} participantes en total · ${groups.length} grupos evaluados</div>
 
+        <!-- TABLA DE DATOS -->
+        <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+          <tr>
+            <td style="vertical-align:top;width:50%;padding-right:16px">
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:6px;font-weight:600">POR GRUPO DE INTERÉS</div>
+              <table style="width:100%;border-collapse:collapse">
+                <tr><th style="${thStyle}">Grupo</th><th style="${thStyle};text-align:center">N°</th><th style="${thStyle};text-align:right">%</th></tr>
+                ${grpTableRows}
+              </table>
+            </td>
+            <td style="vertical-align:top;padding-left:8px">
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:6px;font-weight:600">POR GÉNERO</div>
+              <table style="width:100%;border-collapse:collapse;margin-bottom:12px">
+                <tr><th style="${thStyle}">Género</th><th style="${thStyle};text-align:center">N°</th><th style="${thStyle};text-align:right">%</th></tr>
+                ${genTableRows}
+              </table>
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:6px;font-weight:600">POR RANGO DE EDAD</div>
+              <table style="width:100%;border-collapse:collapse">
+                <tr><th style="${thStyle}">Rango</th><th style="${thStyle};text-align:center">N°</th><th style="${thStyle};text-align:right">%</th></tr>
+                ${edadTableRows}
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- GRÁFICOS DE BARRAS -->
+        <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:10px;font-weight:600;padding-top:10px;border-top:1px solid #e5e7eb">📊 GRÁFICO DE PARTICIPACIÓN</div>
         <table style="width:100%;border-collapse:collapse;margin-bottom:14px">
           <tr>
-            <td style="vertical-align:top;width:50%;padding-right:14px">
-              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:7px;font-weight:600">POR GRUPO DE INTERÉS</div>
+            <td style="vertical-align:top;width:50%;padding-right:16px">
+              <div style="font-size:9px;font-weight:600;color:#065f46;margin-bottom:7px">Por Grupo de Interés</div>
               ${grpBars}
             </td>
             <td style="vertical-align:top;padding-left:8px">
-              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:7px;font-weight:600">POR GÉNERO</div>
+              <div style="font-size:9px;font-weight:600;color:#7c3aed;margin-bottom:7px">Por Género</div>
               ${genBars}
-              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:7px;margin-top:12px;font-weight:600">POR RANGO DE EDAD</div>
+              <div style="font-size:9px;font-weight:600;color:#065f46;margin-bottom:7px;margin-top:12px">Por Rango de Edad</div>
               ${edadBars}
             </td>
           </tr>
         </table>
 
+        <!-- ANÁLISIS -->
         <div style="background:#f0fdf4;border-left:3px solid #059669;border-radius:0 6px 6px 0;padding:9px 12px;font-size:10px;color:#374151;line-height:1.65">
           <b style="color:#065f46">Análisis de caracterización:</b> ${analisisPdf}
         </div>
