@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-F</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-G</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -498,7 +498,6 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
   <div id="consolidated-ai-result"></div>
   <div class="nav" style="margin-top:1rem">
     <button class="btn btn-outline" onclick="goHome()">← Inicio</button>
-    <button class="btn btn-primary" onclick="exportarInformeCompleto()" id="btn-export-completo" style="font-size:13px">📊 Exportar PDF Completo</button>
     <button class="btn btn-outline" onclick="exportarCSV()" style="font-size:12px">📥 Exportar CSV</button>
     <button class="btn btn-danger" onclick="clearAll()" style="font-size:12px">🗑 Borrar diagnóstico activo</button>
   </div>
@@ -3645,48 +3644,56 @@ async function exportarInformeCompleto() {
       if(porGenero[p.genero]!==undefined) porGenero[p.genero]++;
       porEdad[p.edad]=(porEdad[p.edad]||0)+1;
     });
+    // ── Bar charts helpers para PDF
+    const PDF_BAR_COLORS = ['#065f46','#059669','#34d399','#6ee7b7','#a7f3d0','#047857','#10b981'];
+    const maxGrp = Math.max(...Object.values(porGrupo), 1);
+    const maxGen = Math.max(...Object.values(porGenero), 1);
+    const maxEdad = Math.max(...Object.values(porEdad), 1);
+    const pdfBar = (val, max, color, label, n) =>
+      `<div style="margin-bottom:6px;page-break-inside:avoid">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#374151;margin-bottom:2px">
+          <span>${label}</span><span style="font-weight:700;color:${color}">${n} · ${Math.round(val/allPart.length*100)}%</span>
+        </div>
+        <div style="background:#f3f4f6;border-radius:3px;height:8px;width:100%">
+          <div style="background:${color};border-radius:3px;height:8px;width:${Math.round((val/max)*100)}%"></div>
+        </div>
+      </div>`;
+    const grpBars = Object.entries(porGrupo).sort((a,b)=>b[1]-a[1]).map(([g,n],i)=>pdfBar(n,maxGrp,PDF_BAR_COLORS[i%PDF_BAR_COLORS.length],g,n)).join('');
+    const genColors = ['#7c3aed','#2563eb','#6b7280'];
+    const genBars = Object.entries(porGenero).filter(([,n])=>n>0).map(([g,n],i)=>pdfBar(n,maxGen,genColors[i]||'#065f46',g,n)).join('');
+    const edadOrdenPdf = ['14-17','18-29','30-45','46-60','61+'];
+    const edadBars = edadOrdenPdf.filter(e=>porEdad[e]).map((e,i)=>pdfBar(porEdad[e],maxEdad,PDF_BAR_COLORS[i],`${e} años`,porEdad[e])).join('');
+    // Análisis automático
+    const grpMay = Object.entries(porGrupo).sort((a,b)=>b[1]-a[1])[0];
+    const edMay = Object.entries(porEdad).sort((a,b)=>b[1]-a[1])[0];
+    const pctM = Math.round((porGenero['Mujer']||0)/allPart.length*100);
+    const pctH = Math.round((porGenero['Hombre']||0)/allPart.length*100);
+    const analisisPdf = `El proceso contó con <b>${allPart.length} participante${allPart.length!==1?'s':''}</b> de <b>${Object.keys(porGrupo).length} grupo${Object.keys(porGrupo).length!==1?'s':''} de interés</b>. El grupo más representado fue <b>${grpMay?grpMay[0]:'—'}</b> (${grpMay?grpMay[1]:0} persona${grpMay&&grpMay[1]!==1?'s':''}). Las mujeres representaron el <b>${pctM}%</b> y los hombres el <b>${pctH}%</b>. El rango de edad predominante fue <b>${edMay?edMay[0]+' años':'—'}</b>. Esta diversidad de actores fortalece la legitimidad del diagnóstico participativo.`;
+
     const caraDiv = document.createElement('div');
+    caraDiv.style.pageBreakInside = 'avoid';
     caraDiv.innerHTML = `
       <div style="font-size:8px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px;margin-top:4px">4 &nbsp;·&nbsp; CARACTERIZACIÓN DE LA POBLACIÓN PARTICIPANTE</div>
       <div style="border-left:3px solid #065f46;padding-left:14px;margin-bottom:16px">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:16px">${allPart.length} participantes en total · ${groups.length} grupos evaluados</div>
-        <div style="display:table;width:100%;border-collapse:collapse">
-          <div style="display:table-row">
-            <div style="display:table-cell;vertical-align:top;width:40%;padding-right:16px">
-              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:8px">POR GRUPO DE INTERÉS</div>
-              <table style="width:100%;border-collapse:collapse;font-size:10px">
-                <tr style="border-bottom:1px solid #e5e7eb"><th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:500">Grupo</th><th style="padding:4px 6px;text-align:center;color:#6b7280;font-weight:500">N°</th><th style="padding:4px 6px;text-align:right;color:#6b7280;font-weight:500">%</th></tr>
-                ${Object.entries(porGrupo).sort((a,b)=>b[1]-a[1]).map(([g,n])=>`
-                  <tr style="border-bottom:1px solid #f3f4f6">
-                    <td style="padding:4px 6px;color:#374151">${g}</td>
-                    <td style="padding:4px 6px;text-align:center;font-weight:700;color:#065f46">${n}</td>
-                    <td style="padding:4px 6px;text-align:right;color:#9ca3af">${Math.round(n/allPart.length*100)}%</td>
-                  </tr>`).join('')}
-              </table>
-            </div>
-            <div style="display:table-cell;vertical-align:top;padding-left:8px">
-              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:8px">POR GÉNERO</div>
-              <table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:16px">
-                <tr style="border-bottom:1px solid #e5e7eb"><th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:500">Género</th><th style="padding:4px 6px;text-align:center;color:#6b7280;font-weight:500">N°</th><th style="padding:4px 6px;text-align:right;color:#6b7280;font-weight:500">%</th></tr>
-                ${Object.entries(porGenero).filter(([,n])=>n>0).map(([g,n])=>`
-                  <tr style="border-bottom:1px solid #f3f4f6">
-                    <td style="padding:4px 6px;color:#374151">${g}</td>
-                    <td style="padding:4px 6px;text-align:center;font-weight:700;color:#065f46">${n}</td>
-                    <td style="padding:4px 6px;text-align:right;color:#9ca3af">${Math.round(n/allPart.length*100)}%</td>
-                  </tr>`).join('')}
-              </table>
-              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:8px">POR RANGO DE EDAD</div>
-              <table style="width:100%;border-collapse:collapse;font-size:10px">
-                <tr style="border-bottom:1px solid #e5e7eb"><th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:500">Rango</th><th style="padding:4px 6px;text-align:center;color:#6b7280;font-weight:500">N°</th><th style="padding:4px 6px;text-align:right;color:#6b7280;font-weight:500">%</th></tr>
-                ${Object.entries(porEdad).map(([e,n])=>`
-                  <tr style="border-bottom:1px solid #f3f4f6">
-                    <td style="padding:4px 6px;color:#374151">${e} años</td>
-                    <td style="padding:4px 6px;text-align:center;font-weight:700;color:#065f46">${n}</td>
-                    <td style="padding:4px 6px;text-align:right;color:#9ca3af">${Math.round(n/allPart.length*100)}%</td>
-                  </tr>`).join('')}
-              </table>
-            </div>
-          </div>
+        <div style="font-size:11px;color:#6b7280;margin-bottom:14px">${allPart.length} participantes en total · ${groups.length} grupos evaluados</div>
+
+        <table style="width:100%;border-collapse:collapse;margin-bottom:14px">
+          <tr>
+            <td style="vertical-align:top;width:50%;padding-right:14px">
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:7px;font-weight:600">POR GRUPO DE INTERÉS</div>
+              ${grpBars}
+            </td>
+            <td style="vertical-align:top;padding-left:8px">
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:7px;font-weight:600">POR GÉNERO</div>
+              ${genBars}
+              <div style="font-size:8px;letter-spacing:1px;color:#9ca3af;margin-bottom:7px;margin-top:12px;font-weight:600">POR RANGO DE EDAD</div>
+              ${edadBars}
+            </td>
+          </tr>
+        </table>
+
+        <div style="background:#f0fdf4;border-left:3px solid #059669;border-radius:0 6px 6px 0;padding:9px 12px;font-size:10px;color:#374151;line-height:1.65">
+          <b style="color:#065f46">Análisis de caracterización:</b> ${analisisPdf}
         </div>
       </div>`;
     wrap.appendChild(caraDiv);
@@ -3701,6 +3708,7 @@ async function exportarInformeCompleto() {
 
     const gDiv = document.createElement('div');
     gDiv.style.pageBreakBefore = 'always';
+    gDiv.style.pageBreakInside = 'avoid';
 
     // Encabezado del grupo
     let gHtml = `
@@ -3728,7 +3736,7 @@ async function exportarInformeCompleto() {
         <div style="border-left:3px solid #065f46;padding-left:14px">`;
       g.scores.forEach(s=>{
         const c=_nivelColor(s.score), l=_nivelLabel(s.score);
-        gHtml+=`<div style="margin-bottom:9px">
+        gHtml+=`<div style="margin-bottom:9px;page-break-inside:avoid">
           <table style="width:100%;border-collapse:collapse;margin-bottom:3px"><tr>
             <td style="font-size:11px;color:#111827;font-weight:500">${BLOCK_ICONS[s.blockIndex]||''} ${s.name}</td>
             <td style="text-align:right;font-size:11px;font-weight:700;color:${c}">${s.score}%</td>
@@ -3765,7 +3773,7 @@ async function exportarInformeCompleto() {
               <th style="padding:4px 6px;text-align:left;color:#6b7280;font-weight:600">Responsable</th>
             </tr></thead>
             <tbody>${ai.acciones.map(a=>`
-              <tr style="border-bottom:1px solid #f3f4f6">
+              <tr style="border-bottom:1px solid #f3f4f6;page-break-inside:avoid">
                 <td style="padding:4px 6px;color:#111827">${a.acc||'—'}</td>
                 <td style="padding:4px 6px;font-weight:600;color:${a.p==='ALTA'?'#dc2626':a.p==='MEDIA'?'#d97706':'#374151'}">${a.p||'—'}</td>
                 <td style="padding:4px 6px;color:#374151">${a.plazo||'—'}</td>
@@ -3812,10 +3820,11 @@ async function exportarInformeCompleto() {
     filename:'Consolidado_Pianguita_'+new Date().toISOString().slice(0,10)+'.pdf',
     image:{type:'jpeg',quality:0.97},
     html2canvas:{scale:2,useCORS:true,logging:false,scrollY:0},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:['avoid-all','css','legacy']}
   }).from(wrap).save()
-    .then(()=>{ if(btn){ btn.textContent='📊 Exportar PDF Completo'; btn.disabled=false; }})
-    .catch(err=>{ console.error(err); if(btn){ btn.textContent='📊 Exportar PDF Completo'; btn.disabled=false; }});
+    .then(()=>{ if(btn){ btn.disabled=false; }})
+    .catch(err=>{ console.error(err); if(btn){ btn.disabled=false; }});
 }
 
 // ══════════════════════════════════════════════════════════════
