@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-C</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-D</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -2776,24 +2776,53 @@ async function generateConsolidatedAI() {
       return `=== ${g.nombre} — Total: ${g.total}% ===\n${bloqDetalle}`;
     }).join('\n\n');
 
-    const prompt=`Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD.
+    const prompt=`Eres un Consultor Senior en Turismo Sostenible y Regenerativo con alta sensibilidad social. Tu tarea es generar un Informe Consolidado de Autodiagnóstico NTS-TS 001-02 Playa para la comunidad de Piangüita, Punta Bazán, Buenaventura (Pacífico colombiano, comunidad afrocolombiana, ecosistema de manglar, acceso fluvial).
 
-CONTEXTO: Diagnóstico participativo Playa Piangüita, Punta Bazán, Buenaventura (Pacífico colombiano, comunidad afrocolombiana, ecosistema de manglar, acceso fluvial). ${groups.length} grupos focales, ${totPart} participantes. Grupos de interés participantes: ${actoresPresentes}.
+OBJETIVO: Transformar datos técnicos en un documento inspirador, claro y orientado a la acción que empodere a la comunidad local tras la evaluación de sus componentes.
 
-DATOS REALES DE LA EVALUACIÓN (usa ÚNICAMENTE estos datos para tu análisis):
+DATOS REALES DEL DIAGNÓSTICO (${groups.length} grupos focales, ${totPart} participantes, actores: ${actoresPresentes}):
 ${resumenGrupos}
 
-REGLAS ESTRICTAS:
-1. Basa TODAS tus conclusiones ÚNICAMENTE en las respuestas y evidencias anteriores. No inventes situaciones no mencionadas.
-2. En "responsable" usa ÚNICAMENTE actores de esta lista: ${actoresPresentes}, comunidad de Piangüita, alcaldía de Buenaventura, DIMAR, autoridad ambiental. Si no está claro, escribe "comunidad de Piangüita".
-3. Las acciones deben derivarse directamente de las brechas identificadas en las respuestas. No inventes acciones genéricas.
-4. Si los datos no son suficientes para una recomendación específica, escribe "A definir con la comunidad".
-5. Responde SOLO JSON puro sin markdown ni texto adicional.
+LIMITACIONES CRÍTICAS:
+1. NO inventes datos, porcentajes ni hallazgos que no estén en los datos anteriores.
+2. Si un componente tiene datos insuficientes, indícalo como oportunidad de mejora en la recolección.
+3. Tono: profesional pero accesible, empoderador y cercano para los habitantes de Piangüita. Evita lenguaje burocrático.
+4. El plan debe ser realista y ejecutable por la comunidad, no puramente teórico.
+5. En "quien" usa solo actores de: ${actoresPresentes}, comunidad de Piangüita, alcaldía de Buenaventura, DIMAR, autoridad ambiental.
+6. Responde SOLO JSON puro sin markdown ni texto adicional.
 
-JSON requerido:
-{"nivel_general":"CRITICO|INICIAL|EN_DESARROLLO|AVANZADO","diagnostico_general":"párrafo 50 palabras basado en los datos reales","consensos":["hallazgo real 1 de los datos","hallazgo real 2","hallazgo real 3"],"brechas_criticas":["brecha concreta identificada en las respuestas 1","brecha 2","brecha 3"],"acciones_prioritarias":[{"prioridad":"ALTA","accion":"acción concreta derivada de las respuestas","responsable":"actor de la lista","plazo":"0-3m"},{"prioridad":"ALTA","accion":"acción","responsable":"actor","plazo":"0-3m"},{"prioridad":"MEDIA","accion":"acción","responsable":"actor","plazo":"3-6m"},{"prioridad":"BAJA","accion":"acción","responsable":"actor","plazo":"6-12m"}],"proximos_pasos":"párrafo 30 palabras basado en lo identificado","mensaje_comunidad":"frase motivadora 20 palabras referida a Piangüita"}`;
-    const resp=await fetchIA({model:'claude-sonnet-4-20250514',max_tokens:2000,
-      system:'Eres auditor de la NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02 - DESTINOS TURÍSTICOS DE PLAYA. REQUISITOS DE SOSTENIBILIDAD. Responde SOLO JSON válido sin markdown.',
+JSON requerido exacto:
+{
+  "nivel_general": "CRITICO|EN_DESARROLLO|AVANZADO",
+  "diagnostico_detallado": "Párrafo de 80-100 palabras analizando el estado general de Piangüita frente a la NTS-TS 001-02: qué encontró la comunidad, qué significa el resultado global, cuáles son las dimensiones más críticas y qué oportunidad representa este diagnóstico para el territorio. Tono motivador y técnico a la vez.",
+  "fortalezas": ["Solo incluye aspectos donde las respuestas indiquen nivel En Mejoramiento. Máximo 5. Si ningún ítem está en Mejoramiento escribe exactamente: La comunidad aún no ha consolidado fortalezas medibles en la norma; este diagnóstico es el primer paso para construirlas."],
+  "brechas_criticas": ["brecha 1 concreta","brecha 2","brecha 3","brecha 4","brecha 5","brecha 6","brecha 7","brecha 8","brecha 9","brecha 10"],
+  "plan_5w2h": [
+    {"prioridad":"ALTA","componente":"nombre componente","que":"acción específica y concreta","como":"pasos clave de ejecución en Piangüita","quien":"actor responsable","donde":"lugar exacto en Piangüita","cuando":"0-3 meses"},
+    {"prioridad":"ALTA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"0-3 meses"},
+    {"prioridad":"ALTA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"0-3 meses"},
+    {"prioridad":"ALTA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"0-3 meses"},
+    {"prioridad":"ALTA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"0-3 meses"},
+    {"prioridad":"ALTA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"0-3 meses"},
+    {"prioridad":"ALTA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"0-3 meses"},
+    {"prioridad":"MEDIA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"3-6 meses"},
+    {"prioridad":"MEDIA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"3-6 meses"},
+    {"prioridad":"MEDIA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"3-6 meses"},
+    {"prioridad":"MEDIA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"3-6 meses"},
+    {"prioridad":"MEDIA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"3-6 meses"},
+    {"prioridad":"MEDIA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"3-6 meses"},
+    {"prioridad":"MEDIA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"3-6 meses"},
+    {"prioridad":"BAJA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"6-12 meses"},
+    {"prioridad":"BAJA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"6-12 meses"},
+    {"prioridad":"BAJA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"6-12 meses"},
+    {"prioridad":"BAJA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"6-12 meses"},
+    {"prioridad":"BAJA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"6-12 meses"},
+    {"prioridad":"BAJA","componente":"...","que":"...","como":"...","quien":"...","donde":"...","cuando":"6-12 meses"}
+  ],
+  "cierre": "Párrafo final de 30-40 palabras que refuerce la unión comunitaria y el compromiso con la sostenibilidad de Piangüita. Tono inspirador y esperanzador."
+}`;
+    const resp=await fetchIA({model:'claude-sonnet-4-20250514',max_tokens:5000,
+      system:'Eres un Consultor Senior en Turismo Sostenible y Regenerativo. Responde SOLO JSON válido sin markdown ni texto adicional.',
       messages:[{role:'user',content:prompt}]});
     clearInterval(iv); document.getElementById('consolidated-loading').style.display='none';
     if(!resp.ok) throw new Error('HTTP '+resp.status);
@@ -2803,26 +2832,87 @@ JSON requerido:
     if(!match) throw new Error('Sin JSON');
     const r=JSON.parse(match[0]);
     const nCol=r.nivel_general==='AVANZADO'?'#059669':r.nivel_general==='EN_DESARROLLO'?'#d97706':'#dc2626';
-    const accHtml=r.acciones_prioritarias?r.acciones_prioritarias.map((a,i)=>
-      `<div class="action-item"><div class="a-num">${i+1}</div><div>
-        <div class="a-txt">${a.accion||''}</div>
-        <div class="a-meta"><span class="ptag ${a.prioridad==='ALTA'?'p-alta':a.prioridad==='MEDIA'?'p-media':'p-baja'}">${a.prioridad||''}</span><span>${a.plazo||''}</span>${a.responsable?`<span>· ${a.responsable}</span>`:''}</div>
-      </div></div>`
-    ).join(''):'';
+    const nLabel=r.nivel_general==='AVANZADO'?'AVANZADO':r.nivel_general==='EN_DESARROLLO'?'EN DESARROLLO':'CRÍTICO';
+
+    // Fortalezas
+    const fortHtml=r.fortalezas&&r.fortalezas.length>0
+      ?r.fortalezas.map((f,i)=>`<div class="nc-item" style="border-color:#d1fae5"><div class="nc-dot" style="background:#d1fae5;color:#065f46">${i+1}</div><span>${f}</span></div>`).join('')
+      :'<div style="font-size:12px;color:#6b7280;font-style:italic;padding:8px 0">La comunidad aún no ha consolidado fortalezas medibles en la norma; este diagnóstico es el primer paso para construirlas.</div>';
+
+    // Brechas
+    const brechHtml=r.brechas_criticas
+      ?r.brechas_criticas.map((b,i)=>`<div class="nc-item"><div class="nc-dot">${i+1}</div><span>${b}</span></div>`).join(''):'';
+
+    // Plan 5W2H agrupado por prioridad
+    const plan=r.plan_5w2h||[];
+    const renderPlanGrupo=(prioridad,color,bgColor,plazoLabel)=>{
+      const items=plan.filter(a=>a.prioridad===prioridad);
+      if(!items.length) return '';
+      const filas=items.map((a,i)=>`
+        <tr>
+          <td style="font-weight:600;font-size:11px;color:#111827;padding:8px 6px;border-bottom:1px solid #e5e7eb;vertical-align:top">${i+1}. ${a.componente||''}</td>
+          <td style="font-size:11px;color:#374151;padding:8px 6px;border-bottom:1px solid #e5e7eb;vertical-align:top"><strong>Qué:</strong> ${a.que||''}</td>
+          <td style="font-size:11px;color:#374151;padding:8px 6px;border-bottom:1px solid #e5e7eb;vertical-align:top">${a.como||''}</td>
+          <td style="font-size:11px;color:#374151;padding:8px 6px;border-bottom:1px solid #e5e7eb;vertical-align:top">${a.quien||''}</td>
+          <td style="font-size:11px;color:#374151;padding:8px 6px;border-bottom:1px solid #e5e7eb;vertical-align:top">${a.donde||''}</td>
+          <td style="font-size:11px;color:#374151;padding:8px 6px;border-bottom:1px solid #e5e7eb;vertical-align:top;white-space:nowrap">${a.cuando||plazoLabel}</td>
+        </tr>`).join('');
+      return `<div style="margin-bottom:1.2rem">
+        <div style="background:${bgColor};border-left:4px solid ${color};padding:8px 12px;border-radius:6px;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;font-weight:700;color:${color}">● PRIORIDAD ${prioridad}</span>
+          <span style="font-size:11px;color:#6b7280">${plazoLabel} · ${items.length} acciones</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-family:inherit">
+            <thead>
+              <tr style="background:#f9fafb">
+                <th style="font-size:10px;color:#6b7280;font-weight:600;padding:6px;text-align:left;border-bottom:2px solid #e5e7eb;white-space:nowrap">Componente</th>
+                <th style="font-size:10px;color:#6b7280;font-weight:600;padding:6px;text-align:left;border-bottom:2px solid #e5e7eb">¿Qué? / ¿Cómo?</th>
+                <th style="font-size:10px;color:#6b7280;font-weight:600;padding:6px;text-align:left;border-bottom:2px solid #e5e7eb">¿Cómo?</th>
+                <th style="font-size:10px;color:#6b7280;font-weight:600;padding:6px;text-align:left;border-bottom:2px solid #e5e7eb">¿Quién?</th>
+                <th style="font-size:10px;color:#6b7280;font-weight:600;padding:6px;text-align:left;border-bottom:2px solid #e5e7eb">¿Dónde?</th>
+                <th style="font-size:10px;color:#6b7280;font-weight:600;padding:6px;text-align:left;border-bottom:2px solid #e5e7eb">¿Cuándo?</th>
+              </tr>
+            </thead>
+            <tbody>${filas}</tbody>
+          </table>
+        </div>
+      </div>`;
+    };
+
     document.getElementById('consolidated-ai-result').innerHTML=`
-      <div class="card" style="text-align:center;background:#f0fdf4;border-color:#6ee7b7;margin-top:1rem">
-        <div style="font-size:11px;color:#6b7280;margin-bottom:4px">Nivel general del diagnóstico participativo</div>
-        <div style="font-size:28px;font-weight:700;color:${nCol};margin-bottom:6px">${(r.nivel_general||'').replace('_',' ')}</div>
-        <div style="font-size:13px;color:#374151;line-height:1.6;text-align:left">${r.diagnostico_general||''}</div>
+      <div class="card" style="background:#f0fdf4;border-color:#6ee7b7;margin-top:1rem">
+        <div style="text-align:center;margin-bottom:12px">
+          <div style="font-size:10px;letter-spacing:1.5px;color:#6b7280;margin-bottom:6px">NIVEL GENERAL DEL DIAGNÓSTICO PARTICIPATIVO</div>
+          <div style="font-size:32px;font-weight:800;color:${nCol};margin-bottom:4px">${nLabel}</div>
+          <div style="font-size:11px;color:#6b7280">NTS-TS 001-02 · Playa Piangüita · ${groups.length} grupos · ${totPart} participantes</div>
+        </div>
+        <div style="border-top:1px solid #d1fae5;padding-top:12px;font-size:13px;color:#374151;line-height:1.8">${r.diagnostico_detallado||''}</div>
       </div>
-      ${r.consensos?`<div class="card"><div style="font-size:13px;font-weight:600;color:#065f46;margin-bottom:8px">✅ Consensos de la comunidad</div>${r.consensos.map((c,i)=>`<div class="nc-item" style="border-color:#d1fae5"><div class="nc-dot" style="background:#d1fae5;color:#065f46">${i+1}</div><span>${c}</span></div>`).join('')}</div>`:''}
-      ${r.brechas_criticas?`<div class="nc-box"><div class="nc-title">⚠️ Brechas críticas identificadas</div>${r.brechas_criticas.map((b,i)=>`<div class="nc-item"><div class="nc-dot">${i+1}</div><span>${b}</span></div>`).join('')}</div>`:''}
-      <div class="card" style="margin-top:1rem"><div style="font-size:13px;font-weight:600;color:#111827;margin-bottom:12px">Plan de acción consolidado</div>${accHtml}</div>
-      <div class="ruta-box" style="margin-top:1rem"><div style="font-size:12px;font-weight:600;color:#065f46;margin-bottom:6px">Próximos pasos</div><div style="font-size:12px;color:#374151;line-height:1.6">${r.proximos_pasos||''}</div></div>
+
+      <div class="card" style="margin-top:1rem">
+        <div style="font-size:13px;font-weight:700;color:#065f46;margin-bottom:10px">🌟 Fortalezas encontradas</div>
+        ${fortHtml}
+      </div>
+
+      <div class="nc-box" style="margin-top:1rem">
+        <div class="nc-title">⚠️ Brechas críticas identificadas</div>
+        ${brechHtml}
+      </div>
+
+      <div class="card" style="margin-top:1rem">
+        <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:4px">📋 Plan de Acción Propuesto</div>
+        <div style="font-size:11px;color:#6b7280;margin-bottom:16px">Metodología 5W2H · 20 acciones · Basado en los datos reales del diagnóstico</div>
+        ${renderPlanGrupo('ALTA','#dc2626','#fef2f2','0 – 3 meses')}
+        ${renderPlanGrupo('MEDIA','#d97706','#fffbeb','3 – 6 meses')}
+        ${renderPlanGrupo('BAJA','#2563eb','#eff6ff','6 – 12 meses')}
+      </div>
+
       <div class="card" style="background:#065f46;border-color:#065f46;text-align:center;margin-top:1rem">
-        <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:6px">La comunidad de Piangüita dice:</div>
-        <div style="font-size:15px;font-weight:600;color:white;line-height:1.6">"${r.mensaje_comunidad||''}"</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:8px;letter-spacing:1px">CIERRE Y LLAMADO A LA ACCIÓN</div>
+        <div style="font-size:14px;font-weight:600;color:white;line-height:1.7">${r.cierre||''}</div>
       </div>
+
       <div style="text-align:center;margin-top:1.5rem;padding-bottom:1rem">
         <button onclick="exportarInformeCompleto()" style="background:#065f46;color:white;border:none;padding:14px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;width:100%;font-family:inherit">📊 Descargar informe completo en PDF (datos + análisis IA)</button>
       </div>`;
