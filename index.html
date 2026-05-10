@@ -225,7 +225,7 @@ body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; us
     <div class="norma-badge"><span style="font-size:9px;opacity:0.75;font-weight:500;display:block;margin-bottom:2px">NORMA TÉCNICA SECTORIAL COLOMBIANA NTS TS 001-02</span><span style="font-size:11px;display:block;margin-bottom:2px">DESTINOS TURÍSTICOS DE PLAYA</span>REQUISITOS DE SOSTENIBILIDAD</div>
     <h2>¡Bienvenidos, comunidad de Piangüita!</h2>
     <p>Cada grupo responde los componentes asignados. Entre todos construimos el diagnóstico completo de nuestra playa.</p>
-    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-D</div>
+    <div style="font-size:11px;opacity:0.7;margin-top:8px;background:rgba(255,255,255,0.15);display:inline-block;padding:2px 8px;border-radius:4px">v27ABR-E</div>
   </div>
 
   <!-- Selector de diagnóstico/sesión -->
@@ -2055,11 +2055,11 @@ function calcTotalScore(scores) {
 // ══════════════════════════════════════════════════════════════
 // HELPER IA — timeout 30 s · hasta 3 reintentos automáticos
 // ══════════════════════════════════════════════════════════════
-async function fetchIA(payload, maxIntentos=3) {
+async function fetchIA(payload, maxIntentos=3, timeoutMs=30000) {
   let lastErr;
   for(let intento=0; intento<maxIntentos; intento++) {
     const ctrl = new AbortController();
-    const tout = setTimeout(() => ctrl.abort(), 30000);
+    const tout = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
       const resp = await fetch('https://pianguita-proxy.onrender.com/api/messages', {
         method:'POST', headers:{'Content-Type':'application/json'},
@@ -2751,7 +2751,7 @@ async function generateConsolidatedAI() {
   const groups=Object.values(all);
   document.getElementById('consolidated-loading').style.display='block';
   document.getElementById('consolidated-ai-result').innerHTML='';
-  const msgs=['Analizando voces de la comunidad...','Identificando consensos...','Construyendo diagnóstico participativo...','Generando plan de acción colectivo...'];
+  const msgs=['Analizando voces de la comunidad...','Identificando fortalezas y brechas...','Construyendo diagnóstico participativo...','Generando plan 5W2H (puede tardar hasta 60 s)...','Casi listo, elaborando plan de acción...'];
   let mi=0; const ml=document.getElementById('consol-msg');
   const iv=setInterval(()=>{ mi=(mi+1)%msgs.length; ml.textContent=msgs[mi]; },1800);
   try {
@@ -2823,7 +2823,7 @@ JSON requerido exacto:
 }`;
     const resp=await fetchIA({model:'claude-sonnet-4-20250514',max_tokens:5000,
       system:'Eres un Consultor Senior en Turismo Sostenible y Regenerativo. Responde SOLO JSON válido sin markdown ni texto adicional.',
-      messages:[{role:'user',content:prompt}]});
+      messages:[{role:'user',content:prompt}]}, 3, 60000);
     clearInterval(iv); document.getElementById('consolidated-loading').style.display='none';
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     const data=await resp.json();
